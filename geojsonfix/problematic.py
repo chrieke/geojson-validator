@@ -33,11 +33,14 @@ def check_all_problematic(df, criteria):
 
 
 def check_holes(geometry) -> bool:
+    has_holes = False
     if geometry.geom_type == "Polygon":
         try:
             geometry.interiors[0]
+            has_holes = True
         except IndexError:
-            return False
+            pass
+        return has_holes
     else:
         raise TypeError("geometry is not a Polygon")
 
