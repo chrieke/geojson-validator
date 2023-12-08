@@ -27,7 +27,9 @@ def check_all_invalid(df, criteria):
 
         if "inner_and_exterior_ring_intersect" in criteria:
             if check_inner_and_exterior_ring_intersect(row.geometry):
-                invalid_results.setdefault("inner_and_exterior_ring_intersect", []).append(i)
+                invalid_results.setdefault(
+                    "inner_and_exterior_ring_intersect", []
+                ).append(i)
 
     return invalid_results
 
@@ -52,8 +54,10 @@ def check_duplicate_nodes(geometry) -> bool:
     else:
         raise TypeError("geometry is not a Polygon")
 
+
 # def fix_duplicate_nodes(geometry):
 #     df.geometry = df.geometry.simplify(0)
+
 
 def check_less_three_unique_nodes(geometry):
     # TODO: geopandas or shapely autocloses, makes 4 nodes.
@@ -72,16 +76,20 @@ def check_exterior_not_ccw(geometry) -> bool:
 #         lambda x: orient(x) if x.geom_type == "Polygon" else x
 #     )
 
+
 def check_interior_not_cw(geometry) -> bool:
     if geometry.geom_type == "Polygon":
-            return any([interior.is_ccw for interior in geometry.interiors])
+        return any([interior.is_ccw for interior in geometry.interiors])
     else:
         raise TypeError("geometry is not a Polygon")
+
 
 def check_inner_and_exterior_ring_intersect(geometry) -> bool:
     pass
     if geometry.geom_type == "Polygon":
-        return any([geometry.exterior.intersects(interior) for interior in geometry.interiors])
+        return any(
+            [geometry.exterior.intersects(interior) for interior in geometry.interiors]
+        )
     else:
         raise TypeError("geometry is not a Polygon")
 
