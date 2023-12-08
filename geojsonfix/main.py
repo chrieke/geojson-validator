@@ -1,9 +1,16 @@
 from typing import Dict, Union, List
+import sys
 
 import geojson
+from loguru import logger
 
-from .validation import Validation
+from .checks_invalid import *
+from .checks_problematic import *
 from .geom import read_geometry_input
+
+logger.remove()
+logger_format = "{time:YYYY-MM-DD_HH:mm:ss.SSS} | {message}"
+logger.add(sink=sys.stderr, format=logger_format, level="INFO")
 
 VALIDATION_CRITERIA = {
     "invalid": [
@@ -52,28 +59,29 @@ def validate(
         criteria.extend(VALIDATION_CRITERIA["problematic"])
     criteria = list(set(criteria))
 
-    validation = Validation(df)
-    validation.run_validation_checks(validation_criteria=criteria)
+    ### Invalid ###
+    invalid_results = {}
+    if "duplicate_nodes" in criteria:
+        if check_duplicate_nodes(df):
+            invalid_results["duplicate_nodes"] = True
 
-    # TODO: evtl from criteria definition
-    validation_results = {
-        "unclosed": validation.unclosed,
-        "duplicate_nodes": validation.duplicate_nodes,
-        "less_three_unique_nodes": validation.less_three_unique_nodes,
-        "exterior_cw": validation.exterior_cw,
-        "interior_ccw": validation.interior_ccw,
-        "inner_and_exterior_ring_intersect": validation.inner_and_exterior_ring_intersect,
-        "defined_crs": "validation.defined_crs",
-        "holes": validation.holes,
-        "selfintersection": validation.selfintersection,
-        "excessive_coordinate_precision": validation.excessive_coordinate_precision,
-        "more_than_2d_coordinates": validation.more_than_2d_coordinates,
-        "crosses_antimeridian": validation.crosses_antimeridian,
-    }
+    if "exterior_ccw" in criteria:
+        if check_exterior_ccw(df):
+            invalid_results["exterior_ccw"] = True
+
+    ### Problematic ###
+    problematic_results = {}
+    if "no_holes" in criteria:
+        if check_holes(df):
+            problematic_results["no_holes"] = True
+
+    if "no_selfintersection" in criteria:
+        if check_selfintersection(df):
+            problematic_results["no_selfintersection"] = True
 
     return {
-        "invalid": validation.any_invalid,
-        "status": validation_results,
-        "data_original": original_json,
+        "invalid": list(invalid_results.keys()),
+        "problematic": list(problematic_results.keys()),
+        # "data_original": original_json,
         # "data_fixed": fixed_json,
     }
