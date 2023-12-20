@@ -41,7 +41,8 @@ def check_unclosed(geometry):
         is_closed = coords[0] == coords[-1]
         return not is_closed
     else:
-        raise TypeError("geometry is not a Polygon")
+        # TODO WHat if multipolygon. deswegen nur single polygon accepted?
+        raise TypeError(f"geometry is not a Polygon {geometry}")
 
 
 def check_duplicate_nodes(geometry) -> bool:
@@ -55,10 +56,6 @@ def check_duplicate_nodes(geometry) -> bool:
         raise TypeError("geometry is not a Polygon")
 
 
-# def fix_duplicate_nodes(geometry):
-#     df.geometry = df.geometry.simplify(0)
-
-
 def check_less_three_unique_nodes(geometry):
     # TODO: geopandas or shapely autocloses, makes 4 nodes.
     pass
@@ -69,12 +66,6 @@ def check_exterior_not_ccw(geometry) -> bool:
         return not geometry.exterior.is_ccw
     else:
         raise TypeError("geometry is not a Polygon")
-
-
-# def fix_exterior_not_ccw(df):
-#     df.geometry = df.geometry.apply(
-#         lambda x: orient(x) if x.geom_type == "Polygon" else x
-#     )
 
 
 def check_interior_not_cw(geometry) -> bool:

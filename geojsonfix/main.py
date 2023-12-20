@@ -4,8 +4,8 @@ import sys
 import geojson
 from loguru import logger
 
-from .invalid import check_all_invalid
-from .problematic import check_all_problematic
+from .check_invalid import check_all_invalid
+from .check_problematic import check_all_problematic
 from .geom import read_geometry_input
 from .utils import consolidate_criteria
 
@@ -34,6 +34,8 @@ def validate(
 
     criteria = consolidate_criteria(validation_criteria)
     logger.info(f"Validation criteria: {criteria}")
+
+    # TODO: Check geometry type? here or in func
 
     results_invalid = check_all_invalid(df, criteria)
     results_problematic = check_all_problematic(df, criteria)
