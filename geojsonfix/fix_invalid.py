@@ -1,3 +1,4 @@
+# from shapely.ops import orient
 # def fix_duplicate_nodes(geometry):
 #     df.geometry = df.geometry.simplify(0)
 
