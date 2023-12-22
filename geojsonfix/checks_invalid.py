@@ -1,7 +1,7 @@
 # TODO: ?immer selbe response, dict mit 0/1
 
 
-def check_all_invalid(df, criteria):
+def check_all_invalid(geom, criteria):
     functions = {
         "unclosed": check_unclosed,
         "duplicate_nodes": check_duplicate_nodes,
@@ -9,14 +9,13 @@ def check_all_invalid(df, criteria):
         "exterior_not_ccw": check_exterior_not_ccw,
         "interior_not_cw": check_interior_not_cw,
         "inner_and_exterior_ring_intersect": check_inner_and_exterior_ring_intersect,
-        "defined_crs": check_defined_crs
+        "defined_crs": check_defined_crs,
     }
-    results = {}
+    results = []
     for criterium in criteria:
         validator = functions[criterium]
-        for i, row in df.iterrows():
-            if validator(row.geometry):
-                results.setdefault(criterium, []).append(i)
+        if validator(geom):
+            results.append(criterium)
     return results
 
 

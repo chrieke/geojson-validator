@@ -3,10 +3,10 @@ import sys
 
 import geojson
 from loguru import logger
+from shapely.geometry import shape
 
 from .checks_invalid import check_all_invalid
 from .checks_problematic import check_all_problematic
-from .geom import read_geometry_input
 
 logger.remove()
 logger_format = "{time:YYYY-MM-DD_HH:mm:ss.SSS} | {message}"
@@ -48,26 +48,54 @@ def validate(
     Returns:
         The validated & fixed GeoJSON feature collection.
     """
-    df = read_geometry_input(geojson)
-    original_json = df.__geo_interface__.copy()
-    # fixed_json = original_json.copy()
-
     check_criteria(criteria_invalid, invalid=True)
     logger.info(f"Validation for criteria_invalid: {criteria_invalid}")
     check_criteria(criteria_problematic, problematic=True)
     logger.info(f"Validation for criteria_problematic: {criteria_problematic}")
 
-    # TODO: Check geometry type? here or in func
+    type_ = geojson.get("type", None)
+    if type_ is None:
+        raise ValueError("no 'type' field found in GeoJSON")
+    elif type_ == "FeatureCollection":
+        features = geojson.get("features", None)
+        if features is None:
+            raise ValueError("no 'features' field found in GeoJSON FeatureCollection")
+    elif type_ == "Feature":
+        geometry = geojson.get("geometry", None)
+        if geometry is None:
+            raise ValueError("no 'geometry' field found in GeoJSON Feature")
+    elif type_ == "Polygon":
+        features = [{"type": "Feature", "properties": {}, "geometry": geojson}]
+    else:
+        raise ValueError(
+            "The GeoJSON must consist of a FeatureCollection, Features, or Geometries of type Polygon"
+        )
 
-    results_invalid = check_all_invalid(df, criteria_invalid)
-    results_problematic = check_all_problematic(df, criteria_problematic)
+    results = {}
+    # "invalid": dict.fromkeys(criteria_invalid, []),
+    #          "problematic": dict.fromkeys(criteria_problematic, [])
+    # "data_original": original_json,
+    # "data_fixed": fixed_json,
+    #        }
 
-    return {
-        "invalid": results_invalid,
-        "problematic": results_problematic,
-        # "data_original": original_json,
-        # "data_fixed": fixed_json,
-    }
+    for i, feature in enumerate(features):
+        geometry_type = feature.get("geometry", None).get("type", None)
+        if geometry_type is None:
+            raise ValueError("The feature must contain a geometry of type Polygon")
+
+        geom = shape(feature["geometry"])
+        results_invalid = check_all_invalid(geom, criteria_invalid)
+        results_problematic = check_all_problematic(geom, criteria_problematic)
+
+        all_results_invalid = {}
+        for k in results_invalid:
+            all_results_invalid.setdefault(k, []).append(i)
+        all_results_problematic = {}
+        for k in results_problematic:
+            all_results_problematic.setdefault(k, []).append(i)
+
+    results = {"invalid": all_results_invalid, "problematic": all_results_problematic}
+    return results
 
 
 def check_criteria(selected_criteria, invalid=False, problematic=False):

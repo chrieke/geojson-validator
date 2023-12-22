@@ -1,7 +1,8 @@
 from shapely.geometry import mapping
+from shapely.geometry import shape
 
 
-def check_all_problematic(df, criteria):
+def check_all_problematic(geom, criteria):
     functions = {
         "holes": check_holes,
         "self_intersection": check_self_intersection,
@@ -9,15 +10,11 @@ def check_all_problematic(df, criteria):
         "more_than_2d_coordinates": check_more_than_2d_coordinates,
         "crosses_antimeridian": check_crosses_antimeridian,
     }
-    results = {}
+    results = []
     for criterium in criteria:
         validator = functions[criterium]
-        for i, row in df.iterrows():
-            if row.geometry.geom_type =="Polygon":
-                if validator(row.geometry):
-                    results.setdefault(criterium, []).append(i)
-            else:
-                raise ValueError("Contains geometries that are not Polygon, currently not supported.")
+        if validator(geom):
+            results.append(criterium)
     return results
 
 
