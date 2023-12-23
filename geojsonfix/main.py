@@ -48,11 +48,6 @@ def validate(
     Returns:
         The validated & fixed GeoJSON feature collection.
     """
-    check_criteria(criteria_invalid, invalid=True)
-    logger.info(f"Validation for criteria_invalid: {criteria_invalid}")
-    check_criteria(criteria_problematic, problematic=True)
-    logger.info(f"Validation for criteria_problematic: {criteria_problematic}")
-
     type_ = geojson.get("type", None)
     if type_ is None:
         raise ValueError("no 'type' field found in GeoJSON")
@@ -71,53 +66,57 @@ def validate(
             "The GeoJSON must consist of a FeatureCollection, Features, or Geometries of type Polygon"
         )
 
-    # "data_original": original_json,
-    # "data_fixed": fixed_json,
-    #        }
+    check_criteria(criteria_invalid, invalid=True)
+    logger.info(f"Validation for criteria_invalid: {criteria_invalid}")
+    check_criteria(criteria_problematic, problematic=True)
+    logger.info(f"Validation for criteria_problematic: {criteria_problematic}")
+
     results_invalid, results_problematic = {}, {}
+    for i, feature in enumerate(features):
+        geometry_type = feature.get("geometry", None).get("type", None)
+        if geometry_type is None:
+            raise ValueError("The feature must contain a geometry of type Polygon")
+        geom = shape(feature["geometry"])
 
-    for criterium in criteria_invalid:
-        for i, feature in enumerate(features):
-            invalid = False
-            geometry_type = feature.get("geometry", None).get("type", None)
-            if geometry_type is None:
-                raise ValueError("The feature must contain a geometry of type Polygon")
-            geom = shape(feature["geometry"])
-            # Some checks require original GeoJSON, some shapely, structure can not be simplified.
-            if criterium == "unclosed":
-                invalid = checks_invalid.check_unclosed(feature["geometry"])
-            if criterium == "duplicate_nodes":
-                invalid = checks_invalid.check_duplicate_nodes(feature["geometry"])
-            if criterium == "less_three_unique_nodes":
-                invalid = checks_invalid.check_less_three_unique_nodes(feature["geometry"])
-            if criterium == "exterior_not_ccw":
-                invalid = checks_invalid.check_exterior_not_ccw(geom)
-            if criterium == "interior_not_cw":
-                invalid = checks_invalid.check_interior_not_cw(geom)
-            if criterium == "inner_and_exterior_ring_intersect":
-                invalid = checks_invalid.check_inner_and_exterior_ring_intersect(geom)
-            if criterium == "defined_crs":
-                invalid = checks_invalid.check_defined_crs(feature["geometry"])
-            if invalid:
-                results_invalid.setdefault(criterium, []).append(i)
+        if criteria_invalid:
+            if "unclosed" in criteria_invalid:
+                if checks_invalid.check_unclosed(feature["geometry"]):
+                    results_invalid.setdefault("unclosed", []).append(i)
+            if "duplicate_nodes" in criteria_invalid:
+                if checks_invalid.check_duplicate_nodes(feature["geometry"]):
+                    results_invalid.setdefault("duplicate_nodes", []).append(i)
+            if "less_three_unique_nodes" in criteria_invalid:
+                if checks_invalid.check_less_three_unique_nodes(feature["geometry"]):
+                    results_invalid.setdefault("less_three_unique_nodes", []).append(i)
+            if "exterior_not_ccw" in criteria_invalid:
+                if checks_invalid.check_exterior_not_ccw(geom):
+                    results_invalid.setdefault("defined_crs", []).append(i)
+            if "interior_not_cw" in criteria_invalid:
+                if checks_invalid.check_interior_not_cw(geom):
+                    results_invalid.setdefault("interior_not_cw", []).append(i)
+            if "inner_and_exterior_ring_intersect" in criteria_invalid:
+                if checks_invalid.check_inner_and_exterior_ring_intersect(geom):
+                    results_invalid.setdefault("inner_and_exterior_ring_intersect", []).append(i)
+            if "defined_crs" in criteria_invalid:
+                if checks_invalid.check_defined_crs(feature["geometry"]):
+                    results_invalid.setdefault("defined_crs", []).append(i)
 
-        for criterium in criteria_problematic:
-            for i, feature in enumerate(features):
-                problematic=False
-                # Some checks require original GeoJSON, some shapely, structure can not be simplified.
-                geom = shape(feature["geometry"])
-                if criterium == "holes":
-                    problematic = checks_problematic.check_holes(geom)
-                if criterium == "self_intersection":
-                    problematic = checks_problematic.check_self_intersection(geom)
-                # if criterium == "excessive_coordinate_precision":
-                #     problematic = checks_problematic.check_excessive_coordinate_precision(feature["geometry"])
-                # if criterium == "more_than_2d_coordinates":
-                #     problematic = checks_problematic.check_more_than_2d_coordinates(feature["geometry"])
-                if criterium == "crosses_antimeridian":
-                    problematic = checks_problematic.check_crosses_antimeridian(geom)
-                if problematic:
-                    results_problematic.setdefault(criterium, []).append(i)
+        if criteria_problematic:
+            if "holes" in criteria_problematic:
+                if checks_problematic.check_holes(geom):
+                    results_problematic.setdefault("holes", []).append(i)
+            if "self_intersection" in criteria_problematic:
+                if checks_problematic.check_self_intersection(geom):
+                    results_problematic.setdefault("self_intersection", []).append(i)
+            # if "excessive_coordinate_precision" in criteria_problematic:
+            #     if checks_problematic.check_excessive_coordinate_precision(feature["geometry"]):
+            #         results_problematic.setdefault("excessive_coordinate_precision", []).append(i)
+            # if "more_than_2d_coordinates" in criteria_problematic:
+            #     if checks_problematic.check_more_than_2d_coordinates(feature["geometry"]):
+            #         results_problematic.setdefault("more_than_2d_coordinates", []).append(i)
+            if "crosses_antimeridian" in criteria_problematic:
+                if checks_problematic.check_crosses_antimeridian(geom):
+                    results_problematic.setdefault("crosses_antimeridian", []).append(i)
 
     results = {"invalid": results_invalid, "problematic": results_problematic}
     return results
