@@ -1,61 +1,40 @@
-from shapely.geometry import Polygon, mapping
+from shapely.geometry import Polygon
 
 
 def check_holes(geom: Polygon) -> bool:
-    has_holes = False
-    try:
-        geom.interiors[0]
-        has_holes = True
-    except IndexError:
-        pass
-    return has_holes
+    """Return True if the geometry has holes (interior rings)."""
+    return len(geom.interiors) > 0
 
 
 def check_self_intersection(geom: Polygon) -> bool:
-    # TODO how to check selfintersection
+    """Return True if the geometry is self-intersecting."""
+    # TODO how to check selfintersection in shapely
     return not geom.is_valid
 
 
 def check_excessive_coordinate_precision(geometry: dict) -> bool:
-    # Check x coordinate of first 2 coordinate pairs in geometry
-    # TODO: Correct?
+    """Return True if any coordinate has more than 6 decimal places in the longitude."""
+    # For speedup, only checks the x coordinate of first 2 coordinate pairs in the geometry
+    # TODO: Correct, do more?
     coords = geometry["coordinates"][0]
     return any([len(str(coord[0]).split(".")[1]) > 6 for coord in coords[:2]])
 
 
 def check_more_than_2d_coordinates(geometry: dict, check_all_coordinates=False) -> bool:
-    """
-    By default checks only the first coordinate pair to speed things up.
-
-    Args:
-        geometry:
-        check_all_coordinates:
-
-    Returns:
-
-    """
+    """Return True if any coordinates are more than 2D."""
     # TODO: should check_all_coordinates be activated?
     coords = geometry["coordinates"][0]
-    first_coord = coords[0]
-    if len(first_coord) > 2:
-        return True
-    elif check_all_coordinates:
+    if check_all_coordinates:
         for ring in coords:
             for coord in ring:
                 if len(coord) > 2:
                     return True
-    else:
-        return False
+    first_coordinate = coords[0]
+    return len(first_coordinate) > 2
 
 
 def check_crosses_antimeridian(geometry: dict) -> bool:
-    """
-    Check if the input geometry crosses the antimeridian.
-    Args:
-        geometry (dict): A dictionary containing 'coordinates', a list of [longitude, latitude] pairs.
-    Returns:
-        bool: True if the geometry crosses the antimeridian, False otherwise.
-    """
+    """Return True if the geometry crosses the antimeridian."""
     coords = geometry["coordinates"][0]
     for start, end in zip(coords, coords[1:]):
         # Normalize longitudes to -180 to 180 range
@@ -66,3 +45,41 @@ def check_crosses_antimeridian(geometry: dict) -> bool:
         if abs(norm_end_lon - norm_start_lon) > 180:
             return True
     return False
+
+
+# geometry2 ={
+#   "type": "FeatureCollection",
+#   "features": [
+#     {
+#       "type": "Feature",
+#       "properties": {},
+#       "geometry": {
+#         "coordinates": [
+#           [
+#             [
+#               102.86600441432711,
+#               39.07012388142172
+#             ],
+#             [
+#               102.86600441432711,
+#               3.163608989405958
+#             ],
+#             [
+#               249.2095932113952,
+#               3.163608989405958
+#             ],
+#             [
+#               249.2095932113952,
+#               39.07012388142172
+#             ],
+#             [
+#               102.86600441432711,
+#               39.07012388142172
+#             ]
+#           ]
+#         ],
+#         "type": "Polygon"
+#       }
+#     }
+#   ]
+# }
