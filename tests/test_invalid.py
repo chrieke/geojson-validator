@@ -7,7 +7,7 @@ from .context import (
     check_exterior_not_ccw,
     check_interior_not_cw,
     check_inner_and_exterior_ring_intersect,
-    check_defined_crs,
+    check_crs_defined,
 )
 
 
@@ -56,5 +56,5 @@ def test_check_inner_and_exterior_ring_intersect():
 def test_check_defined_crs():
     geojson_fp = "./tests/examples_geojson/invalid/crs_defined.geojson"  # from geojson-invalid-geometry repo
     df = gpd.read_file(geojson_fp)
-    result = check_defined_crs(df.geometry[0])
+    result = check_crs_defined(df.geometry[0])
     assert result

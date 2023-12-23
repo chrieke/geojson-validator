@@ -1,5 +1,6 @@
 from typing import Dict, Union, List
 import sys
+from collections import Counter
 
 import geojson
 from loguru import logger
@@ -20,7 +21,7 @@ VALIDATION_CRITERIA = {
         "exterior_not_ccw",
         "interior_not_cw",
         "inner_and_exterior_ring_intersect",
-        "defined_crs",
+        "crs_defined",
     ],
     "problematic": [
         "holes",
@@ -72,10 +73,27 @@ def validate(
     logger.info(f"Validation for criteria_problematic: {criteria_problematic}")
 
     results_invalid, results_problematic = {}, {}
+
+    if "crs_defined" in criteria_invalid:
+        # is defined on fc level, not feature
+        if type_ == "FeatureCollection":
+            if checks_invalid.check_crs_defined(geojson):
+                # TODO: Different responses, all true instead and position different response element?
+                results_invalid["crs_defined"] = True
+
+    geometry_types = []
     for i, feature in enumerate(features):
         geometry_type = feature.get("geometry", None).get("type", None)
         if geometry_type is None:
             raise ValueError("The feature must contain a geometry of type Polygon")
+        else:
+            geometry_types.append(geometry_type)
+        if geometry_type != "Polygon":
+            logger.info(f"Geometry of type {geometry_type} currently not supported, skipping.")
+            continue
+        # TODO: If multipolygon loop the bottom part over it.
+
+
         geom = shape(feature["geometry"])
 
         if criteria_invalid:
@@ -90,16 +108,15 @@ def validate(
                     results_invalid.setdefault("less_three_unique_nodes", []).append(i)
             if "exterior_not_ccw" in criteria_invalid:
                 if checks_invalid.check_exterior_not_ccw(geom):
-                    results_invalid.setdefault("defined_crs", []).append(i)
+                    results_invalid.setdefault("exterior_not_ccw", []).append(i)
             if "interior_not_cw" in criteria_invalid:
                 if checks_invalid.check_interior_not_cw(geom):
                     results_invalid.setdefault("interior_not_cw", []).append(i)
             if "inner_and_exterior_ring_intersect" in criteria_invalid:
                 if checks_invalid.check_inner_and_exterior_ring_intersect(geom):
-                    results_invalid.setdefault("inner_and_exterior_ring_intersect", []).append(i)
-            if "defined_crs" in criteria_invalid:
-                if checks_invalid.check_defined_crs(feature["geometry"]):
-                    results_invalid.setdefault("defined_crs", []).append(i)
+                    results_invalid.setdefault(
+                        "inner_and_exterior_ring_intersect", []
+                    ).append(i)
 
         if criteria_problematic:
             if "holes" in criteria_problematic:
@@ -118,7 +135,7 @@ def validate(
                 if checks_problematic.check_crosses_antimeridian(geom):
                     results_problematic.setdefault("crosses_antimeridian", []).append(i)
 
-    results = {"invalid": results_invalid, "problematic": results_problematic}
+    results = {"invalid": results_invalid, "problematic": results_problematic, "count_geometry_types": Counter(geometry_types)}
     return results
 
 
