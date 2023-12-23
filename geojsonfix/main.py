@@ -89,10 +89,11 @@ def validate(
         else:
             geometry_types.append(geometry_type)
         if geometry_type != "Polygon":
-            logger.info(f"Geometry of type {geometry_type} currently not supported, skipping.")
+            logger.info(
+                f"Geometry of type {geometry_type} currently not supported, skipping."
+            )
             continue
         # TODO: If multipolygon loop the bottom part over it.
-
 
         geom = shape(feature["geometry"])
 
@@ -125,17 +126,29 @@ def validate(
             if "self_intersection" in criteria_problematic:
                 if checks_problematic.check_self_intersection(geom):
                     results_problematic.setdefault("self_intersection", []).append(i)
-            # if "excessive_coordinate_precision" in criteria_problematic:
-            #     if checks_problematic.check_excessive_coordinate_precision(feature["geometry"]):
-            #         results_problematic.setdefault("excessive_coordinate_precision", []).append(i)
-            # if "more_than_2d_coordinates" in criteria_problematic:
-            #     if checks_problematic.check_more_than_2d_coordinates(feature["geometry"]):
-            #         results_problematic.setdefault("more_than_2d_coordinates", []).append(i)
+            if "excessive_coordinate_precision" in criteria_problematic:
+                if checks_problematic.check_excessive_coordinate_precision(
+                    feature["geometry"]
+                ):
+                    results_problematic.setdefault(
+                        "excessive_coordinate_precision", []
+                    ).append(i)
+            if "more_than_2d_coordinates" in criteria_problematic:
+                if checks_problematic.check_more_than_2d_coordinates(
+                    feature["geometry"]
+                ):
+                    results_problematic.setdefault(
+                        "more_than_2d_coordinates", []
+                    ).append(i)
             if "crosses_antimeridian" in criteria_problematic:
                 if checks_problematic.check_crosses_antimeridian(geom):
                     results_problematic.setdefault("crosses_antimeridian", []).append(i)
 
-    results = {"invalid": results_invalid, "problematic": results_problematic, "count_geometry_types": Counter(geometry_types)}
+    results = {
+        "invalid": results_invalid,
+        "problematic": results_problematic,
+        "count_geometry_types": Counter(geometry_types),
+    }
     return results
 
 

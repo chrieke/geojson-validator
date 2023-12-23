@@ -1,7 +1,7 @@
-# TODO: ?immer selbe response, dict mit 0/1
+from shapely.geometry import Polygon
 
 
-def check_unclosed(geometry: dict):
+def check_unclosed(geometry: dict) -> bool:
     # This needs to check the original json string, as shapely or geopandas automatically close.
     coords = geometry["coordinates"][0]
     is_closed = coords[0] == coords[-1]
@@ -18,29 +18,27 @@ def check_duplicate_nodes(geometry: dict) -> bool:
         duplications = True
         # But acceptable if only the first and last coordinates are the same (closed ring)
         # and no other duplicates are present
-        if (first_last_same and len(unique_coords) == len(coords) - 1):
+        if first_last_same and len(unique_coords) == len(coords) - 1:
             duplications = False
     return duplications
 
 
-def check_less_three_unique_nodes(geometry):
+def check_less_three_unique_nodes(geometry: dict) -> bool:
     coords = geometry["coordinates"][0]
     return len(set(map(tuple, coords))) < 3
 
 
-def check_exterior_not_ccw(geometry) -> bool:
-    return not geometry.exterior.is_ccw
+def check_exterior_not_ccw(geom: Polygon) -> bool:
+    return not geom.exterior.is_ccw
 
 
-def check_interior_not_cw(geometry) -> bool:
-    return any([interior.is_ccw for interior in geometry.interiors])
+def check_interior_not_cw(geom: Polygon) -> bool:
+    return any([interior.is_ccw for interior in geom.interiors])
 
 
-def check_inner_and_exterior_ring_intersect(geometry) -> bool:
-    return any(
-        [geometry.exterior.intersects(interior) for interior in geometry.interiors]
-    )
+def check_inner_and_exterior_ring_intersect(geom: Polygon) -> bool:
+    return any([geom.exterior.intersects(interior) for interior in geom.interiors])
 
 
-def check_crs_defined(feature_collection) -> bool:
+def check_crs_defined(feature_collection: dict) -> bool:
     return feature_collection.get("crs", None)
