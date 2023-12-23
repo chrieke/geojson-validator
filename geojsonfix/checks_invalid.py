@@ -1,35 +1,18 @@
 # TODO: ?immer selbe response, dict mit 0/1
 
 
-def check_all_invalid(geom, criteria):
-    functions = {
-        "unclosed": check_unclosed,
-        "duplicate_nodes": check_duplicate_nodes,
-        "less_three_unique_nodes": check_less_three_unique_nodes,
-        "exterior_not_ccw": check_exterior_not_ccw,
-        "interior_not_cw": check_interior_not_cw,
-        "inner_and_exterior_ring_intersect": check_inner_and_exterior_ring_intersect,
-        "defined_crs": check_defined_crs,
-    }
-    results = []
-    for criterium in criteria:
-        validator = functions[criterium]
-        if validator(geom):
-            results.append(criterium)
-    return results
-
-
-def check_unclosed(geometry):
-    # TODO: geopandas or shapely autocloses!
-    coords = list(geometry.exterior.coords)
+def check_unclosed(geometry: dict):
+    # shapely or Geopandas, this needs to check the original json string!
+    coords = geometry["coordinates"][0][0]
     is_closed = coords[0] == coords[-1]
     return not is_closed
 
 
-def check_duplicate_nodes(geometry) -> bool:
-    coords = list(geometry.exterior.coords)[
+def check_duplicate_nodes(geometry: dict) -> bool:
+    # TODO: could be that unclosed but still a duplicate
+    coords = geometry["coordinates"][0][0][
         1:-1
-    ]  # TODO: could be that unclosed but still a duplicate
+    ]
     has_duplicate_node = len(coords) != len(set(coords))
     return has_duplicate_node
 

@@ -5,8 +5,8 @@ import geojson
 from loguru import logger
 from shapely.geometry import shape
 
-from .checks_invalid import check_all_invalid
-from .checks_problematic import check_all_problematic
+from . import checks_invalid
+from . import checks_problematic
 
 logger.remove()
 logger_format = "{time:YYYY-MM-DD_HH:mm:ss.SSS} | {message}"
@@ -71,30 +71,55 @@ def validate(
             "The GeoJSON must consist of a FeatureCollection, Features, or Geometries of type Polygon"
         )
 
-    results = {}
-    # "invalid": dict.fromkeys(criteria_invalid, []),
-    #          "problematic": dict.fromkeys(criteria_problematic, [])
     # "data_original": original_json,
     # "data_fixed": fixed_json,
     #        }
+    results_invalid, results_problematic = {}, {}
 
-    for i, feature in enumerate(features):
-        geometry_type = feature.get("geometry", None).get("type", None)
-        if geometry_type is None:
-            raise ValueError("The feature must contain a geometry of type Polygon")
+    for criterium in criteria_invalid:
+        for i, feature in enumerate(features):
+            invalid = False
+            geometry_type = feature.get("geometry", None).get("type", None)
+            if geometry_type is None:
+                raise ValueError("The feature must contain a geometry of type Polygon")
+            geom = shape(feature["geometry"])
+            # Some checks require original GeoJSON, some shapely, structure can not be simplified.
+            if criterium == "unclosed":
+                invalid = checks_invalid.check_unclosed(feature["geometry"])
+            if criterium == "duplicate_nodes":
+                invalid = checks_invalid.check_duplicate_nodes(feature["geometry"])
+            if criterium == "less_three_unique_nodes":
+                invalid = checks_invalid.check_less_three_unique_nodes(feature["geometry"])
+            if criterium == "exterior_not_ccw":
+                invalid = checks_invalid.check_exterior_not_ccw(geom)
+            if criterium == "interior_not_cw":
+                invalid = checks_invalid.check_interior_not_cw(geom)
+            if criterium == "inner_and_exterior_ring_intersect":
+                invalid = checks_invalid.check_inner_and_exterior_ring_intersect(geom)
+            if criterium == "defined_crs":
+                invalid = checks_invalid.check_defined_crs(feature["geometry"])
+            if invalid:
+                results_invalid.setdefault(criterium, []).append(i)
 
-        geom = shape(feature["geometry"])
-        results_invalid = check_all_invalid(geom, criteria_invalid)
-        results_problematic = check_all_problematic(geom, criteria_problematic)
+        for criterium in criteria_problematic:
+            for i, feature in enumerate(features):
+                problematic=False
+                # Some checks require original GeoJSON, some shapely, structure can not be simplified.
+                geom = shape(feature["geometry"])
+                if criterium == "holes":
+                    problematic = checks_problematic.check_holes(geom)
+                if criterium == "self_intersection":
+                    problematic = checks_problematic.check_self_intersection(geom)
+                # if criterium == "excessive_coordinate_precision":
+                #     problematic = checks_problematic.check_excessive_coordinate_precision(feature["geometry"])
+                # if criterium == "more_than_2d_coordinates":
+                #     problematic = checks_problematic.check_more_than_2d_coordinates(feature["geometry"])
+                if criterium == "crosses_antimeridian":
+                    problematic = checks_problematic.check_crosses_antimeridian(geom)
+                if problematic:
+                    results_problematic.setdefault(criterium, []).append(i)
 
-        all_results_invalid = {}
-        for k in results_invalid:
-            all_results_invalid.setdefault(k, []).append(i)
-        all_results_problematic = {}
-        for k in results_problematic:
-            all_results_problematic.setdefault(k, []).append(i)
-
-    results = {"invalid": all_results_invalid, "problematic": all_results_problematic}
+    results = {"invalid": results_invalid, "problematic": results_problematic}
     return results
 
 

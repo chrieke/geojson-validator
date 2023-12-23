@@ -1,21 +1,4 @@
 from shapely.geometry import mapping
-from shapely.geometry import shape
-
-
-def check_all_problematic(geom, criteria):
-    functions = {
-        "holes": check_holes,
-        "self_intersection": check_self_intersection,
-        "excessive_coordinate_precision": check_excessive_coordinate_precision,
-        "more_than_2d_coordinates": check_more_than_2d_coordinates,
-        "crosses_antimeridian": check_crosses_antimeridian,
-    }
-    results = []
-    for criterium in criteria:
-        validator = functions[criterium]
-        if validator(geom):
-            results.append(criterium)
-    return results
 
 
 def check_holes(geometry) -> bool:
