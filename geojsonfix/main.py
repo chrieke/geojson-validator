@@ -85,7 +85,7 @@ def validate(
     for i, feature in enumerate(features):
         geometry_type = feature.get("geometry", None).get("type", None)
         if geometry_type is None:
-            raise ValueError("The feature must contain a geometry of type Polygon")
+            raise ValueError("no 'geometry' field found in GeoJSON Feature")
         else:
             geometry_types.append(geometry_type)
         if geometry_type != "Polygon":
@@ -141,13 +141,13 @@ def validate(
                         "more_than_2d_coordinates", []
                     ).append(i)
             if "crosses_antimeridian" in criteria_problematic:
-                if checks_problematic.check_crosses_antimeridian(geom):
+                if checks_problematic.check_crosses_antimeridian(feature["geometry"]):
                     results_problematic.setdefault("crosses_antimeridian", []).append(i)
 
     results = {
         "invalid": results_invalid,
         "problematic": results_problematic,
-        "count_geometry_types": Counter(geometry_types),
+        "count_geometry_types": dict(Counter(geometry_types)),
     }
     return results
 
