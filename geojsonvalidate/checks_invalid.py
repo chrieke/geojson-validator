@@ -44,8 +44,9 @@ def check_inner_and_exterior_ring_intersect(geom: Polygon) -> bool:
 
 
 def check_crs_defined(feature_collection: dict) -> bool:
-    """Return True if a CRS (Coordinate Reference System) is defined in the feature collection."""
-    return "crs" in feature_collection
+    """Return True if a CRS (Coordinate Reference System) other than 4326 is defined in the feature collection."""
+    if "crs" in feature_collection:
+        return feature_collection["crs"] != "EPSG:4326"  # TODO: should 4326 be okay? could be written differently
 
 
 # def check_within_lat_lon_boundaries(geometry: dict) -> bool:
