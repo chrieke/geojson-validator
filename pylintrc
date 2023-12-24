@@ -20,7 +20,9 @@ disable=
     fixme,
     duplicate-code,
     logging-fstring-interpolation,
-    logging-format-interpolation
+    logging-format-interpolation,
+    unspecified-encoding,
+    dangerous-default-value
 
 [FORMAT]
 max-line-length=120

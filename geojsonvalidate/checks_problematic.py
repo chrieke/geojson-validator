@@ -17,7 +17,7 @@ def check_excessive_coordinate_precision(geometry: dict) -> bool:
     # For speedup, only checks the x coordinate of first 2 coordinate pairs in the geometry
     # TODO: Correct, do more?
     coords = geometry["coordinates"][0]
-    return any([len(str(coord[0]).split(".")[1]) > 6 for coord in coords[:2]])
+    return any(len(str(coord[0]).split(".")[1]) > 6 for coord in coords[:2])
 
 
 def check_more_than_2d_coordinates(geometry: dict, check_all_coordinates=False) -> bool:

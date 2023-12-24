@@ -35,12 +35,12 @@ def check_exterior_not_ccw(geom: Polygon) -> bool:
 
 def check_interior_not_cw(geom: Polygon) -> bool:
     """Return True if any interior ring is counter-clockwise."""
-    return any([interior.is_ccw for interior in geom.interiors])
+    return any(interior.is_ccw for interior in geom.interiors)
 
 
 def check_inner_and_exterior_ring_intersect(geom: Polygon) -> bool:
     """Return True if any interior ring intersects with the exterior ring."""
-    return any([geom.exterior.intersects(interior) for interior in geom.interiors])
+    return any(geom.exterior.intersects(interior) for interior in geom.interiors)
 
 
 def check_crs_defined(feature_collection: dict) -> bool:

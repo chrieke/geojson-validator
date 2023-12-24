@@ -65,9 +65,9 @@ def process_validation(geometries, criteria_invalid, criteria_problematic):
             )
             # Take all invalid criteria from the Polygons inside the Multipolygon and indicate them
             # as the position index of the MultiPolygon.
-            for criterium in results_mp["invalid"].keys():
+            for criterium in results_mp["invalid"]:
                 results_invalid.setdefault(criterium, []).append(i)
-            for criterium in results_mp["problematic"].keys():
+            for criterium in results_mp["problematic"]:
                 results_problematic.setdefault(criterium, []).append(i)
             continue
 
