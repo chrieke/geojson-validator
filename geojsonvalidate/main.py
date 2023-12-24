@@ -87,75 +87,22 @@ def process_geometries_validation(geometries, criteria_invalid, criteria_problem
         if geometry_type is None:
             raise ValueError("no 'geometry' field found in GeoJSON Feature")
         geometry_types.append(geometry_type)
-        if geometry_type not in ["Polygon", "MultiPolygon"]:
+        if geometry_type not in ["Polygon"]:  # TODO: Multipolygon
             logger.info(
                 f"Geometry of type {geometry_type} currently not supported, skipping."
             )
             continue
         # TODO: If multipolygon loop the bottom part over it.
 
-        geom = shape(geometry)
+        for criterium in criteria_invalid:
+            check_func = getattr(checks_invalid, f"check_{criterium}")
+            if check_func(geometry):
+                append_result(results_invalid, criterium, i)
 
-        # Some checks require GeoJSON format input, some shapely format
-        if criteria_invalid:
-            if "unclosed" in criteria_invalid and checks_invalid.check_unclosed(
-                geometry
-            ):
-                append_result(results_invalid, "unclosed", i)
-            if (
-                "duplicate_nodes" in criteria_invalid
-                and checks_invalid.check_duplicate_nodes(geometry)
-            ):
-                append_result(results_invalid, "duplicate_nodes", i)
-            if (
-                "less_three_unique_nodes" in criteria_invalid
-                and checks_invalid.check_less_three_unique_nodes(geometry)
-            ):
-                append_result(results_invalid, "less_three_unique_nodes", i)
-            if (
-                "exterior_not_ccw" in criteria_invalid
-                and checks_invalid.check_exterior_not_ccw(geom)
-            ):
-                append_result(results_invalid, "exterior_not_ccw", i)
-            if (
-                "interior_not_cw" in criteria_invalid
-                and checks_invalid.check_interior_not_cw(geom)
-            ):
-                append_result(results_invalid, "interior_not_cw", i)
-            if (
-                "inner_and_exterior_ring_intersect" in criteria_invalid
-                and checks_invalid.check_inner_and_exterior_ring_intersect(geom)
-            ):
-                append_result(results_invalid, "inner_and_exterior_ring_intersect", i)
-            if (
-                "outside_lat_lon_boundaries" in criteria_invalid
-                and checks_invalid.check_outside_lat_lon_boundaries(geometry)
-            ):
-                append_result(results_invalid, "outside_lat_lon_boundaries", i)
-
-        if criteria_problematic:
-            if "holes" in criteria_problematic and checks_problematic.check_holes(geom):
-                append_result(results_problematic, "holes", i)
-            if (
-                "self_intersection" in criteria_problematic
-                and checks_problematic.check_self_intersection(geom)
-            ):
-                append_result(results_problematic, "self_intersection", i)
-            if (
-                "excessive_coordinate_precision" in criteria_problematic
-                and checks_problematic.check_excessive_coordinate_precision(geometry)
-            ):
-                append_result(results_problematic, "excessive_coordinate_precision", i)
-            if (
-                "more_than_2d_coordinates" in criteria_problematic
-                and checks_problematic.check_more_than_2d_coordinates(geometry)
-            ):
-                append_result(results_problematic, "more_than_2d_coordinates", i)
-            if (
-                "crosses_antimeridian" in criteria_problematic
-                and checks_problematic.check_crosses_antimeridian(geometry)
-            ):
-                append_result(results_problematic, "crosses_antimeridian", i)
+        for criterium in criteria_problematic:
+            check_func = getattr(checks_problematic, f"check_{criterium}")
+            if check_func(geometry):
+                append_result(results_problematic, criterium, i)
 
     results = {
         "invalid": results_invalid,
