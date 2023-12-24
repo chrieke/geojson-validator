@@ -1,4 +1,4 @@
-import geopandas as gpd
+import geojson
 
 from .context import (
     check_unclosed,
@@ -13,8 +13,13 @@ from .context import (
 
 def test_check_unclosed():
     geojson_fp = "./tests/examples_geojson/invalid/polygon_unclosed_polygon.geojson"  # from geojson-invalid-geometry repo
-    df = gpd.read_file(geojson_fp)
-    result = check_unclosed(df.geometry[0])  # TODO: Check multiple geoms?
+
+
+    with open(geojson_fp) as f:
+        gj = geojson.load(f)
+    features = gj['features'][0]
+
+    result = check_unclosed(geometry)
     assert result
 
 
