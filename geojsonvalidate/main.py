@@ -87,7 +87,7 @@ def process_geometries_validation(geometries, criteria_invalid, criteria_problem
         if geometry_type is None:
             raise ValueError("no 'geometry' field found in GeoJSON Feature")
         geometry_types.append(geometry_type)
-        if geometry_type != "Polygon":
+        if geometry_type not in ["Polygon", "MultiPolygon"]:
             logger.info(
                 f"Geometry of type {geometry_type} currently not supported, skipping."
             )
