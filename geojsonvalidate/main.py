@@ -2,7 +2,6 @@ from typing import Dict, Union, List
 import sys
 from collections import Counter
 
-import geojson
 from loguru import logger
 from shapely.geometry import shape
 
@@ -22,6 +21,7 @@ VALIDATION_CRITERIA = {
         "interior_not_cw",
         "inner_and_exterior_ring_intersect",
         "crs_defined",
+        "outside_lat_lon_boundaries",
     ],
     "problematic": [
         "holes",
@@ -75,9 +75,7 @@ def run_checks(geometry, criteria, results, checks_module, index):
 
 
 def append_result(results, key, index):
-    if key not in results:
-        results[key] = []
-    results[key].append(index)
+    results.setdefault(key, []).append(index)
 
 
 def process_geometries_validation(geometries, criteria_invalid, criteria_problematic):
@@ -98,6 +96,7 @@ def process_geometries_validation(geometries, criteria_invalid, criteria_problem
 
         geom = shape(geometry)
 
+        # Some checks require GeoJSON format input, some shapely format
         if criteria_invalid:
             if "unclosed" in criteria_invalid and checks_invalid.check_unclosed(
                 geometry
@@ -128,6 +127,11 @@ def process_geometries_validation(geometries, criteria_invalid, criteria_problem
                 and checks_invalid.check_inner_and_exterior_ring_intersect(geom)
             ):
                 append_result(results_invalid, "inner_and_exterior_ring_intersect", i)
+            if (
+                "outside_lat_lon_boundaries" in criteria_invalid
+                and checks_invalid.check_outside_lat_lon_boundaries(geometry)
+            ):
+                append_result(results_invalid, "outside_lat_lon_boundaries", i)
 
         if criteria_problematic:
             if "holes" in criteria_problematic and checks_problematic.check_holes(geom):
@@ -163,7 +167,7 @@ def process_geometries_validation(geometries, criteria_invalid, criteria_problem
 
 
 def validate(
-    geojson_input: Union[geojson.FeatureCollection, str],
+    geojson_input: Union[dict, str],
     criteria_invalid: Union[List[str], None] = VALIDATION_CRITERIA["invalid"],
     criteria_problematic: Union[List[str], None] = VALIDATION_CRITERIA["problematic"],
 ) -> Dict:

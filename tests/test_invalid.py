@@ -14,10 +14,9 @@ from .context import (
 def test_check_unclosed():
     geojson_fp = "./tests/examples_geojson/invalid/polygon_unclosed_polygon.geojson"  # from geojson-invalid-geometry repo
 
-
     with open(geojson_fp) as f:
         gj = geojson.load(f)
-    features = gj['features'][0]
+    features = gj["features"][0]
 
     result = check_unclosed(geometry)
     assert result
