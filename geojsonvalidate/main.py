@@ -42,43 +42,7 @@ def check_criteria(selected_criteria, criteria_type):
     logger.info(f"Validation criteria '{criteria_type}': {selected_criteria}")
 
 
-def validate_geojson_type(geojson):
-    # TODO: Add shapely type?
-    type_ = geojson.get("type", None)
-    if type_ is None:
-        raise ValueError("No 'type' field found in GeoJSON")
-    if type_ not in ["FeatureCollection", "Feature", "Polygon", "MultiPolygon"]:
-        raise ValueError(
-            "Only a GeoJSON FeatureCollection, Feature or Polygon/MultiPolygon Geometry are supported as input."
-        )
-    return type_
-
-
-def run_checks(geometry, criteria, results, checks_module, index):
-    geom = shape(geometry)
-    for criterium in criteria:
-        # Determine the appropriate input for the check function
-        if criterium in [
-            "duplicate_nodes",
-            "excessive_coordinate_precision",
-            "more_than_2d_coordinates",
-            "unclosed",
-        ]:
-            input_data = geometry  # These functions need the raw GeoJSON geometry
-        else:
-            input_data = geom  # Others need the shapely geometry
-
-        check_function = getattr(checks_module, f"check_{criterium}", None)
-
-        if callable(check_function) and check_function(input_data):
-            results.setdefault(criterium, []).append(index)
-
-
-def append_result(results, key, index):
-    results.setdefault(key, []).append(index)
-
-
-def process_geometries_validation(geometries, criteria_invalid, criteria_problematic):
+def process_validation(geometries, criteria_invalid, criteria_problematic):
     results_invalid, results_problematic = {}, {}
     geometry_types = []
 
@@ -87,10 +51,24 @@ def process_geometries_validation(geometries, criteria_invalid, criteria_problem
         if geometry_type is None:
             raise ValueError("no 'geometry' field found in GeoJSON Feature")
         geometry_types.append(geometry_type)
-        if geometry_type not in ["Polygon", "MultiPolygon"]:  # TODO: Multipolygon
+        if geometry_type not in ["Polygon", "MultiPolygon"]:
             logger.info(
                 f"Geometry of type {geometry_type} currently not supported, skipping."
             )
+            continue
+        if geometry_type == "MultiPolygon":
+            single_geometries = [
+                {"type": "Polygon", "coordinates": g} for g in geometry["coordinates"]
+            ]
+            results_mp = process_validation(
+                single_geometries, criteria_invalid, criteria_problematic
+            )
+            # Take all invalid criteria from the Polygons inside the Multipolygon and indicate them
+            # as the position index of the MultiPolygon.
+            for criterium in results_mp["invalid"].keys():
+                results_invalid.setdefault(criterium, []).append(i)
+            for criterium in results_mp["problematic"].keys():
+                results_problematic.setdefault(criterium, []).append(i)
             continue
 
         # Some criteria require the original json geometry dict as shapely etc. autofixes (e.g. closes) geometries.
@@ -100,12 +78,12 @@ def process_geometries_validation(geometries, criteria_invalid, criteria_problem
         for criterium in criteria_invalid:
             check_func = getattr(checks_invalid, f"check_{criterium}")
             if check_func(input_options[VALIDATION_CRITERIA["invalid"][criterium]]):
-                append_result(results_invalid, criterium, i)
+                results_invalid.setdefault(criterium, []).append(i)
 
         for criterium in criteria_problematic:
             check_func = getattr(checks_problematic, f"check_{criterium}")
             if check_func(input_options[VALIDATION_CRITERIA["problematic"][criterium]]):
-                append_result(results_problematic, criterium, i)
+                results_problematic.setdefault(criterium, []).append(i)
 
     results = {
         "invalid": results_invalid,
@@ -132,32 +110,32 @@ def validate(
     Returns:
         The validated & fixed GeoJSON feature collection.
     """
-    type_ = validate_geojson_type(geojson_input)
     check_criteria(criteria_invalid, criteria_type="invalid")
     check_criteria(criteria_problematic, criteria_type="problematic")
 
-    # Process based on the type of GeoJSON object
+    type_ = geojson_input.get("type", None)
+    # TODO: Validate all required geojson fields
+    if type_ is None:
+        raise ValueError("No 'type' field found in GeoJSON")
     crs_defined = False
     if type_ == "FeatureCollection":
-        # TODO: Validate all required fields
         geometries = [feature["geometry"] for feature in geojson_input["features"]]
         if "crs_defined" in criteria_invalid:
             crs_defined = checks_invalid.check_crs_defined(geojson_input)
     elif type_ == "Feature":
         geometries = [geojson_input["geometry"]]
-    elif type_ in ["Polygon", "MultiPolygon"]:  # TODO: Add MultiPolygon
+    elif type_ in ["Polygon", "MultiPolygon"]:
         geometries = [geojson_input]
     else:
         raise ValueError(
             "Only a GeoJSON FeatureCollection, Feature or Polygon/MultiPolygon Geometry are supported as input."
         )
 
-    results = process_geometries_validation(
-        geometries, criteria_invalid, criteria_problematic
-    )
+    results = process_validation(geometries, criteria_invalid, criteria_problematic)
 
     if crs_defined:
-        results["invalid"] = True
+        results["invalid"]["crs_defined"] = True
+
     logger.info(f"Validation results: {results}")
     return results
 

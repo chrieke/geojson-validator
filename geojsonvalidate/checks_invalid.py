@@ -1,5 +1,6 @@
 from shapely.geometry import Polygon
 
+
 def check_unclosed(geometry: dict) -> bool:
     """Return True if the geometry is not closed (first coordinate != last coordinate)."""
     # This needs to check the original json string, as shapely or geopandas automatically close.
