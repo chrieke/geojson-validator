@@ -1,4 +1,5 @@
 from shapely.geometry import Polygon
+from shapely.validation import explain_validity
 
 
 def check_holes(geom: Polygon) -> bool:
@@ -8,8 +9,9 @@ def check_holes(geom: Polygon) -> bool:
 
 def check_self_intersection(geom: Polygon) -> bool:
     """Return True if the geometry is self-intersecting."""
-    # TODO how to check selfintersection in shapely
-    return not geom.is_valid
+    # TODO: Shapely independent?
+    if not geom.is_valid:
+        return "Self-intersection" in explain_validity(geom)
 
 
 def check_excessive_coordinate_precision(geometry: dict) -> bool:
