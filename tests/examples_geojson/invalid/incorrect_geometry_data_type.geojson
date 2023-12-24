@@ -1,0 +1,37 @@
+{
+  "type": "FeatureCollection",
+  "name": "incorrect_geometry_data_types",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              13.383092,
+              52.510235
+            ],
+            [
+              13.383092,
+              52.509704
+            ],
+            [
+              13.38458,
+              52.509704
+            ],
+            [
+              13.38458,
+              52.510235
+            ],
+            [
+              13.383092,
+              52.510235
+            ]
+          ]
+        ],
+        "type": "LineString"
+      }
+    }
+  ]
+}

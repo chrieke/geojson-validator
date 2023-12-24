@@ -1,0 +1,41 @@
+{
+  "type": "FeatureCollection",
+  "name": "polygon_selfintersection_small",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              13.379527,
+              52.50852
+            ],
+            [
+              13.379538,
+              52.507998
+            ],
+            [
+              13.381105,
+              52.508026
+            ],
+            [
+              13.381071,
+              52.508537
+            ],
+            [
+              13.37949,
+              52.508516
+            ],
+            [
+              13.379527,
+              52.50852
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "type": "FeatureCollection",
+  "name": "multitype_geometry_with_just_one_geometry",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                13.387768,
+                52.508488
+              ],
+              [
+                13.386971,
+                52.508312
+              ],
+              [
+                13.386995,
+                52.508116
+              ],
+              [
+                13.387807,
+                52.508295
+              ],
+              [
+                13.387768,
+                52.508488
+              ]
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
