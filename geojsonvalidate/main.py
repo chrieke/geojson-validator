@@ -13,23 +13,23 @@ logger_format = "{time:YYYY-MM-DD_HH:mm:ss.SSS} | {message}"
 logger.add(sink=sys.stderr, format=logger_format, level="INFO")
 
 VALIDATION_CRITERIA = {
-    "invalid": [
-        "unclosed",
-        "duplicate_nodes",
-        "less_three_unique_nodes",
-        "exterior_not_ccw",
-        "interior_not_cw",
-        "inner_and_exterior_ring_intersect",
-        "crs_defined",
-        "outside_lat_lon_boundaries",
-    ],
-    "problematic": [
-        "holes",
-        "self_intersection",
-        "excessive_coordinate_precision",
-        "more_than_2d_coordinates",
-        "crosses_antimeridian",
-    ],
+    "invalid": {
+        "unclosed": "json_geometry",
+        "duplicate_nodes": "json_geometry",
+        "less_three_unique_nodes": "json_geometry",
+        "exterior_not_ccw": "shapely_geom",
+        "interior_not_cw": "shapely_geom",
+        "inner_and_exterior_ring_intersect": "shapely_geom",
+        "crs_defined": "json_geometry",
+        "outside_lat_lon_boundaries": "json_geometry",
+    },
+    "problematic": {
+        "holes": "shapely_geom",
+        "self_intersection": "shapely_geom",
+        "excessive_coordinate_precision": "json_geometry",
+        "more_than_2d_coordinates": "json_geometry",
+        "crosses_antimeridian": "json_geometry",
+    },
 }
 
 
@@ -87,21 +87,24 @@ def process_geometries_validation(geometries, criteria_invalid, criteria_problem
         if geometry_type is None:
             raise ValueError("no 'geometry' field found in GeoJSON Feature")
         geometry_types.append(geometry_type)
-        if geometry_type not in ["Polygon"]:  # TODO: Multipolygon
+        if geometry_type not in ["Polygon", "MultiPolygon"]:  # TODO: Multipolygon
             logger.info(
                 f"Geometry of type {geometry_type} currently not supported, skipping."
             )
             continue
-        # TODO: If multipolygon loop the bottom part over it.
+
+        # Some criteria require the original json geometry dict as shapely etc. autofixes (e.g. closes) geometries.
+        # Initiating the shapely type in each check function specifically is time intensive.
+        input_options = {"json_geometry": geometry, "shapely_geom": shape(geometry)}
 
         for criterium in criteria_invalid:
             check_func = getattr(checks_invalid, f"check_{criterium}")
-            if check_func(geometry):
+            if check_func(input_options[VALIDATION_CRITERIA["invalid"][criterium]]):
                 append_result(results_invalid, criterium, i)
 
         for criterium in criteria_problematic:
             check_func = getattr(checks_problematic, f"check_{criterium}")
-            if check_func(geometry):
+            if check_func(input_options[VALIDATION_CRITERIA["problematic"][criterium]]):
                 append_result(results_problematic, criterium, i)
 
     results = {
@@ -142,7 +145,7 @@ def validate(
             crs_defined = checks_invalid.check_crs_defined(geojson_input)
     elif type_ == "Feature":
         geometries = [geojson_input["geometry"]]
-    elif type_ == "Polygon":  # TODO: Add MultiPolygon
+    elif type_ in ["Polygon", "MultiPolygon"]:  # TODO: Add MultiPolygon
         geometries = [geojson_input]
     else:
         raise ValueError(

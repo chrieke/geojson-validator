@@ -1,7 +1,4 @@
-from shapely.geometry import shape
-
-# Some criteria require the original json geometry dict as shapely etc. autofixes (e.g. closes) geometries.
-
+from shapely.geometry import Polygon
 
 def check_unclosed(geometry: dict) -> bool:
     """Return True if the geometry is not closed (first coordinate != last coordinate)."""
@@ -30,21 +27,18 @@ def check_less_three_unique_nodes(geometry: dict) -> bool:
     return len(set(map(tuple, coords))) < 3
 
 
-def check_exterior_not_ccw(geometry: dict) -> bool:
+def check_exterior_not_ccw(geom: Polygon) -> bool:
     """Return True if the exterior ring is not counter-clockwise."""
-    geom = shape(geometry)
     return not geom.exterior.is_ccw
 
 
-def check_interior_not_cw(geometry: dict) -> bool:
+def check_interior_not_cw(geom: Polygon) -> bool:
     """Return True if any interior ring is counter-clockwise."""
-    geom = shape(geometry)
     return any([interior.is_ccw for interior in geom.interiors])
 
 
-def check_inner_and_exterior_ring_intersect(geometry: dict) -> bool:
+def check_inner_and_exterior_ring_intersect(geom: Polygon) -> bool:
     """Return True if any interior ring intersects with the exterior ring."""
-    geom = shape(geometry)
     return any([geom.exterior.intersects(interior) for interior in geom.interiors])
 
 

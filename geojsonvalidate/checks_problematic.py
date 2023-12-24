@@ -1,18 +1,14 @@
-from shapely.geometry import shape
-
-# Some criteria require the original json geometry dict as shapely etc. autofixes (e.g. closes) geometries.
+from shapely.geometry import Polygon
 
 
-def check_holes(geometry: dict) -> bool:
+def check_holes(geom: Polygon) -> bool:
     """Return True if the geometry has holes (interior rings)."""
-    geom = shape(geometry)
     return len(geom.interiors) > 0
 
 
-def check_self_intersection(geometry: dict) -> bool:
+def check_self_intersection(geom: Polygon) -> bool:
     """Return True if the geometry is self-intersecting."""
     # TODO how to check selfintersection in shapely
-    geom = shape(geometry)
     return not geom.is_valid
 
 
