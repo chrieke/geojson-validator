@@ -6,5 +6,5 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../s
 
 # Import the required classes and functions
 # pylint: disable=unused-import,wrong-import-position
-from geojsonfix.checks_invalid import *
-from geojsonfix.checks_problematic import *
+from geojsonvalidate.checks_invalid import *
+from geojsonvalidate.checks_problematic import *
