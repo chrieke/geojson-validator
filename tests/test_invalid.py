@@ -60,3 +60,9 @@ def test_check_defined_crs():
         gj = json.load(f)
     invalid = checks_invalid.check_crs_defined(gj)
     assert invalid
+
+
+def test_check_outside_lat_lon_boundaries():
+    geometry = read_geojson_geometry("outside_lat_lon_boundaries.geojson")
+    invalid = checks_invalid.check_outside_lat_lon_boundaries(geometry)
+    assert invalid
