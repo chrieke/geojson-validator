@@ -12,14 +12,14 @@ def check_duplicate_nodes(geometry: dict) -> bool:
     """Return True if there are duplicate nodes, excluding the acceptable duplicate of a closed ring."""
     coords = geometry["coordinates"][0]
     unique_coords = set(map(tuple, coords))
-    first_last_same = coords[0] == coords[-1]
 
-    if len(unique_coords) < len(coords):
-        # But acceptable if only the first and last coordinates are the same (closed ring)
-        # and no other duplicates are present
-        if first_last_same and len(unique_coords) == len(coords) - 1:
-            return True
-    return False
+    has_duplicates = len(unique_coords) < len(coords)
+    is_closed_ring = coords[0] == coords[-1]
+    only_closed_ring_duplicate = (
+        is_closed_ring and len(unique_coords) == len(coords) - 1
+    )
+
+    return has_duplicates and not only_closed_ring_duplicate
 
 
 def check_less_three_unique_nodes(geometry: dict) -> bool:
