@@ -21,13 +21,13 @@ geojson =  {'type': 'FeatureCollection',
     'features': [{'type': 'Feature', 'geometry': 
         {'type': 'Polygon', 'coordinates': [[[-59.758285, 8.367035],...]]}}]}
 geojsonvalidate.validate(geojson)
-
-{'invalid': 
-     {'duplicate_nodes': [1]},
- 'problematic': 
-     {'self_intersection': [0, 1],
-      'crosses_antimeridian': [0]},
- 'count_geometry_types': {'Polygon': 1, 'MultiPolygon': 1}}
+```
+```json
+{"invalid": {"duplicate_nodes": [2]},
+ "problematic": 
+     {"self_intersection": [0, 2],
+      "crosses_antimeridian": [1]},
+ "count_geometry_types": {"Polygon": 2, "MultiPolygon": 1}}
 ```
 
 The validation gives the reason & positional index of the invalid geometry. 
