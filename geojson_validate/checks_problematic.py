@@ -10,8 +10,10 @@ def check_holes(geom: Polygon) -> bool:
 def check_self_intersection(geom: Polygon) -> bool:
     """Return True if the geometry is self-intersecting."""
     # TODO: Shapely independent?
+    self_intersection = False
     if not geom.is_valid:
-        return "Self-intersection" in explain_validity(geom)
+        self_intersection = "Self-intersection" in explain_validity(geom)
+    return self_intersection
 
 
 def check_excessive_coordinate_precision(geometry: dict, precision=6) -> bool:
