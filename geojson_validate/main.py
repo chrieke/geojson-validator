@@ -113,28 +113,18 @@ def validate(
     check_criteria(criteria_invalid, criteria_type="invalid")
     check_criteria(criteria_problematic, criteria_type="problematic")
 
-    type_ = geojson_input.get("type", None)
-    # TODO: Validate all required geojson fields
-    if type_ is None:
-        raise ValueError("No 'type' field found in GeoJSON")
-    crs_defined = False
-    if type_ == "FeatureCollection":
-        geometries = [feature["geometry"] for feature in geojson_input["features"]]
-        if "crs_defined" in criteria_invalid:
-            crs_defined = checks_invalid.check_crs_defined(geojson_input)
-    elif type_ == "Feature":
-        geometries = [geojson_input["geometry"]]
-    elif type_ in ["Polygon", "MultiPolygon"]:
-        geometries = [geojson_input]
-    else:
-        raise ValueError(
-            "Only a GeoJSON FeatureCollection, Feature or Polygon/MultiPolygon Geometry are supported as input."
-        )
+    if isinstance(geojson_input, (str, Path)):
+        if Path(geojson_input).exists():
+            with open(str(geojson_input)) as f:
+                geojson_input = json.load(f)
+    type_, geometries = get_geometries(geojson_input)
 
     results = process_validation(geometries, criteria_invalid, criteria_problematic)
 
-    if crs_defined:
-        results["invalid"]["crs_defined"] = True
+    if "crs_defined" in criteria_invalid:
+        if type_ == "FeatureCollection":
+            if checks_invalid.check_crs_defined(geojson_input):
+                results["invalid"]["crs_defined"] = True
 
     logger.info(f"Validation results: {results}")
     return results
