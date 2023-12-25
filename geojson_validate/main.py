@@ -1,6 +1,8 @@
 from typing import Dict, Union, List
 import sys
 from collections import Counter
+from pathlib import Path
+import json
 
 from loguru import logger
 from shapely.geometry import shape
@@ -40,6 +42,33 @@ def check_criteria(selected_criteria, criteria_type):
                 f"The selected criterium {criterium} is not a valid argument for {criteria_type}"
             )
     logger.info(f"Validation criteria '{criteria_type}': {selected_criteria}")
+
+
+def get_geometries(geojson_input: dict) -> List[dict]:
+    """
+    Extracts the geometries from the GeoJSON.
+
+    Args:
+        geojson_input: Input GeoJSON FeatureCollection, Feature or Geometry.
+
+    Returns:
+        List of geometries
+    """
+    type_ = geojson_input.get("type", None)
+    # TODO: Validate all required geojson fields
+    if type_ is None:
+        raise ValueError("No 'type' field found in GeoJSON")
+    if type_ == "FeatureCollection":
+        geometries = [feature["geometry"] for feature in geojson_input["features"]]
+    elif type_ == "Feature":
+        geometries = [geojson_input["geometry"]]
+    elif type_ in ["Polygon", "MultiPolygon"]:
+        geometries = [geojson_input]
+    else:
+        raise ValueError(
+            "Only a GeoJSON FeatureCollection, Feature or Polygon/MultiPolygon Geometry are supported as input."
+        )
+    return type_, geometries
 
 
 def process_validation(geometries, criteria_invalid, criteria_problematic):
@@ -95,7 +124,7 @@ def process_validation(geometries, criteria_invalid, criteria_problematic):
 
 
 def validate(
-    geojson_input: Union[dict, str],
+    geojson_input: Union[dict, str, Path],
     criteria_invalid: Union[List[str], None] = VALIDATION_CRITERIA["invalid"],
     criteria_problematic: Union[List[str], None] = VALIDATION_CRITERIA["problematic"],
 ) -> Dict:
@@ -103,7 +132,7 @@ def validate(
     Validate that a GeoJSON conforms to the geojson specs.
 
     Args:
-        geojson: Input GeoJSON feature collection.
+        geojson: Input GeoJSON FeatureCollection, Feature, Geometry or filepath to (Geo)JSON/file.
         criteria_invalid: A list of validation criteria that are invalid according the GeoJSON specification.
         criteria_problematic: A list of validation criteria that are valid, but problematic with some tools.
 
