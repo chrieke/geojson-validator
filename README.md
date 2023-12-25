@@ -1,8 +1,8 @@
 # geojson-validate
 
-**Validate and fix invalid GeoJSON**   
+**Validates and automatically fixes your invalid GeoJSON data**   
 
-Ever encountered an invalid geometry error when dealing with GeoJSON? Even if a GeoJSON conforms 
+Ever encountered an invalid geometry error when dealing with GeoJSON? Even if it conforms 
 to the GeoJSON specification, some tools or APIs might have issues with it. This Python library shows you 
 all possible invalid and problematic issues with your GeoJSON and can fix them automatically.
 
@@ -48,6 +48,23 @@ criteria_invalid = ["unclosed", "duplicate_nodes", "less_three_unique_nodes", "e
 criteria_problematic = ["holes", "self_intersection", "excessive_coordinate_precision", 
                         "more_than_2d_coordinates", "crosses_antimeridian"]
 ```
+
+## Webapp
+
+- File Upload:
+    - GeoJSON
+    - JSON
+    - KML
+    - WKT
+    - Shapefile (Zipfile containing shp,dbf,prj,shx files)
+- Copy-paste:
+    - GeoJSON FeatureCollection 
+    - Feature
+    - Geometry
+    - Coordinates
+    - bbox
+
+
 
 ## Coming Soon:
 - Automatically fixing geometries
