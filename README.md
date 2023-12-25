@@ -37,14 +37,12 @@ The result gives the reason and positional index of the invalid geometry:
 To only evaluate specific validation criteria use the parameters `validate(geojson, criteria_invalid, criteria_problematic)`.
 For details on all the invalid and problematic GeoJSON criteria see [geojson-invalid-geometry](https://github.com/chrieke/geojson-invalid-geometry).
 
-```
-# criteria_invalid
-["unclosed", "duplicate_nodes", "less_three_unique_nodes", "exterior_not_ccw", "interior_not_cw", 
+```python
+criteria_invalid = ["unclosed", "duplicate_nodes", "less_three_unique_nodes", "exterior_not_ccw", "interior_not_cw", 
 "inner_and_exterior_ring_intersect", "crs_defined", "outside_lat_lon_boundaries"]
 ```
-```
-# criteria_problematic
-["holes", "self_intersection", "excessive_coordinate_precision", "more_than_2d_coordinates", 
+```python
+criteria_problematic = ["holes", "self_intersection", "excessive_coordinate_precision", "more_than_2d_coordinates", 
 "crosses_antimeridian"]
 ```
 
