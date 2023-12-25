@@ -17,6 +17,9 @@ pip install geojsonvalidate
 ```python
 import geojsonvalidate
 
+geojson =  {'type': 'FeatureCollection',
+    'features': [{'type': 'Feature', 'geometry': 
+        {'type': 'Polygon', 'coordinates': [[[-59.758285, 8.367035],...]]}}]}
 geojsonvalidate.validate(geojson)
 
 {'invalid': 
