@@ -38,11 +38,13 @@ To only evaluate specific validation criteria use the parameters `validate(geojs
 For details on all the invalid and problematic GeoJSON criteria see [geojson-invalid-geometry](https://github.com/chrieke/geojson-invalid-geometry).
 
 ```python
+# Invalid according to the GeoJSON specification
 criteria_invalid = ["unclosed", "duplicate_nodes", "less_three_unique_nodes", "exterior_not_ccw", 
                     "interior_not_cw", "inner_and_exterior_ring_intersect", "crs_defined", 
                     "outside_lat_lon_boundaries"]
 ```
 ```python
+# valid, but problematic with some tools or APIs
 criteria_problematic = ["holes", "self_intersection", "excessive_coordinate_precision", 
                         "more_than_2d_coordinates", "crosses_antimeridian"]
 ```
