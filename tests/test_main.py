@@ -16,6 +16,7 @@ def test_check_criteria_invalid():
     with pytest.raises(ValueError):
         main.check_criteria(["non_existent_criteria"], "invalid")
 
+
 def test_check_criteria_valid():
     try:
         main.check_criteria(["unclosed", "duplicate_nodes"], "invalid")
@@ -37,14 +38,60 @@ def test_get_geometries_feature_collection():
     assert isinstance(geometries, list)
     assert isinstance(geometries[0], dict)
 
+
 def test_get_geometries_invalid_type():
     with pytest.raises(ValueError):
         main.get_geometries({"type": "InvalidType"})
 
 
-@patch('geojson_validate.main.check_criteria')
-@patch('geojson_validate.main.get_geometries')
-@patch('geojson_validate.main.process_validation')
+def test_process_validation_valid_polygon_without_criteria():
+    geometries = [
+        {"type": "Polygon", "coordinates": [[[0, 0], [1, 1], [1, 0], [0, 0]]]}
+    ]
+    results = main.process_validation(geometries, [], [])
+    assert not results["invalid"]
+    assert not results["problematic"]
+
+
+def test_process_validation_invalid_geometry():
+    # unclosed
+    geometries = [
+        {"type": "Polygon", "coordinates": [[[0, 0], [1, 1], [1, 0]]]}
+    ]  # Missing closing point
+    invalid_criteria = ["unclosed"]
+    results = main.process_validation(geometries, invalid_criteria, [])
+    assert "unclosed" in results["invalid"]
+
+
+def test_process_validation_multi_polygon():
+    # Second geometry in Multipolygon and third geometry is unclosed
+    geometries = [
+        {"type": "Polygon", "coordinates": [[[0, 0], [1, 1], [1, 0], [0, 0]]]},
+        {
+            "type": "MultiPolygon",
+            "coordinates": [
+                [[[0, 0], [2, 2], [2, 0], [0, 0]]],
+                [[[0, 0], [1, 1], [1, 0]]],
+            ],
+        },
+        {"type": "Polygon", "coordinates": [[[0, 0], [1, 1], [1, 0]]]},
+    ]
+    invalid_criteria = ["unclosed"]
+    results = main.process_validation(geometries, invalid_criteria, [])
+    assert results["invalid"]["unclosed"] == [1, 2]
+    assert results["count_geometry_types"] == {"Polygon": 2, "MultiPolygon": 1}
+
+
+def test_process_validation_error_no_type():
+    # Test handling of geometry missing the 'type' field
+    geometries = [{"coordinates": [[[0, 0], [1, 1], [1, 0], [0, 0]]]}]  # No type field
+    with pytest.raises(ValueError):
+        main.process_validation(geometries, [], [])
+
+
+@patch("geojson_validate.main.check_criteria")
+@patch("geojson_validate.main.get_geometries")
+@patch("geojson_validate.main.process_validation")
 def test_validate(mock_process_validation, mock_get_geometries, mock_check_criteria):
     """Ensure the validate function integrates them correctly."""
     mock_get_geometries.return_value = ("FeatureCollection", [])
@@ -53,12 +100,11 @@ def test_validate(mock_process_validation, mock_get_geometries, mock_check_crite
     geojson_input = {}  # Mock input
     results = main.validate(geojson_input)
 
-    assert 'invalid' in results
-    assert 'problematic' in results
+    assert "invalid" in results
+    assert "problematic" in results
     mock_check_criteria.assert_called()
     mock_get_geometries.assert_called_with(geojson_input)
     mock_process_validation.assert_called()
-
 
 
 def test_validate_invalid():
