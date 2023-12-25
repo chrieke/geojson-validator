@@ -24,9 +24,7 @@ geojsonvalidate.validate(geojson)
 ```
 ```json
 {"invalid": {"duplicate_nodes": [2]},
- "problematic": 
-     {"self_intersection": [0, 2],
-      "crosses_antimeridian": [1]},
+ "problematic": {"self_intersection": [0, 2], "crosses_antimeridian": [1]},
  "count_geometry_types": {"Polygon": 2, "MultiPolygon": 1}}
 ```
 
