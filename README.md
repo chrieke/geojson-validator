@@ -9,7 +9,7 @@ all possible invalid and problematic issues with your GeoJSON and can fix them a
 ## Installation
 
 ```bash
-pip install geojsonvalidate
+pip install geojson_validate
 ```
 
 ## Usage
@@ -17,13 +17,13 @@ pip install geojsonvalidate
 Accepts a GeoJSON FeatureCollection, Feature, Polygon Geometry or MultiPolygon Geometry.
 
 ```python
-import geojsonvalidate
+import geojson_validate
 
-geojson =  {'type': 'FeatureCollection',
-    'features': [{'type': 'Feature', 'geometry': 
-        {'type': 'Polygon', 'coordinates': [[[-59.758285, 8.367035],...]]}}]}
+geojson = {'type': 'FeatureCollection',
+           'features': [{'type': 'Feature', 'geometry':
+               {'type': 'Polygon', 'coordinates': [[[-59.758285, 8.367035], ...]]}}]}
 
-geojsonvalidate.validate(geojson)
+geojson_validate.validate(geojson)
 ```
 The result gives the reason and positional index of the invalid geometry:
 
