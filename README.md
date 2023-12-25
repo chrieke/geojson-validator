@@ -20,8 +20,11 @@ import geojsonvalidate
 geojson =  {'type': 'FeatureCollection',
     'features': [{'type': 'Feature', 'geometry': 
         {'type': 'Polygon', 'coordinates': [[[-59.758285, 8.367035],...]]}}]}
+
 geojsonvalidate.validate(geojson)
 ```
+Validation Results:
+
 ```json
 {"invalid": {"duplicate_nodes": [2]},
  "problematic": {"self_intersection": [0, 2], "crosses_antimeridian": [1]},
