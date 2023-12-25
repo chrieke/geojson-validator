@@ -1,4 +1,4 @@
-# geojsonvalidate
+# geojson_validate
 
 **Validate and fix invalid GeoJSON**   
 
