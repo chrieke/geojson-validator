@@ -8,4 +8,4 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../s
 # pylint: disable=unused-import,wrong-import-position
 from geojson_validate import checks_invalid
 from geojson_validate import checks_problematic
-from geojson_validate.main import validate
+from geojson_validate import main

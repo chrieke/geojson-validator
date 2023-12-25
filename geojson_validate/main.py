@@ -44,6 +44,18 @@ def check_criteria(selected_criteria, criteria_type):
     logger.info(f"Validation criteria '{criteria_type}': {selected_criteria}")
 
 
+def read_file(filepath: Union[str, Path]):
+    filepath = Path(filepath)
+    if filepath.exists() and filepath.suffix in [
+        ".json",
+        ".JSON",
+        ".geojson",
+        ".GEOJSON",
+    ]:
+        with filepath.open(encoding="UTF-8") as f:
+            return json.load(f)
+
+
 def get_geometries(geojson_input: dict) -> List[dict]:
     """
     Extracts the geometries from the GeoJSON.
@@ -143,9 +155,7 @@ def validate(
     check_criteria(criteria_problematic, criteria_type="problematic")
 
     if isinstance(geojson_input, (str, Path)):
-        if Path(geojson_input).exists():
-            with open(str(geojson_input)) as f:
-                geojson_input = json.load(f)
+        geojson_input = read_file(filepath=geojson_input)
     type_, geometries = get_geometries(geojson_input)
 
     results = process_validation(geometries, criteria_invalid, criteria_problematic)
@@ -160,12 +170,3 @@ def validate(
 
 
 # def fix(geojson, fix_criteria=["invalid", "problematic"]):
-#
-#     df = read_geometry_input(geojson)
-#     original_json = df.__geo_interface__.copy()
-#
-#     criteria = consolidate_criteria(fix_criteria)
-#     logger.info(f"Fix criteria: {criteria}")
-#
-#     results_invalid = fix_all_invalid(df, criteria)
-#     results_problematic = fix_all_problematic(df, criteria)
