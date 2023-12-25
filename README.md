@@ -9,7 +9,7 @@ all possible invalid and problematic issues with your GeoJSON and can fix them a
 ## Installation
 
 ```bash
-pip install geojson_validate
+pip install geojson-validate
 ```
 
 ## Usage
