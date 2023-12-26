@@ -7,7 +7,7 @@ from streamlit_lottie import st_lottie
 import geojsonfix
 
 st.set_page_config(
-    page_title="Vector Validator",
+    page_title="geojsonfix",
     layout="centered",
     page_icon="🔻",
     initial_sidebar_state="collapsed",
