@@ -13,11 +13,13 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
+
 def load_lottieurl(url: str):
     r = requests.get(url)
     if r.status_code != 200:
         return None
     return r.json()
+
 
 col1_header, col2_header = st.columns([1, 6])
 lottie_url = "https://assets10.lottiefiles.com/temp/lf20_YQB3X3.json"
@@ -33,13 +35,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-text_instruction = (
-    "Paste GeoJSON - FeatureCollection, Feature or Geometry"
-)
+text_instruction = "Paste GeoJSON - FeatureCollection, Feature or Geometry"
 text_help = f"E.g. from https://geojson.io/"
-json_string = st.text_area(
-    text_instruction, height=250, help=text_help
-)
+json_string = st.text_area(text_instruction, height=250, help=text_help)
 
 st.write("")
 st.write("")
@@ -58,7 +56,7 @@ if button_run:
         st.warning("Problematic GeoJSON")
     else:
         st.success("Valid GeoJSON")
-    st.write("Results (shows the positional index of the invalid/problematic geometries)")
+    st.write(
+        "Results (shows the positional index of the invalid/problematic geometries)"
+    )
     st.write(results)
-
-

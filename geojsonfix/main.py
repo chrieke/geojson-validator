@@ -50,7 +50,7 @@ VALIDATION_CRITERIA = {
             "relevant": ["LineString", "Polygon"],
             "input": "json_geometry",
         },
-        #"wrong_bbox_order: {}"
+        # "wrong_bbox_order: {}"
     },
 }
 

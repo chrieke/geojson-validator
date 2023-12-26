@@ -15,6 +15,7 @@
 ## Usage
 
 ```bash
+# Install
 pip install geojsonfix
 ```
 
