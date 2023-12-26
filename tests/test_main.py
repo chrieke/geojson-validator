@@ -5,7 +5,6 @@ import pytest
 
 from .context import main
 
-
 def read_geojson_geometry(file_path: str):
     with open(file_path) as f:
         gj = json.load(f)
