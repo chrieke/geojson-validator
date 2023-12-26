@@ -61,3 +61,7 @@ Coming Soon...
 - Accept all Geometry types, validate/fix depending on type
 - Add shapely input support
 - Add support for all file input types as in app
+- Banner image with geometry, inspection glass, hammer
+- Check for incorrect geometry data type in type vs. geometry pattern
+- bbox order and other criteria
+- 
