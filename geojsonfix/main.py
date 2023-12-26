@@ -16,21 +16,41 @@ logger.add(sink=sys.stderr, format=logger_format, level="INFO")
 
 VALIDATION_CRITERIA = {
     "invalid": {
-        "unclosed": "json_geometry",
-        "duplicate_nodes": "json_geometry",
-        "less_three_unique_nodes": "json_geometry",
-        "exterior_not_ccw": "shapely_geom",
-        "interior_not_cw": "shapely_geom",
-        "inner_and_exterior_ring_intersect": "shapely_geom",
-        "crs_defined": "json_geometry",
-        "outside_lat_lon_boundaries": "json_geometry",
+        "unclosed": {"relevant": ["Polygon"], "input": "json_geometry"},
+        "duplicate_nodes": {
+            "relevant": ["LineString", "Polygon"],
+            "input": "json_geometry",
+        },
+        "less_three_unique_nodes": {"relevant": ["Polygon"], "input": "json_geometry"},
+        "exterior_not_ccw": {"relevant": ["Polygon"], "input": "shapely_geom"},
+        "interior_not_cw": {"relevant": ["Polygon"], "input": "shapely_geom"},
+        "inner_and_exterior_ring_intersect": {
+            "relevant": ["Polygon"],
+            "input": "shapely_geom",
+        },
+        "outside_lat_lon_boundaries": {
+            "relevant": ["Point", "Linestring", "Polygon"],
+            "input": "json_geometry",
+        },
+        "crs_defined": {"relevant": ["FeatureCollection"], "input": "json_geometry"},
+        # "zero-length": {"relevant": ["LineString"], "input": "json_geometry"},
     },
     "problematic": {
-        "holes": "shapely_geom",
-        "self_intersection": "shapely_geom",
-        "excessive_coordinate_precision": "json_geometry",
-        "more_than_2d_coordinates": "json_geometry",
-        "crosses_antimeridian": "json_geometry",
+        "holes": {"relevant": ["Polygon"], "input": "shapely_geom"},
+        "self_intersection": {"relevant": ["Polygon"], "input": "shapely_geom"},
+        "excessive_coordinate_precision": {
+            "relevant": ["Point", "LineString", "Polygon"],
+            "input": "json_geometry",
+        },
+        "more_than_2d_coordinates": {
+            "relevant": ["Point", "LineString", "Polygon"],
+            "input": "json_geometry",
+        },
+        "crosses_antimeridian": {
+            "relevant": ["LineString", "Polygon"],
+            "input": "json_geometry",
+        },
+        #"wrong_bbox_order: {}"
     },
 }
 
@@ -118,12 +138,16 @@ def process_validation(geometries, criteria_invalid, criteria_problematic):
 
         for criterium in criteria_invalid:
             check_func = getattr(checks_invalid, f"check_{criterium}")
-            if check_func(input_options[VALIDATION_CRITERIA["invalid"][criterium]]):
+            if check_func(
+                input_options[VALIDATION_CRITERIA["invalid"][criterium]["input"]]
+            ):
                 results_invalid.setdefault(criterium, []).append(i)
 
         for criterium in criteria_problematic:
             check_func = getattr(checks_problematic, f"check_{criterium}")
-            if check_func(input_options[VALIDATION_CRITERIA["problematic"][criterium]]):
+            if check_func(
+                input_options[VALIDATION_CRITERIA["problematic"][criterium]["input"]]
+            ):
                 results_problematic.setdefault(criterium, []).append(i)
 
     results = {
