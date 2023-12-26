@@ -26,7 +26,7 @@ with col1_header:
     st_lottie(lottie_json, height=100, speed=1)
 
 col2_header.write("")
-col2_header.title(f"Vector Validator")
+col2_header.title(f"GeoJSONfix")
 st.write("")
 st.markdown(
     "**Validates and automatically fixes your geospatial vector data.**",

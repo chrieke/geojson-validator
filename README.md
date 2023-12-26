@@ -1,20 +1,22 @@
-# geojsonfix
+# 🔧 GeoJSONfix
 
-**Validates and automatically fixes your invalid GeoJSON data**   
+**Validates and automatically fixes invalid GeoJSON - Webapp and Python package**   
 
-Ever encountered an invalid geometry error when dealing with GeoJSON? Even if it conforms 
-to the GeoJSON specification, some tools or APIs might have issues with it. This Python library shows you 
-all possible invalid and problematic issues with your GeoJSON and can fix them automatically.
+<h3 align="center">
+    🎈 Try it out here: <a href="https://geojsonfix.streamlit.app/">geojsonfix webapp 🎈 </a>
+</h3>
 
-## Installation
+<br>
+
+**The only tool which addresses all GeoJSON issues**: 
+- **Invalid** according to GeoJSON specification: e.g. duplicate nodes, wrong winding order, unclosed 
+- **Problematic** with some tools & APIs: e.g. self-intersection, holes, crossing anti-meridian
+
+## Usage
 
 ```bash
 pip install geojsonfix
 ```
-
-## Usage
-
-Accepts a GeoJSON FeatureCollection, Feature, Polygon Geometry or MultiPolygon Geometry.
 
 ```python
 import geojsonfix
@@ -25,33 +27,33 @@ geojson = {'type': 'FeatureCollection',
 
 geojsonfix.validate(geojson)
 ```
-The result gives the reason and positional index of the invalid geometry:
-
+**Validation results:**
 ```json
 {"invalid": {"duplicate_nodes": [2]},
  "problematic": {"self_intersection": [0, 2], "crosses_antimeridian": [1]},
  "count_geometry_types": {"Polygon": 2, "MultiPolygon": 1}}
 ```
+The result gives the reason and positional index of the invalid geometry.
+Accepts a GeoJSON FeatureCollection, Feature, Polygon Geometry or MultiPolygon Geometry.
 
 ## Parameters
-To only evaluate specific validation criteria use the parameters `validate(geojson, criteria_invalid, criteria_problematic)`.
-For details on all the invalid and problematic GeoJSON criteria see [geojson-invalid-geometry](https://github.com/chrieke/geojson-invalid-geometry).
+To only evaluate specific validation criteria use the `validate` function parameters
+For detailed descriptions on all criteria see [geojson-invalid-geometry](https://github.com/chrieke/geojson-invalid-geometry).
 
 ```python
 # Invalid according to the GeoJSON specification
 criteria_invalid = ["unclosed", "duplicate_nodes", "less_three_unique_nodes", "exterior_not_ccw", 
                     "interior_not_cw", "inner_and_exterior_ring_intersect", "crs_defined", 
                     "outside_lat_lon_boundaries"]
-```
-```python
-# valid, but problematic with some tools or APIs
+
+# Problematic with some tools & APIs
 criteria_problematic = ["holes", "self_intersection", "excessive_coordinate_precision", 
                         "more_than_2d_coordinates", "crosses_antimeridian"]
+
+geojsonfix.validate(geojson, criteria_invalid, criteria_problematic)
 ```
 
-## Webapp
 
-https://geojsonfix.streamlit.app/
 
 ## TODO:
 - Automatically fix geometries
