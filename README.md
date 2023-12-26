@@ -51,21 +51,13 @@ criteria_problematic = ["holes", "self_intersection", "excessive_coordinate_prec
 
 ## Webapp
 
-- File Upload:
-    - GeoJSON
-    - JSON
-    - KML
-    - WKT
-    - Shapefile (Zipfile containing shp,dbf,prj,shx files)
-- Copy-paste:
-    - GeoJSON FeatureCollection 
-    - Feature
-    - Geometry
-    - Coordinates
-    - bbox
+Coming Soon...
 
+- File Upload: GeoJSON, JSON, KML, WKT, Shapefile (Zipfile containing shp,dbf,prj,shx files)
+- Copy-paste: GeoJSON FeatureCollection, Feature, Geometry, Coordinates, bbox
 
-
-## Coming Soon:
-- Automatically fixing geometries
-- This library is still very early, expect breaking changes
+## TODO:
+- Automatically fix geometries
+- Accept all Geometry types, validate/fix depending on type
+- Add shapely input support
+- Add support for all file input types as in app

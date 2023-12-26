@@ -5,7 +5,7 @@ from setuptools import find_packages, setup
 parent_dir = Path(__file__).resolve().parent
 
 setup(
-    name="geojson-validate",
+    name="geojsonfix",
     version="0.0.1",
     author="Christoph Rieke",
     author_email="christoph.k.rieke@gmail.com",
