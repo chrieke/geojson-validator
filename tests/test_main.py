@@ -89,9 +89,9 @@ def test_process_validation_error_no_type():
         main.process_validation(geometries, [], [])
 
 
-@patch("geojson_validate.main.check_criteria")
-@patch("geojson_validate.main.get_geometries")
-@patch("geojson_validate.main.process_validation")
+@patch("geojsonfix.main.check_criteria")
+@patch("geojsonfix.main.get_geometries")
+@patch("geojsonfix.main.process_validation")
 def test_validate(mock_process_validation, mock_get_geometries, mock_check_criteria):
     """Ensure the validate function integrates them correctly."""
     mock_get_geometries.return_value = ("FeatureCollection", [])
