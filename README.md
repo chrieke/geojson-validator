@@ -51,10 +51,7 @@ criteria_problematic = ["holes", "self_intersection", "excessive_coordinate_prec
 
 ## Webapp
 
-Coming Soon...
-
-- File Upload: GeoJSON, JSON, KML, WKT, Shapefile (Zipfile containing shp,dbf,prj,shx files)
-- Copy-paste: GeoJSON FeatureCollection, Feature, Geometry, Coordinates, bbox
+https://geojsonfix.streamlit.app/
 
 ## TODO:
 - Automatically fix geometries
