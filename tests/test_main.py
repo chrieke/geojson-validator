@@ -25,25 +25,6 @@ def test_check_criteria_valid():
         pytest.fail("Unexpected ValueError for valid criteria")
 
 
-def test_read_file():
-    filepath = "./tests/examples_geojson/valid/simple_polygon.geojson"
-    geojson_input = main.read_file(filepath)
-    assert isinstance(geojson_input, dict)
-
-
-def test_get_geometries_feature_collection():
-    fc = read_geojson_geometry("./tests/examples_geojson/valid/simple_polygon.geojson")
-    type_, geometries = main.get_geometries(fc)
-    assert type_ == "FeatureCollection"
-    assert isinstance(geometries, list)
-    assert isinstance(geometries[0], dict)
-
-
-def test_get_geometries_invalid_type():
-    with pytest.raises(ValueError):
-        main.get_geometries({"type": "InvalidType"})
-
-
 def test_process_validation_valid_polygon_without_criteria():
     geometries = [
         {"type": "Polygon", "coordinates": [[[0, 0], [1, 1], [1, 0], [0, 0]]]}

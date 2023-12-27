@@ -1,11 +1,11 @@
 from shapely.geometry import shape
 
 from .context import checks_problematic
-from .test_utils import read_geojson_geometry
+from .fixtures_utils import read_geometry_of_geojson
 
 
 def test_check_holes():
-    geometry = read_geojson_geometry(
+    geometry = read_geometry_of_geojson(
         "./tests/examples_geojson/problematic/polygon_has_holes.geojson"
     )
     geom = shape(geometry)
@@ -14,7 +14,7 @@ def test_check_holes():
 
 
 def test_check_self_intersection():
-    geometry = read_geojson_geometry(
+    geometry = read_geometry_of_geojson(
         "./tests/examples_geojson/problematic/polygon_selfintersection_small.geojson"
     )
     geom = shape(geometry)
@@ -23,7 +23,7 @@ def test_check_self_intersection():
 
 
 def test_check_excessive_coordinate_precision():
-    geometry = read_geojson_geometry(
+    geometry = read_geometry_of_geojson(
         "./tests/examples_geojson/problematic/excessive_coordinate_precision.geojson"
     )
     problematic = checks_problematic.check_excessive_coordinate_precision(geometry)
@@ -31,7 +31,7 @@ def test_check_excessive_coordinate_precision():
 
 
 def test_check_more_than_2d_coordinates():
-    geometry = read_geojson_geometry(
+    geometry = read_geometry_of_geojson(
         "./tests/examples_geojson/problematic/3d_coordinates.geojson"
     )
     problematic = checks_problematic.check_more_than_2d_coordinates(geometry)
@@ -39,7 +39,7 @@ def test_check_more_than_2d_coordinates():
 
 
 def test_check_crosses_antimeridian():
-    geometry = read_geojson_geometry(
+    geometry = read_geometry_of_geojson(
         "./tests/examples_geojson/problematic/geometry_crosses_the_antimeridian.geojson"
     )
     problematic = checks_problematic.check_crosses_antimeridian(geometry)

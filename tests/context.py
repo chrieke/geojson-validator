@@ -8,6 +8,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../s
 # pylint: disable=unused-import,wrong-import-position
 from geojsonfix import (
     main,
+    geometry_utils,
     checks_invalid,
     checks_problematic,
     fixes_invalid,
