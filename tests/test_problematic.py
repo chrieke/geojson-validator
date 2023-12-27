@@ -33,6 +33,14 @@ def test_check_excessive_coordinate_precision():
     assert problematic
 
 
+def test_check_excessive_coordinate_precision_no_after_comma_succeds():
+    geometry_no_after_comma = {
+        "coordinates": [[[-77, 26.0], [-77.17255, 25], [-77, 26]]],
+        "type": "Polygon",
+    }
+    checks_problematic.check_excessive_coordinate_precision(geometry_no_after_comma)
+
+
 def test_check_more_than_2d_coordinates():
     geometry = read_geojson(
         "./tests/examples_geojson/problematic/3d_coordinates.geojson", geometries=True

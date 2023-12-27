@@ -16,12 +16,16 @@ def check_self_intersection(geom: Polygon) -> bool:
     return self_intersection
 
 
-def check_excessive_coordinate_precision(geometry: dict, precision=6) -> bool:
-    """Return True if any coordinate has more than 6 decimal places in the longitude."""
-    # For speedup, only checks the x coordinate of first 2 coordinate pairs in the geometry
-    # TODO: Correct, do more than first 2?
+def check_excessive_coordinate_precision(geometry: dict, precision=6, n_first_coords=2) -> bool:
+    """Return True if coordinates have more than 6 decimal places in the longitude."""
+    # For speedup, by default only checks the x&y coordinates of the n_first_coords=2 coordinate pairs.
     coords = geometry["coordinates"][0]
-    return any(len(str(coord[0]).split(".")[1]) > precision for coord in coords[:2])
+    for xy in coords[:n_first_coords]:
+        for coord in xy:
+            splits = str(coord).split(".")
+            if len(splits) == 2 and len(splits[1]) > precision:
+                return True
+    return False
 
 
 def check_more_than_2d_coordinates(geometry: dict, check_all_coordinates=False) -> bool:
