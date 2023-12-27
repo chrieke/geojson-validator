@@ -6,7 +6,7 @@ parent_dir = Path(__file__).resolve().parent
 
 setup(
     name="geojsonfix",
-    version="0.0.1",
+    version="0.0.2",
     author="Christoph Rieke",
     author_email="christoph.k.rieke@gmail.com",
     description="Validates and fixes GeoJSON",
@@ -14,7 +14,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/chrieke/geojsonfix",
     license="MIT",
-    packages=find_packages(exclude=("tests", "docs", "examples")),
+    packages=find_packages(exclude=("tests", "streamlit-geojsonfix", "docs", "examples")),
     data_files=[
         (
             "",
