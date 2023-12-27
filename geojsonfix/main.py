@@ -2,13 +2,14 @@ from typing import Dict, Union, List
 import sys
 from collections import Counter
 from pathlib import Path
-import json
 
 from loguru import logger
 from shapely.geometry import shape
 
 from . import checks_invalid
 from . import checks_problematic
+from .geometry_utils import get_geometries
+
 
 logger.remove()
 logger_format = "{time:YYYY-MM-DD_HH:mm:ss.SSS} | {message}"
@@ -62,45 +63,6 @@ def check_criteria(selected_criteria, criteria_type):
                 f"The selected criterium {criterium} is not a valid argument for {criteria_type}"
             )
     logger.info(f"Validation criteria '{criteria_type}': {selected_criteria}")
-
-
-def read_file(filepath: Union[str, Path]):
-    filepath = Path(filepath)
-    if filepath.exists() and filepath.suffix in [
-        ".json",
-        ".JSON",
-        ".geojson",
-        ".GEOJSON",
-    ]:
-        with filepath.open(encoding="UTF-8") as f:
-            return json.load(f)
-
-
-def get_geometries(geojson_input: dict) -> List[dict]:
-    """
-    Extracts the geometries from the GeoJSON.
-
-    Args:
-        geojson_input: Input GeoJSON FeatureCollection, Feature or Geometry.
-
-    Returns:
-        List of geometries
-    """
-    type_ = geojson_input.get("type", None)
-    # TODO: Validate all required geojson fields
-    if type_ is None:
-        raise ValueError("No 'type' field found in GeoJSON")
-    if type_ == "FeatureCollection":
-        geometries = [feature["geometry"] for feature in geojson_input["features"]]
-    elif type_ == "Feature":
-        geometries = [geojson_input["geometry"]]
-    elif type_ in ["Polygon", "MultiPolygon"]:
-        geometries = [geojson_input]
-    else:
-        raise ValueError(
-            "Only a GeoJSON FeatureCollection, Feature or Polygon/MultiPolygon Geometry are supported as input."
-        )
-    return type_, geometries
 
 
 def process_validation(geometries, criteria_invalid, criteria_problematic):
@@ -178,8 +140,6 @@ def validate(
     check_criteria(criteria_invalid, criteria_type="invalid")
     check_criteria(criteria_problematic, criteria_type="problematic")
 
-    if isinstance(geojson_input, (str, Path)):
-        geojson_input = read_file(filepath=geojson_input)
     type_, geometries = get_geometries(geojson_input)
 
     results = process_validation(geometries, criteria_invalid, criteria_problematic)
