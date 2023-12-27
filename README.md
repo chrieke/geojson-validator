@@ -15,23 +15,23 @@ The only tool that addresses all potential issues:
 
 ## Python package
 
-### Installation
+#### Installation
 ```bash
 pip install geojsonfix
 ```
 
-### Usage
+### Validate GeoJSON
 
 As input takes any GeoJSON (dictionary, filepath, url), shapely geometry or anything with a __geo_interface__.
 
 ```python
 import geojsonfix
 
-geojson = {'type': 'FeatureCollection',
-           'features': [{'type': 'Feature', 'geometry':
-             {'type': 'Polygon', 'coordinates': [[[-59.758285, 8.367035], ...]]}}]}
+geojson_input = {'type': 'FeatureCollection',
+                 'features': [{'type': 'Feature', 'geometry':
+                 {'type': 'Polygon', 'coordinates': [[[-59.758285, 8.367035], ...]]}}]}
 
-geojsonfix.validate(geojson)
+geojsonfix.validate(geojson_input)
 ```
 The result gives the reason and positional index of the invalid geometry.
 ```json
@@ -40,10 +40,14 @@ The result gives the reason and positional index of the invalid geometry.
  "count_geometry_types": {"Polygon": 2, "MultiPolygon": 1}}
 ```
 
+### Fix GeoJSON
+
+**Coming Soon!**
+
 <br>
 
-### Parameters
-It is possible to select only specific validation criteria. For comprehensive criteria descriptions,
+#### Parameters
+It is possible to select only specific criteria for validation and fixing. For comprehensive criteria descriptions,
 see the [geojson-invalid-geometry](https://github.com/chrieke/geojson-invalid-geometry) list.
 
 ```python
