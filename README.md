@@ -1,12 +1,16 @@
 <img src="./header_img.jpeg">
 
-**Validates and automatically fixes invalid GeoJSON - 🌎 Webapp and 🐍 Python package.**
+**Validates and automatically fixes invalid GeoJSON - 🌎 Webapp and 🐍 Python package.** 
+
+The only tool that addresses all potential issues:
 - **Invalid** according to GeoJSON specification: e.g. duplicate nodes, wrong winding order, unclosed 
 - **Problematic** with some tools & APIs: e.g. self-intersection, holes, crossing anti-meridian
+
 
 <h3 align="center">
     🎈 <a href="https://geojsonfix.streamlit.app/">Try it out here: geojsonfix webapp 🎈 </a>
 </h3>
+
 <br>
 
 ## Python package
@@ -17,6 +21,8 @@ pip install geojsonfix
 ```
 
 ### Usage
+
+As input takes any GeoJSON (dictionary or filepath), shapely geometry or anything with a __geo_interface__.
 
 ```python
 import geojsonfix
@@ -34,10 +40,11 @@ The result gives the reason and positional index of the invalid geometry.
  "count_geometry_types": {"Polygon": 2, "MultiPolygon": 1}}
 ```
 
-As input, geojsonfix takes a GeoJSON FeatureCollection, Feature, or Geometry.
+<br>
 
 ### Parameters
-You can limit the validation to specific criteria. For detailed descriptions of all criteria see the [geojson-invalid-geometry](https://github.com/chrieke/geojson-invalid-geometry) list.
+It is possible to select only specific validation criteria. For comprehensive criteria descriptions,
+see the [geojson-invalid-geometry](https://github.com/chrieke/geojson-invalid-geometry) list.
 
 ```python
 # Invalid according to the GeoJSON specification
@@ -52,14 +59,13 @@ criteria_problematic = ["holes", "self_intersection", "excessive_coordinate_prec
 geojsonfix.validate(geojson, criteria_invalid, criteria_problematic)
 ```
 
-
+<br>
+<br>
 
 ## TODO:
 - Automatically fix geometries
 - Accept all Geometry types, validate/fix depending on type
 - Add shapely input support
 - Add support for all file input types as in app
-- Banner image with geometry, inspection glass, hammer
 - Check for incorrect geometry data type in type vs. geometry pattern
 - bbox order and other criteria
-- 
