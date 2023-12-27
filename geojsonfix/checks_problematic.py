@@ -16,7 +16,9 @@ def check_self_intersection(geom: Polygon) -> bool:
     return self_intersection
 
 
-def check_excessive_coordinate_precision(geometry: dict, precision=6, n_first_coords=2) -> bool:
+def check_excessive_coordinate_precision(
+    geometry: dict, precision=6, n_first_coords=2
+) -> bool:
     """Return True if coordinates have more than 6 decimal places in the longitude."""
     # For speedup, by default only checks the x&y coordinates of the n_first_coords=2 coordinate pairs.
     coords = geometry["coordinates"][0]

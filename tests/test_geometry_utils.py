@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 
 import pytest
@@ -28,6 +27,7 @@ def test_get_geometries_shapely():
     geom = shape(read_geojson(fp, geometries=True))
     type_, geometries = geometry_utils.get_geometries(geom)
     assert type_ == "Polygon"
+    assert len(geometries) == 1
 
 
 def test_get_geometries_geojson_feature_collection():

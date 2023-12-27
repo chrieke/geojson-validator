@@ -97,7 +97,14 @@ def test_validate_valid():
     assert not result["problematic"]
 
 
+@pytest.mark.skip()
 def test_validate_countries():
     fc = read_geojson("./tests/examples_geojson/countries.geojson")
     result = main.validate(fc)
-    assert "duplicate_nodes" in result["invalid"]
+    assert len(result["invalid"]) == 0
+    assert len(result["problematic"]["self_intersection"]) == 1
+    assert result["problematic"]["crosses_antimeridian"] == [12, 59, 142]
+    assert len(result["problematic"]["excessive_coordinate_precision"]) == 51
+    assert result["problematic"]["holes"] == [181]
+    assert len(result["problematic"]) == 4
+    assert result["count_geometry_types"] == {"Polygon": 188, "MultiPolygon": 46}

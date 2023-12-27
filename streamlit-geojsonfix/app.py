@@ -15,7 +15,7 @@ st.set_page_config(
 
 
 def load_lottieurl(url: str):
-    r = requests.get(url)
+    r = requests.get(url, timeout=5)
     if r.status_code != 200:
         return None
     return r.json()
@@ -28,7 +28,7 @@ with col1_header:
     st_lottie(lottie_json, height=100, speed=1)
 
 col2_header.write("")
-col2_header.title(f"GeoJSONfix")
+col2_header.title("GeoJSONfix")
 st.write("")
 st.markdown(
     "**Validates and automatically fixes your geospatial vector data.**",
@@ -36,7 +36,7 @@ st.markdown(
 )
 
 text_instruction = "Paste GeoJSON - FeatureCollection, Feature or Geometry"
-text_help = f"E.g. from https://geojson.io/"
+text_help = "E.g. from https://geojson.io/"
 json_string = st.text_area(text_instruction, height=250, help=text_help)
 
 st.write("")

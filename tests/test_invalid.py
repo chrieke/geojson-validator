@@ -1,5 +1,3 @@
-import json
-
 from shapely.geometry import shape
 import pytest
 
