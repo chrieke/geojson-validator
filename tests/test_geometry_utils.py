@@ -5,7 +5,7 @@ import pytest
 from shapely.geometry import shape
 
 from .context import geometry_utils
-from .fixtures_utils import read_geometry_of_geojson
+from .fixtures_utils import read_geojson
 
 
 def test_read_file():
@@ -25,14 +25,14 @@ def test_get_geometries_file():
 
 def test_get_geometries_shapely():
     fp = "./tests/examples_geojson/valid/simple_polygon.geojson"
-    geom = shape(read_geometry_of_geojson(fp))
+    geom = shape(read_geojson(fp, geometries=True))
     type_, geometries = geometry_utils.get_geometries(geom)
     assert type_ == "Polygon"
 
 
 def test_get_geometries_geojson_feature_collection():
-    with open("./tests/examples_geojson/valid/simple_polygon.geojson") as f:
-        fc = json.load(f)
+    fp_geojson = "./tests/examples_geojson/valid/simple_polygon.geojson"
+    fc = read_geojson(fp_geojson)
     for k, v in {
         "FeatureCollection": fc,
         "Feature": fc["features"][0],

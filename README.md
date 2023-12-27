@@ -65,7 +65,8 @@ geojsonfix.validate(geojson, criteria_invalid, criteria_problematic)
 ## TODO:
 - Automatically fix geometries
 - Accept all Geometry types, validate/fix depending on type
-- Add shapely input support
-- Add support for all file input types as in app
 - Check for incorrect geometry data type in type vs. geometry pattern
 - bbox order and other criteria
+
+No:
+- Filsupport wkt etc. that would require more dependencies.

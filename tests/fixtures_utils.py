@@ -1,7 +1,9 @@
 import json
 
 
-def read_geometry_of_geojson(geojson_fp: str):
-    with open(geojson_fp) as f:
+def read_geojson(file_path: str, geometries=False):
+    with open(file_path) as f:
         gj = json.load(f)
-    return gj["features"][0]["geometry"]
+    if geometries:
+        return gj["features"][0]["geometry"]
+    return gj
