@@ -1,23 +1,26 @@
-# 🔧 GeoJSONfix
+# 🔧 geojsonfix
 
-**Validates and automatically fixes invalid GeoJSON - Webapp and Python package**   
 
-<h3 align="center">
-    🎈 Try it out here: <a href="https://geojsonfix.streamlit.app/">geojsonfix webapp 🎈 </a>
-</h3>
 
-<br>
+<img src="./header_img.jpeg">
 
-**The only tool which addresses all GeoJSON issues**: 
+**Validates and automatically fixes invalid GeoJSON - 🌎 Webapp and 🐍 Python package.**
 - **Invalid** according to GeoJSON specification: e.g. duplicate nodes, wrong winding order, unclosed 
 - **Problematic** with some tools & APIs: e.g. self-intersection, holes, crossing anti-meridian
 
-## Usage
+<h3 align="center">
+    🎈 <a href="https://geojsonfix.streamlit.app/">Try it out here: geojsonfix webapp 🎈 </a>
+</h3>
+<br>
 
+## Python package
+
+### Installation
 ```bash
-# Install
 pip install geojsonfix
 ```
+
+### Usage
 
 ```python
 import geojsonfix
@@ -28,18 +31,18 @@ geojson = {'type': 'FeatureCollection',
 
 geojsonfix.validate(geojson)
 ```
-**Validation results:**
+The result gives the reason and positional index of the invalid geometry.
 ```json
 {"invalid": {"duplicate_nodes": [2]},
  "problematic": {"self_intersection": [0, 2], "crosses_antimeridian": [1]},
  "count_geometry_types": {"Polygon": 2, "MultiPolygon": 1}}
 ```
-The result gives the reason and positional index of the invalid geometry.
-Accepts a GeoJSON FeatureCollection, Feature, Polygon Geometry or MultiPolygon Geometry.
 
-## Parameters
-To only evaluate specific validation criteria use the `validate` function parameters
-For detailed descriptions on all criteria see [geojson-invalid-geometry](https://github.com/chrieke/geojson-invalid-geometry).
+As input, geojsonfix takes a GeoJSON FeatureCollection, Feature, or Geometry.
+
+### Parameters
+To only evaluate specific validation criteria use the `validate` function parameters.
+For detailed descriptions on all criteria see the [geojson-invalid-geometry](https://github.com/chrieke/geojson-invalid-geometry) list.
 
 ```python
 # Invalid according to the GeoJSON specification
