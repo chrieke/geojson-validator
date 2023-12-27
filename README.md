@@ -1,7 +1,3 @@
-# 🔧 geojsonfix
-
-
-
 <img src="./header_img.jpeg">
 
 **Validates and automatically fixes invalid GeoJSON - 🌎 Webapp and 🐍 Python package.**
@@ -41,8 +37,7 @@ The result gives the reason and positional index of the invalid geometry.
 As input, geojsonfix takes a GeoJSON FeatureCollection, Feature, or Geometry.
 
 ### Parameters
-To only evaluate specific validation criteria use the `validate` function parameters.
-For detailed descriptions on all criteria see the [geojson-invalid-geometry](https://github.com/chrieke/geojson-invalid-geometry) list.
+You can limit the validation to specific criteria. For detailed descriptions of all criteria see the [geojson-invalid-geometry](https://github.com/chrieke/geojson-invalid-geometry) list.
 
 ```python
 # Invalid according to the GeoJSON specification
