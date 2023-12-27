@@ -1,19 +1,29 @@
 from typing import List, Union, Tuple
 import json
-
+from urllib.parse import urlparse
 from pathlib import Path
 
+import requests
 
-def read_file(filepath: Union[str, Path]):
-    filepath = Path(filepath)
-    if filepath.exists() and filepath.suffix in [
+
+def read_geojson_file_or_url(fp_or_url: Union[str, Path]):
+    """Reads a geojson source from a filepath or url"""
+    if Path(fp_or_url).suffix not in [
         ".json",
         ".JSON",
         ".geojson",
         ".GEOJSON",
     ]:
-        with filepath.open(encoding="UTF-8") as f:
-            return json.load(f)
+        raise ValueError("Filepath or URL must be a geojson or json file")
+    if isinstance(fp_or_url, Path) or Path(fp_or_url).is_file():
+        fp = Path(fp_or_url)
+        if fp.exists():
+            with fp.open(encoding="UTF-8") as f:
+                return json.load(f)
+    elif urlparse(fp_or_url).scheme in ("http", "https", "ftp", "ftps"):
+        response = requests.get(str(fp_or_url), timeout=5)
+        if response.status_code == 200:  # Check if the request was successful
+            return response.json()
 
 
 def get_geometries(geojson_input: dict) -> Tuple[str, List[dict]]:
@@ -27,7 +37,7 @@ def get_geometries(geojson_input: dict) -> Tuple[str, List[dict]]:
         Tuple: The geometry type of the initial input, list of GeoJSON geometries from the input
     """
     if isinstance(geojson_input, (str, Path)):
-        geojson_input = read_file(filepath=geojson_input)
+        geojson_input = read_geojson_file_or_url(geojson_input)
     elif hasattr(geojson_input, "__geo_interface__"):
         geojson_input = geojson_input.__geo_interface__
     elif not isinstance(geojson_input, dict) or "type" not in geojson_input:

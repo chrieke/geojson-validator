@@ -7,10 +7,20 @@ from .context import geometry_utils
 from .fixtures_utils import read_geojson
 
 
-def test_read_file():
+def test_read_geojson_file_or_url_filepath():
     filepath = "./tests/examples_geojson/valid/simple_polygon.geojson"
-    geojson_input = geometry_utils.read_file(filepath)
-    assert isinstance(geojson_input, dict)
+    fc = geometry_utils.read_geojson_file_or_url(filepath)
+    assert isinstance(fc, dict)
+
+
+def test_read_geojson_file_or_url_url():
+    filepath = (
+        "https://raw.githubusercontent.com/isellsoap/deutschlandGeoJSON/main/"
+        "2_bundeslaender/1_sehr_hoch.geo.json"
+    )
+    fc = geometry_utils.read_geojson_file_or_url(filepath)
+    assert isinstance(fc, dict)
+    assert fc["type"] == "FeatureCollection"
 
 
 def test_get_geometries_file():

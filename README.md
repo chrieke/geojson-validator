@@ -22,7 +22,7 @@ pip install geojsonfix
 
 ### Usage
 
-As input takes any GeoJSON (dictionary or filepath), shapely geometry or anything with a __geo_interface__.
+As input takes any GeoJSON (dictionary, filepath, url), shapely geometry or anything with a __geo_interface__.
 
 ```python
 import geojsonfix
@@ -67,6 +67,7 @@ geojsonfix.validate(geojson, criteria_invalid, criteria_problematic)
 - Accept all Geometry types, validate/fix depending on type
 - Check for incorrect geometry data type in type vs. geometry pattern
 - bbox order and other criteria
+- Multihtreading?
 
 No:
 - Filsupport wkt etc. that would require more dependencies.

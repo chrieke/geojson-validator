@@ -91,13 +91,15 @@ def test_validate_invalid():
 
 
 def test_validate_valid():
-    fc = read_geojson("./tests/examples_geojson/valid/simple_polygon.geojson")
-    result = main.validate(fc)
-    assert not result["invalid"]
-    assert not result["problematic"]
+    fp = "./tests/examples_geojson/valid/simple_polygon.geojson"
+    fc = read_geojson(fp)
+    for input_ in [fc, fp]:
+        result = main.validate(input_)
+        assert not result["invalid"]
+        assert not result["problematic"]
 
 
-@pytest.mark.skip()
+# @pytest.mark.skip(reason="1mb file")
 def test_validate_countries():
     fc = read_geojson("./tests/examples_geojson/countries.geojson")
     result = main.validate(fc)
@@ -108,3 +110,17 @@ def test_validate_countries():
     assert result["problematic"]["holes"] == [181]
     assert len(result["problematic"]) == 4
     assert result["count_geometry_types"] == {"Polygon": 188, "MultiPolygon": 46}
+
+
+@pytest.mark.skip(reason="Takes 10sec, 20mb file")
+def test_validate_buildings():
+    fc = read_geojson("./tests/examples_geojson/buildings.json")
+    result = main.validate(fc)
+    assert len(result["problematic"]["excessive_coordinate_precision"]) == 66510
+    assert result["count_geometry_types"]["Polygon"] == 66510
+
+
+def test_validate_url():
+    url = "https://raw.githubusercontent.com/isellsoap/deutschlandGeoJSON/main/2_bundeslaender/1_sehr_hoch.geo.json"
+    result = main.validate(url)
+    assert len(result["invalid"]["exterior_not_ccw"]) == 16
