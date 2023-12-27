@@ -1,37 +1,25 @@
 import json
-import requests
 
 import streamlit as st
-from streamlit_lottie import st_lottie
 
 import geojsonfix
 
 st.set_page_config(
     page_title="geojsonfix",
     layout="centered",
-    page_icon="🔻",
+    page_icon="🟥",
     initial_sidebar_state="collapsed",
 )
 
+st.image("header_img.jpeg")
 
-def load_lottieurl(url: str):
-    r = requests.get(url, timeout=5)
-    if r.status_code != 200:
-        return None
-    return r.json()
+st.markdown(
+    "[![Star](https://img.shields.io/github/stars/chrieke/geojsonfix.svg?logo=github&style=social)](https://github.com/chrieke/geojsonfix)"
+)
 
-
-col1_header, col2_header = st.columns([1, 6])
-lottie_url = "https://assets10.lottiefiles.com/temp/lf20_YQB3X3.json"
-lottie_json = load_lottieurl(lottie_url)
-with col1_header:
-    st_lottie(lottie_json, height=100, speed=1)
-
-col2_header.write("")
-col2_header.title("GeoJSONfix")
 st.write("")
 st.markdown(
-    "**Validates and automatically fixes your geospatial vector data.**",
+    "**Validates and automatically fixes invalid GeoJSON - 🌎 Webapp and 🐍 Python package.**",
     unsafe_allow_html=True,
 )
 
@@ -42,14 +30,16 @@ json_string = st.text_area(text_instruction, height=250, help=text_help)
 st.write("")
 st.write("")
 
-button_run = st.button("Validate")
+_, cl1, cl2, _ = st.columns(4)
+button_validate = cl1.button("Validate")
+button_fix = cl2.button("Fix GeoJSON")
 
-if button_run:
+if button_validate:
     if not json_string:
-        st.error("Input GeoJSON")
+        st.error("Input GeoJSON or URL")
         st.stop()
-    json_json = json.loads(json_string.replace("'", '"'))
-    results = geojsonfix.validate(dict(json_json))
+    json_json = dict(json.loads(json_string.replace("'", '"')))
+    results = geojsonfix.validate(json_json)
     if results["invalid"]:
         st.error("Invalid GeoJSON")
     elif results["problematic"]:
@@ -60,3 +50,6 @@ if button_run:
         "Results (shows the positional index of the invalid/problematic geometries)"
     )
     st.write(results)
+
+if button_fix:
+    st.write("Coming Soon!")

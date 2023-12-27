@@ -18,7 +18,7 @@ Check which version is currently installed:
 
 ## 0.0.2
 
-**December 26, 2023**
+**December 27, 2023**
 
 - Adds reading geojson/json from url as input option
 - Adds shapely geometry as input option
