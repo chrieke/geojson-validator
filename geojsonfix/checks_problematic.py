@@ -21,11 +21,7 @@ def check_excessive_coordinate_precision(
 ) -> bool:
     """Return True if coordinates have more than 6 decimal places in the longitude."""
     # For speedup, by default only checks the x&y coordinates of the n_first_coords=2 coordinate pairs.
-
-    if geometry["type"] == "Point":
-        coords = [geometry["coordinates"]]
-    else:
-        coords = geometry["coordinates"][0][:n_first_coords]
+    coords = geometry["coordinates"][0][:n_first_coords]
     for coord_xy in coords:
         for coord in coord_xy:
             splits = str(coord).split(".")
@@ -39,12 +35,9 @@ def check_excessive_coordinate_precision(
 def check_more_than_2d_coordinates(geometry: dict, n_first_coords=2) -> bool:
     """Return True if any coordinates are more than 2D."""
     # TODO: should all coordinates be checked?
-    if geometry["type"] == "Point":
-        return len(geometry["coordinates"]) > 2
-    else:
-        for coords in geometry["coordinates"][0][:n_first_coords]:
-            if len(coords) > 2:
-                return True
+    for coords in geometry["coordinates"][0][:n_first_coords]:
+        if len(coords) > 2:
+            return True
     return False
 
 

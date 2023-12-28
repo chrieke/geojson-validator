@@ -59,11 +59,6 @@ def check_outside_lat_lon_boundaries(geometry: dict) -> bool:
     def _inside_boundaries(lon, lat):
         return -180 <= lon <= 180 and -90 <= lat <= 90
 
-    if geometry["type"] == "Point":
-        return not _inside_boundaries(
-            geometry["coordinates"][0], geometry["coordinates"][1]
-        )
-    else:
-        return not all(
-            _inside_boundaries(lon, lat) for lon, lat in geometry["coordinates"][0]
-        )
+    return not all(
+        _inside_boundaries(lon, lat) for lon, lat in geometry["coordinates"][0]
+    )

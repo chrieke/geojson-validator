@@ -15,76 +15,65 @@ logger.remove()
 logger_format = "{time:YYYY-MM-DD_HH:mm:ss.SSS} | {message}"
 logger.add(sink=sys.stderr, format=logger_format, level="INFO")
 
+
+ALL_ACCEPTED_GEOMETRY_TYPES = POI, MPOI, LS, MLS, POL, MPOL = [
+    "Point",
+    "MultiPoint",
+    "LineString",
+    "MultiLineString",
+    "Polygon",
+    "MultiPolygon",
+]
+
 VALIDATION_CRITERIA = {
     "invalid": {
-        "unclosed": {"relevant": ["Polygon", "MultiPolygon"], "input": "json_geometry"},
+        "unclosed": {"relevant": [POL, MPOL], "input": "json_geometry"},
         "duplicate_nodes": {
-            "relevant": ["LineString", "MultiLineString", "Polygon", "MultiPolygon"],
+            "relevant": [LS, MLS, POL, MPOL],
             "input": "json_geometry",
         },
         "less_three_unique_nodes": {
-            "relevant": ["Polygon", "MultiPolygon"],
+            "relevant": [POL, MPOL],
             "input": "json_geometry",
         },
         "exterior_not_ccw": {
-            "relevant": ["Polygon", "MultiPolygon"],
+            "relevant": [POL, MPOL],
             "input": "shapely_geom",
         },
         "interior_not_cw": {
-            "relevant": ["Polygon", "MultiPolygon"],
+            "relevant": [POL, MPOL],
             "input": "shapely_geom",
         },
         "inner_and_exterior_ring_intersect": {
-            "relevant": ["Polygon", "MultiPolygon"],
+            "relevant": [POL, MPOL],
             "input": "shapely_geom",
         },
         "outside_lat_lon_boundaries": {
-            "relevant": [
-                "Point",
-                "MultiPoint",
-                "Linestring",
-                "MultiLineString",
-                "Polygon",
-                "MultiPolygon",
-            ],
+            "relevant": ALL_ACCEPTED_GEOMETRY_TYPES,
             "input": "json_geometry",
         },
         "crs_defined": {
             "relevant": ["FeatureCollection"],
             "input": "json_geometry",
-        },  # TODO
+        },  # TODO: Does this actually check
         # "zero-length": {"relevant": ["LineString"], "input": "json_geometry"},
     },
     "problematic": {
-        "holes": {"relevant": ["Polygon", "MultiPolygon"], "input": "shapely_geom"},
+        "holes": {"relevant": [POL, MPOL], "input": "shapely_geom"},
         "self_intersection": {
-            "relevant": ["Polygon", "MultiPolygon"],
+            "relevant": [POL, MPOL],
             "input": "shapely_geom",
         },
         "excessive_coordinate_precision": {
-            "relevant": [
-                "Point",
-                "MultiPoint",
-                "Linestring",
-                "MultiLineString",
-                "Polygon",
-                "MultiPolygon",
-            ],
+            "relevant": ALL_ACCEPTED_GEOMETRY_TYPES,
             "input": "json_geometry",
         },
         "more_than_2d_coordinates": {
-            "relevant": [
-                "Point",
-                "MultiPoint",
-                "Linestring",
-                "MultiLineString",
-                "Polygon",
-                "MultiPolygon",
-            ],
+            "relevant": ALL_ACCEPTED_GEOMETRY_TYPES,
             "input": "json_geometry",
         },
         "crosses_antimeridian": {
-            "relevant": ["Linestring", "MultiLineString", "Polygon", "MultiPolygon"],
+            "relevant": [LS, MLS, POL, MPOL],
             "input": "json_geometry",
         },
         # "wrong_bbox_order: {}"
@@ -111,17 +100,11 @@ def process_validation(geometries, criteria_invalid, criteria_problematic):
         if geometry_type is None:
             raise ValueError("no 'geometry' field found in GeoJSON Feature")
         geometry_types.append(geometry_type)
-        if geometry_type not in [
-            "Point",
-            "MultiPoint",
-            "LineString",
-            "Polygon",
-            "MultiPolygon",
-        ]:  # TODO
+        if geometry_type not in ALL_ACCEPTED_GEOMETRY_TYPES:
             logger.info(
                 f"Geometry of type {geometry_type} currently not supported, skipping."
             )
-            skipped_validation.append(i)
+            skipped_validation.append(i)  # TODO: Improve
             continue
         if "Multi" in geometry_type:
             single_type = geometry_type.split("Multi")[1]
@@ -139,9 +122,16 @@ def process_validation(geometries, criteria_invalid, criteria_problematic):
                 results_problematic.setdefault(criterium, []).append(i)
             continue
 
+        shapely_geom = shape(geometry)
+
+        # Keep geometry handling in checks the same
+        if geometry_type == "Point":
+            geometry["coordinates"] = [[geometry["coordinates"]]]
+        if geometry_type == "LineString":
+            geometry["coordinates"] = [geometry["coordinates"]]
         # Some criteria require the original json geometry dict as shapely etc. autofixes (e.g. closes) geometries.
         # Initiating the shapely type in each check function specifically is time intensive.
-        input_options = {"json_geometry": geometry, "shapely_geom": shape(geometry)}
+        input_options = {"json_geometry": geometry, "shapely_geom": shapely_geom}
 
         for criterium in criteria_invalid:
             if geometry_type in VALIDATION_CRITERIA["invalid"][criterium]["relevant"]:

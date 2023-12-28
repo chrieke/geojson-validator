@@ -89,14 +89,14 @@ def test_validate_url():
 
 geojson_examples = [
     ("Point", "./tests/examples_geojson/valid/simple_point.geojson"),
-    ("MultiPoint", "./tests/examples_geojson/valid/simple_multipoint.geojson"),
-    # ("LineString", "./tests/examples_geojson/valid/simple_linestring.geojson"),
-    # (
-    #     "MultiLineString",
-    #     "./tests/examples_geojson/valid/simple_multilinestring.geojson",
-    # ),
-    ("Polygon", "./tests/examples_geojson/valid/simple_polygon.geojson"),
-    ("MultiPolygon", "./tests/examples_geojson/valid/simple_multipolygon.geojson"),
+    # ("MultiPoint", "./tests/examples_geojson/valid/simple_multipoint.geojson"),
+    ("LineString", "./tests/examples_geojson/valid/simple_linestring.geojson"),
+    (
+        "MultiLineString",
+        "./tests/examples_geojson/valid/simple_multilinestring.geojson",
+    ),
+    # ("Polygon", "./tests/examples_geojson/valid/simple_polygon.geojson"),
+    # ("MultiPolygon", "./tests/examples_geojson/valid/simple_multipolygon.geojson"),
 ]
 
 
