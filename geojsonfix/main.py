@@ -67,6 +67,7 @@ def check_criteria(selected_criteria, criteria_type):
 
 def process_validation(geometries, criteria_invalid, criteria_problematic):
     results_invalid, results_problematic = {}, {}
+    skipped_validation = []
     geometry_types = []
 
     for i, geometry in enumerate(geometries):
@@ -74,19 +75,21 @@ def process_validation(geometries, criteria_invalid, criteria_problematic):
         if geometry_type is None:
             raise ValueError("no 'geometry' field found in GeoJSON Feature")
         geometry_types.append(geometry_type)
-        if geometry_type not in ["Polygon", "MultiPolygon"]:
+        if geometry_type not in ["Polygon", "MultiPolygon"]:  # TODO
             logger.info(
                 f"Geometry of type {geometry_type} currently not supported, skipping."
             )
+            skipped_validation.append(i)
             continue
-        if geometry_type == "MultiPolygon":
+        if "Multi" in geometry_type:
+            single_type = geometry_type.split("Multi")[1]
             single_geometries = [
-                {"type": "Polygon", "coordinates": g} for g in geometry["coordinates"]
+                {"type": single_type, "coordinates": g} for g in geometry["coordinates"]
             ]
             results_mp = process_validation(
                 single_geometries, criteria_invalid, criteria_problematic
             )
-            # Take all invalid criteria from the Polygons inside the Multipolygon and indicate them
+            # Take all invalid criteria from the e.g. Polygons inside the Multipolygon and indicate them
             # as the position index of the MultiPolygon.
             for criterium in results_mp["invalid"]:
                 results_invalid.setdefault(criterium, []).append(i)
@@ -116,6 +119,7 @@ def process_validation(geometries, criteria_invalid, criteria_problematic):
         "invalid": results_invalid,
         "problematic": results_problematic,
         "count_geometry_types": dict(Counter(geometry_types)),
+        "skipped_validation": skipped_validation,
     }
 
     return results

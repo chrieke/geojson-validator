@@ -42,25 +42,31 @@ def get_geometries(geojson_input: dict) -> Tuple[str, List[dict]]:
         geojson_input = geojson_input.__geo_interface__
     elif not isinstance(geojson_input, dict) or "type" not in geojson_input:
         raise ValueError(
-            f"Unsupported input {type(geojson_input)}. Input must be a GeoJSON, filepath to GeoJSON, "
+            f"Unsupported input {type(geojson_input)}. Input must be a GeoJSON, filepath/url to GeoJSON, "
             f"shapely geometry or any object with a __geo_interface__"
         )
 
-    type_ = geojson_input.get("type", None)
+    supported_geojson_types = [
+        "Point",
+        "MultiPoint",
+        "Linestring",
+        "MulltiLineString",
+        "Polygon",
+        "MultiPolygon",
+    ]
     # TODO: Validate all required geojson fields
+    type_ = geojson_input.get("type", None)  # FeatureCollection, Feature, Geometry
     if type_ is None:
         raise ValueError("No 'type' field found in GeoJSON")
     if type_ == "FeatureCollection":
         geometries = [feature["geometry"] for feature in geojson_input["features"]]
     elif type_ == "Feature":
         geometries = [geojson_input["geometry"]]
-    elif type_ in ["Polygon", "MultiPolygon"]:
+    elif type_ in supported_geojson_types:
         geometries = [geojson_input]
     else:
-        # TODO: Support all types
         raise ValueError(
-            f"Unsupported GeoJSON type {type_}. Only FeatureCollection, Feature or Polygon/MultiPolygon "
-            f"Geometry are supported."
+            f"Unsupported GeoJSON type {type_}. Supported are {supported_geojson_types}"
         )
 
     return type_, geometries

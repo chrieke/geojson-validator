@@ -51,4 +51,7 @@
 #     return Polygon(exterior, interiors)
 #
 #
-# # The rest of the functions like fixing fewer than three unique nodes, fixing intersecting inner and outer rings, defining CRS, and fixing outside boundaries typically involve more complex logic, potential user input, or case-by-case handling. They are generally not as straightforward to "fix" programmatically without additional context or constraints.
+# # The rest of the functions like fixing fewer than three unique nodes, fixing intersecting inner and
+# outer rings, defining CRS, and fixing outside boundaries typically involve more complex logic, potential
+# user input, or case-by-case handling. They are generally not as straightforward to "fix" programmatically
+# without additional context or constraints.
