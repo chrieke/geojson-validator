@@ -153,4 +153,9 @@ def validate(
     return results
 
 
-# def fix(geojson, fix_criteria=["invalid", "problematic"]):
+# def fix(
+#     geojson,
+#     criteria_invalid: Union[List[str], None] = VALIDATION_CRITERIA["invalid"],
+#     criteria_problematic: Union[List[str], None] = VALIDATION_CRITERIA["problematic"],
+# ):
+#     pass

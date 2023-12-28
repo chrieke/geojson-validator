@@ -14,7 +14,8 @@ st.set_page_config(
 st.image("header_img.jpeg")
 
 st.markdown(
-    "[![Star](https://img.shields.io/github/stars/chrieke/geojsonfix.svg?logo=github&style=social)](https://github.com/chrieke/geojsonfix)"
+    "[![Star](https://img.shields.io/github/stars/chrieke/geojsonfix.svg?logo=github&style=social)]"
+    "(https://github.com/chrieke/geojsonfix)"
 )
 
 st.write("")

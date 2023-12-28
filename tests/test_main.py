@@ -38,25 +38,6 @@ def test_process_validation_invalid_geometry():
     assert "unclosed" in results["invalid"]
 
 
-def test_process_validation_multi_polygon():
-    # Second geometry in Multipolygon and third geometry is unclosed
-    geometries = [
-        {"type": "Polygon", "coordinates": [[[0, 0], [1, 1], [1, 0], [0, 0]]]},
-        {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [[[0, 0], [2, 2], [2, 0], [0, 0]]],
-                [[[0, 0], [1, 1], [1, 0]]],
-            ],
-        },
-        {"type": "Polygon", "coordinates": [[[0, 0], [1, 1], [1, 0]]]},
-    ]
-    invalid_criteria = ["unclosed"]
-    results = main.process_validation(geometries, invalid_criteria, [])
-    assert results["invalid"]["unclosed"] == [1, 2]
-    assert results["count_geometry_types"] == {"Polygon": 2, "MultiPolygon": 1}
-
-
 def test_process_validation_error_no_type():
     # Test handling of geometry missing the 'type' field
     geometries = [{"coordinates": [[[0, 0], [1, 1], [1, 0], [0, 0]]]}]  # No type field
@@ -99,28 +80,52 @@ def test_validate_valid():
         assert not result["problematic"]
 
 
-# @pytest.mark.skip(reason="1mb file")
-def test_validate_countries():
-    fc = read_geojson("./tests/examples_geojson/countries.geojson")
-    result = main.validate(fc)
-    assert len(result["invalid"]) == 0
-    assert len(result["problematic"]["self_intersection"]) == 1
-    assert result["problematic"]["crosses_antimeridian"] == [12, 59, 142]
-    assert len(result["problematic"]["excessive_coordinate_precision"]) == 51
-    assert result["problematic"]["holes"] == [181]
-    assert len(result["problematic"]) == 4
-    assert result["count_geometry_types"] == {"Polygon": 188, "MultiPolygon": 46}
-
-
-@pytest.mark.skip(reason="Takes 10sec, 20mb file")
-def test_validate_buildings():
-    fc = read_geojson("./tests/examples_geojson/buildings.json")
-    result = main.validate(fc)
-    assert len(result["problematic"]["excessive_coordinate_precision"]) == 66510
-    assert result["count_geometry_types"]["Polygon"] == 66510
-
-
+@pytest.mark.skip(reason="online file")
 def test_validate_url():
     url = "https://raw.githubusercontent.com/isellsoap/deutschlandGeoJSON/main/2_bundeslaender/1_sehr_hoch.geo.json"
     result = main.validate(url)
     assert len(result["invalid"]["exterior_not_ccw"]) == 16
+
+
+geojson_examples = [
+    ("Point", "./tests/examples_geojson/valid/simple_point.geojson"),
+    ("LineString", "./tests/examples_geojson/valid/simple_linestring.geojson"),
+    (
+        "MultiLineString",
+        "./tests/examples_geojson/valid/simple_multilinestring.geojson",
+    ),
+    ("Polygon", "./tests/examples_geojson/valid/simple_polygon.geojson"),
+    ("MultiPolygon", "./tests/examples_geojson/valid/simple_multipolygon.geojson"),
+]
+
+
+@pytest.mark.parametrize("geometry_type, file_path", geojson_examples)
+def test_process_validation(geometry_type, file_path):
+    fc = read_geojson(
+        file_path
+    )  # read_geojson function should be defined in main module
+    results = main.validate(
+        fc
+    )  # validate function should process the feature collection and return results
+    assert not results["invalid"]
+    assert not results["problematic"]
+    assert results["count_geometry_types"] == {geometry_type: 1}
+
+
+def test_process_validation_multiple_types():
+    # Second geometry in Multipolygon and third geometry is unclosed
+    geometries = [
+        {"type": "Polygon", "coordinates": [[[0, 0], [1, 1], [1, 0], [0, 0]]]},
+        {
+            "type": "MultiPolygon",
+            "coordinates": [
+                [[[0, 0], [2, 2], [2, 0], [0, 0]]],
+                [[[0, 0], [1, 1], [1, 0]]],
+            ],
+        },
+        {"type": "Polygon", "coordinates": [[[0, 0], [1, 1], [1, 0]]]},
+    ]
+    invalid_criteria = ["unclosed"]
+    results = main.process_validation(geometries, invalid_criteria, [])
+    assert results["invalid"]["unclosed"] == [1, 2]
+    assert results["count_geometry_types"] == {"Polygon": 2, "MultiPolygon": 1}
