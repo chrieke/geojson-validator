@@ -55,7 +55,7 @@ VALIDATION_CRITERIA = {
         "crs_defined": {
             "relevant": ["FeatureCollection"],
             "input": "json_geometry",
-        },  # TODO: Does this actually check
+        },
         # "zero-length": {"relevant": ["LineString"], "input": "json_geometry"},
     },
     "problematic": {
@@ -90,6 +90,37 @@ def check_criteria(selected_criteria, criteria_type):
     logger.info(f"Validation criteria '{criteria_type}': {selected_criteria}")
 
 
+def prepare_geometries_for_checks(geometry):
+    """Prepares the Geometries for the validation checks"""
+    # Some criteria require the original json geometry dict as shapely etc. autofixes (e.g. closes) geometries.
+    # Initiating the shapely type in each check function specifically is time intensive.
+    shapely_geom = shape(geometry)
+
+    # To avoid adjusting the checks code for each geometry type, they are brought to the same
+    # list depth (not ideal but okay).
+    geometry_type = geometry.get("type", None)
+    if geometry_type == "Point":
+        geometry["coordinates"] = [[geometry["coordinates"]]]
+    if geometry_type == "LineString":
+        geometry["coordinates"] = [geometry["coordinates"]]
+    return geometry, shapely_geom
+
+
+def apply_check(
+    criterium, geometry, shapely_geom, geometry_type, criteria_type="invalid"
+):
+    """Applies the correct check for the criteria"""
+    geometry_input_options = {"json_geometry": geometry, "shapely_geom": shapely_geom}
+    relevant_geometry_type = VALIDATION_CRITERIA[criteria_type][criterium]["relevant"]
+    if geometry_type in relevant_geometry_type:
+        check_module = (
+            checks_invalid if criteria_type == "invalid" else checks_problematic
+        )
+        check_func = getattr(check_module, f"check_{criterium}")
+        required_input_type = VALIDATION_CRITERIA[criteria_type][criterium]["input"]
+        return check_func(geometry_input_options[required_input_type])
+
+
 def process_validation(geometries, criteria_invalid, criteria_problematic):
     results_invalid, results_problematic = {}, {}
     skipped_validation = []
@@ -104,8 +135,10 @@ def process_validation(geometries, criteria_invalid, criteria_problematic):
             logger.info(
                 f"Geometry of type {geometry_type} currently not supported, skipping."
             )
-            skipped_validation.append(i)  # TODO: Improve
+            skipped_validation.append(i)  # TODO: Improve skipped_validation result
             continue
+
+        # Handle Multi-Geometries
         if "Multi" in geometry_type:
             single_type = geometry_type.split("Multi")[1]
             single_geometries = [
@@ -115,44 +148,23 @@ def process_validation(geometries, criteria_invalid, criteria_problematic):
                 single_geometries, criteria_invalid, criteria_problematic
             )
             # Take all invalid criteria from the e.g. Polygons inside the Multipolygon and indicate them
-            # as the position index of the MultiPolygon.
+            # as the positional index of the MultiPolygon.
             for criterium in results_mp["invalid"]:
                 results_invalid.setdefault(criterium, []).append(i)
             for criterium in results_mp["problematic"]:
                 results_problematic.setdefault(criterium, []).append(i)
             continue
 
-        shapely_geom = shape(geometry)
-
-        # Keep geometry handling in checks the same
-        if geometry_type == "Point":
-            geometry["coordinates"] = [[geometry["coordinates"]]]
-        if geometry_type == "LineString":
-            geometry["coordinates"] = [geometry["coordinates"]]
-        # Some criteria require the original json geometry dict as shapely etc. autofixes (e.g. closes) geometries.
-        # Initiating the shapely type in each check function specifically is time intensive.
-        input_options = {"json_geometry": geometry, "shapely_geom": shapely_geom}
-
+        # Handle Single-Geometries
+        geometry, shapely_geom = prepare_geometries_for_checks(geometry)
         for criterium in criteria_invalid:
-            if geometry_type in VALIDATION_CRITERIA["invalid"][criterium]["relevant"]:
-                check_func = getattr(checks_invalid, f"check_{criterium}")
-                if check_func(
-                    input_options[VALIDATION_CRITERIA["invalid"][criterium]["input"]]
-                ):
-                    results_invalid.setdefault(criterium, []).append(i)
-
+            if apply_check(criterium, geometry, shapely_geom, geometry_type, "invalid"):
+                results_invalid.setdefault(criterium, []).append(i)
         for criterium in criteria_problematic:
-            if (
-                geometry_type
-                in VALIDATION_CRITERIA["problematic"][criterium]["relevant"]
+            if apply_check(
+                criterium, geometry, shapely_geom, geometry_type, "problematic"
             ):
-                check_func = getattr(checks_problematic, f"check_{criterium}")
-                if check_func(
-                    input_options[
-                        VALIDATION_CRITERIA["problematic"][criterium]["input"]
-                    ]
-                ):
-                    results_problematic.setdefault(criterium, []).append(i)
+                results_problematic.setdefault(criterium, []).append(i)
 
     results = {
         "invalid": results_invalid,
