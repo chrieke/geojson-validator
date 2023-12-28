@@ -1,4 +1,4 @@
-<img src="./header_img.jpeg">
+<img src="./preview-images/header_img.jpeg">
 
 **Validate and automatically fixes invalid GeoJSON. 🌎 Webapp and 🐍 Python package.** 
 
@@ -8,7 +8,7 @@ The only tool that addresses all issues:
 
 
 <h3 align="center">
-    🎈 <a href="https://geojsonfix.streamlit.app/">Try it out: geojsonfix webapp 🎈 </a>
+    🎈 <a href="https://geojson-validator.streamlit.app/">Try it out: geojson-validator webapp 🎈 </a>
 </h3>
 
 <br>
@@ -17,7 +17,7 @@ The only tool that addresses all issues:
 
 #### Installation
 ```bash
-pip install geojsonfix
+pip install geojson-validator
 ```
 
 ### Validate GeoJSON
@@ -25,13 +25,13 @@ pip install geojsonfix
 Input can be any GeoJSON (dictionary, filepath, url), shapely geometry, or anything with a `__geo_interface__`.
 
 ```python
-import geojsonfix
+import geojson_validator
 
 geojson_input = {'type': 'FeatureCollection',
                  'features': [{'type': 'Feature', 'geometry':
-                 {'type': 'Polygon', 'coordinates': [[[-59.758285, 8.367035], ...]]}}]}
+                     {'type': 'Polygon', 'coordinates': [[[-59.758285, 8.367035], ...]]}}]}
 
-geojsonfix.validate(geojson_input)
+geojson_validator.validate(geojson_input)
 ```
 The result gives the reason and positional index of the invalid geometry.
 ```json
@@ -65,18 +65,22 @@ criteria_invalid = ["unclosed", "duplicate_nodes", "less_three_unique_nodes", "e
 criteria_problematic = ["holes", "self_intersection", "excessive_coordinate_precision", 
                         "more_than_2d_coordinates", "crosses_antimeridian"]
 
-geojsonfix.validate(geojson, criteria_invalid, criteria_problematic)
+geojson_validator.validate(geojson, criteria_invalid, criteria_problematic)
 ```
 
 <br>
 <br>
 
 ## TODO:
+- Put on website projects
 - Automatically fix geometries
-- Accept all Geometry types, validate/fix depending on type
+- Release 0.1, delete 0.0.1
 - Check for incorrect geometry data type in type vs. geometry pattern
 - bbox order and other criteria
 - Multihtreading?
+- Add tests for invalid/prob for each geometry type (gpt)
+- refactor main
+- add bbox option?
 
 No:
 - Filsupport wkt etc. that would require more dependencies.

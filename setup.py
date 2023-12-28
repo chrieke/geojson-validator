@@ -5,17 +5,17 @@ from setuptools import find_packages, setup
 parent_dir = Path(__file__).resolve().parent
 
 setup(
-    name="geojsonfix",
-    version="0.0.2",
+    name="geojson-validator",
+    version="0.1.0",
     author="Christoph Rieke",
     author_email="christoph.k.rieke@gmail.com",
     description="Validates and fixes GeoJSON",
     long_description=parent_dir.joinpath("README.md").read_text(),
     long_description_content_type="text/markdown",
-    url="https://github.com/chrieke/geojsonfix",
+    url="https://github.com/chrieke/geojson-validator",
     license="MIT",
     packages=find_packages(
-        exclude=("tests", "streamlit-geojsonfix", "docs", "examples")
+        exclude=("tests", "streamlit-geojson_validator", "docs", "examples")
     ),
     data_files=[
         (

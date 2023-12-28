@@ -2,10 +2,10 @@ import json
 
 import streamlit as st
 
-import geojsonfix
+import geojson_validator
 
 st.set_page_config(
-    page_title="geojsonfix",
+    page_title="geojson-validator",
     layout="centered",
     page_icon="🟥",
     initial_sidebar_state="collapsed",
@@ -14,8 +14,8 @@ st.set_page_config(
 st.image("header_img.jpeg")
 
 st.markdown(
-    "[![Star](https://img.shields.io/github/stars/chrieke/geojsonfix.svg?logo=github&style=social)]"
-    "(https://github.com/chrieke/geojsonfix)"
+    "[![Star](https://img.shields.io/github/stars/chrieke/geojson-validator.svg?logo=github&style=social)]"
+    "(https://github.com/chrieke/geojson-validator)"
 )
 
 st.write("")
@@ -40,7 +40,7 @@ if button_validate:
         st.error("Input GeoJSON or URL")
         st.stop()
     json_json = dict(json.loads(json_string.replace("'", '"')))
-    results = geojsonfix.validate(json_json)
+    results = geojson_validator.validate(json_json)
     if results["invalid"]:
         st.error("Invalid GeoJSON")
     elif results["problematic"]:

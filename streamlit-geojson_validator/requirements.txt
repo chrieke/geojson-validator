@@ -1,0 +1,2 @@
+streamlit
+-e ../geojson-validator
