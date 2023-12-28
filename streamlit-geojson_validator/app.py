@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-st.image("header_img.jpeg")
+st.image("preview-images/header_img.jpeg")
 
 st.markdown(
     "[![Star](https://img.shields.io/github/stars/chrieke/geojson-validator.svg?logo=github&style=social)]"
