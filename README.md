@@ -72,14 +72,11 @@ geojson_validator.validate(geojson, criteria_invalid, criteria_problematic)
 <br>
 
 ## TODO:
-- Put on website projects
 - Automatically fix geometries
-- Release 0.1, delete 0.0.1
 - Check for incorrect geometry data type in type vs. geometry pattern
 - bbox order and other criteria
 - Multihtreading?
-- Add tests for invalid/prob for each geometry type (gpt)
-- refactor main
+- Add tests for invalid/prob for each geometry type
 - add bbox option?
 
 No:

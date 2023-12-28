@@ -9,7 +9,9 @@
 # #     )
 #
 #
-# from shapely.geometry import Polygon, LinearRing
+from shapely.geometry import Polygon, LinearRing
+
+
 # from shapely.ops import unary_union
 #
 #
@@ -41,14 +43,18 @@
 #     return geom
 #
 #
-# def fix_interior_not_cw(geom: Polygon):
-#     """Reorder any interior rings to be clockwise."""
-#     exterior = LinearRing(geom.exterior)
-#     interiors = [
-#         LinearRing(interior) if interior.is_ccw else LinearRing(interior.coords[::-1])
-#         for interior in geom.interiors
-#     ]
-#     return Polygon(exterior, interiors)
+def fix_interior_not_cw(geom: Polygon):
+    """Reorder any interior rings to be clockwise."""
+    interiors = []
+    exterior = LinearRing(geom.exterior)
+    for interior in geom.interiors:
+        if interior.is_ccw:
+            interiors.append(LinearRing(interior.coords[::-1]))
+        else:
+            interiors.append(LinearRing(interior))
+    return Polygon(exterior, interiors)
+
+
 #
 #
 # # The rest of the functions like fixing fewer than three unique nodes, fixing intersecting inner and

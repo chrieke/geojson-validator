@@ -1,18 +1,15 @@
-# import json
-#
-# from shapely.geometry import shape
-# import pytest
-#
-# from .context import fixes_invalid
-#
-#
-# def read_geojson_geometry(file_name: str):
-#     geojson_fp = f"./tests/examples_geojson/invalid/{file_name}"
-#     with open(geojson_fp) as f:
-#         gj = json.load(f)
-#     return gj["features"][0]["geometry"]
-#
-#
-# def test_check_unclosed():
-#     geometry = read_geojson_geometry("polygon_unclosed_polygon.geojson")
-#     fixed_geometry = fixes_invalid.fix_unclosed(geometry)
+from shapely.geometry import shape
+
+from .context import fixes_invalid, checks_invalid
+from .fixtures_utils import read_geojson
+
+
+def test_fix_interior_not_cw():
+    geometry = read_geojson(
+        "./tests/examples_geojson/invalid/polygon_interior_ring_not_clockwise_winding_order.geojson",
+        geometries=True,
+    )
+    geom = shape(geometry)
+    assert checks_invalid.check_interior_not_cw(geom)
+    fixed_geom = fixes_invalid.fix_interior_not_cw(geom)
+    assert not checks_invalid.check_interior_not_cw(fixed_geom)
