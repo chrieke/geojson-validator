@@ -1,14 +1,14 @@
 <img src="./header_img.jpeg">
 
-**Validates and automatically fixes invalid GeoJSON - 🌎 Webapp and 🐍 Python package.** 
+**Validate and automatically fixes invalid GeoJSON. 🌎 Webapp and 🐍 Python package.** 
 
-The only tool that addresses all potential issues:
-- **Invalid** according to GeoJSON specification: e.g. duplicate nodes, wrong winding order, unclosed 
+The only tool that addresses all issues:
+- **Invalid** GeoJSON according to specification: e.g. duplicate nodes, wrong winding order, unclosed 
 - **Problematic** with some tools & APIs: e.g. self-intersection, holes, crossing anti-meridian
 
 
 <h3 align="center">
-    🎈 <a href="https://geojsonfix.streamlit.app/">Try it out here: geojsonfix webapp 🎈 </a>
+    🎈 <a href="https://geojsonfix.streamlit.app/">Try it out: geojsonfix webapp 🎈 </a>
 </h3>
 
 <br>
@@ -22,7 +22,7 @@ pip install geojsonfix
 
 ### Validate GeoJSON
 
-As input takes any GeoJSON (dictionary, filepath, url), shapely geometry or anything with a __geo_interface__.
+Input can be any GeoJSON (dictionary, filepath, url), shapely geometry, or anything with a `__geo_interface__`.
 
 ```python
 import geojsonfix
@@ -35,9 +35,14 @@ geojsonfix.validate(geojson_input)
 ```
 The result gives the reason and positional index of the invalid geometry.
 ```json
-{"invalid": {"duplicate_nodes": [2]},
- "problematic": {"self_intersection": [0, 2], "crosses_antimeridian": [1]},
- "count_geometry_types": {"Polygon": 2, "MultiPolygon": 1}}
+{"invalid": 
+      {"duplicate_nodes": [2]},
+ "problematic": 
+      {"self_intersection": [0, 2], 
+        "crosses_antimeridian": [1]},
+ "count_geometry_types": 
+      {"Polygon": 2, 
+        "MultiPolygon": 1}}
 ```
 
 ### Fix GeoJSON
