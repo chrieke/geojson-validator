@@ -21,30 +21,35 @@ def check_excessive_coordinate_precision(
 ) -> bool:
     """Return True if coordinates have more than 6 decimal places in the longitude."""
     # For speedup, by default only checks the x&y coordinates of the n_first_coords=2 coordinate pairs.
-    coords = geometry["coordinates"][0]
-    for xy in coords[:n_first_coords]:
-        for coord in xy:
+
+    if geometry["type"] == "Point":
+        coords = [geometry["coordinates"]]
+    else:
+        coords = geometry["coordinates"][0][:n_first_coords]
+    for coord_xy in coords:
+        for coord in coord_xy:
             splits = str(coord).split(".")
-            if len(splits) == 2 and len(splits[1]) > precision:
+            if (
+                len(splits) == 2 and len(splits[1]) > precision
+            ):  # catch coord without after comma
                 return True
     return False
 
 
-def check_more_than_2d_coordinates(geometry: dict, check_all_coordinates=False) -> bool:
+def check_more_than_2d_coordinates(geometry: dict, n_first_coords=2) -> bool:
     """Return True if any coordinates are more than 2D."""
-    # TODO: should check_all_coordinates be activated?
-    coords = geometry["coordinates"][0]
-    if check_all_coordinates:
-        for ring in coords:
-            for coord in ring:
-                if len(coord) > 2:
-                    return True
-    first_coordinate = coords[0]
-    return len(first_coordinate) > 2
+    # TODO: should all coordinates be checked?
+    if geometry["type"] == "Point":
+        return len(geometry["coordinates"]) > 2
+    else:
+        for coords in geometry["coordinates"][0][:n_first_coords]:
+            if len(coords) > 2:
+                return True
+    return False
 
 
 def check_crosses_antimeridian(geometry: dict) -> bool:
-    """Return True if the geometry crosses the antimeridian."""
+    """Return True if the geometry crosses the antimeridian (meridian at 180 longitude)."""
     coords = geometry["coordinates"][0]
     for start, end in zip(coords, coords[1:]):
         # Normalize longitudes to -180 to 180 range
