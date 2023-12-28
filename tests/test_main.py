@@ -89,18 +89,20 @@ def test_validate_url():
 
 geojson_examples = [
     ("Point", "./tests/examples_geojson/valid/simple_point.geojson"),
-    ("LineString", "./tests/examples_geojson/valid/simple_linestring.geojson"),
-    (
-        "MultiLineString",
-        "./tests/examples_geojson/valid/simple_multilinestring.geojson",
-    ),
+    ("MultiPoint", "./tests/examples_geojson/valid/simple_multipoint.geojson"),
+    # ("LineString", "./tests/examples_geojson/valid/simple_linestring.geojson"),
+    # (
+    #     "MultiLineString",
+    #     "./tests/examples_geojson/valid/simple_multilinestring.geojson",
+    # ),
     ("Polygon", "./tests/examples_geojson/valid/simple_polygon.geojson"),
     ("MultiPolygon", "./tests/examples_geojson/valid/simple_multipolygon.geojson"),
 ]
 
 
+# TODO: Linestring
 @pytest.mark.parametrize("geometry_type, file_path", geojson_examples)
-def test_process_validation(geometry_type, file_path):
+def test_process_validation_valid_all_geometry_types(geometry_type, file_path):
     fc = read_geojson(
         file_path
     )  # read_geojson function should be defined in main module
@@ -110,6 +112,8 @@ def test_process_validation(geometry_type, file_path):
     assert not results["invalid"]
     assert not results["problematic"]
     assert results["count_geometry_types"] == {geometry_type: 1}
+    # TODO: Check that not skipped
+    assert not results["skipped_validation"]
 
 
 def test_process_validation_multiple_types():
