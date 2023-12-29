@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pytest
-from shapely.geometry import shape
+from shapely.geometry import shape, Point, LineString
 
 from .context import geometry_utils
 from .fixtures_utils import read_geojson
@@ -55,6 +55,23 @@ def test_input_to_featurecollection_invalid_input_type():
             geometry_utils.input_to_featurecollection(x)
 
 
-def test_get_geometries_invalid_geojson_type():
+def test_input_to_featurecollection_invalid_geojson_type():
     with pytest.raises(ValueError):
         geometry_utils.input_to_featurecollection({"type": "InvalidGeoJSONType"})
+
+
+def test_prepare_geometries_for_checks():
+    point_geojson = {"type": "Point", "coordinates": [10, 20]}
+    modified_point, shapely_point = geometry_utils.prepare_geometries_for_checks(
+        point_geojson
+    )
+    assert modified_point["coordinates"] == [[[10, 20]]]
+    assert isinstance(shapely_point, Point)
+
+    linestring_geojson = {"type": "LineString", "coordinates": [[10, 20], [30, 40]]}
+    (
+        modified_linestring,
+        shapely_linestring,
+    ) = geometry_utils.prepare_geometries_for_checks(linestring_geojson)
+    assert modified_linestring["coordinates"] == [[[10, 20], [30, 40]]]
+    assert isinstance(shapely_linestring, LineString)
