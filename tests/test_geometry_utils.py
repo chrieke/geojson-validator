@@ -23,41 +23,34 @@ def test_read_geojson_file_or_url_url():
     assert fc["type"] == "FeatureCollection"
 
 
-def test_input_to_featurecollection_file():
+def test_input_to_geojson_file():
     fp = "./tests/examples_geojson/valid/simple_polygon.geojson"
-    for f in [fp, Path(fp)]:
-        fc = geometry_utils.input_to_featurecollection(f)
-        assert fc["type"] == "FeatureCollection"
-        assert isinstance(fc, dict)
-        assert isinstance(fc["features"][0], dict)
+    for f in [fp, Path(fp), shape(read_geojson(fp, geometries=True))]:
+        geojson_data = geometry_utils.input_to_geojson(f)
+        assert geojson_data["type"]
 
 
-def test_input_to_featurecollection_shapely():
-    fp = "./tests/examples_geojson/valid/simple_polygon.geojson"
-    geom = shape(read_geojson(fp, geometries=True))
-    fc = geometry_utils.input_to_featurecollection(geom)
-    assert fc["type"] == "FeatureCollection"
-    assert len(fc["features"]) == 1
-    assert fc["features"][0]["geometry"]["type"] == "Polygon"
+def test_input_to_geojson_invalid_input_type():
+    for x in [[], set(), TypeError]:  # random other objects
+        with pytest.raises(ValueError):
+            geometry_utils.input_to_geojson(x)
 
 
-def test_input_to_featurecollection_various_geojson_types():
+def test_any_geojson_to_featurecollection_various_geojson_types():
     fp_geojson = "./tests/examples_geojson/valid/simple_polygon.geojson"
     fc_in = read_geojson(fp_geojson)
-    for i in [fc_in, fc_in["features"][0], fc_in["features"][0]["geometry"]]:
-        fc_out = geometry_utils.input_to_featurecollection(i)
+    for geojson_element in [
+        fc_in,
+        fc_in["features"][0],
+        fc_in["features"][0]["geometry"],
+    ]:
+        fc_out = geometry_utils.any_geojson_to_featurecollection(geojson_element)
         assert fc_out["type"] == "FeatureCollection"
 
 
-def test_input_to_featurecollection_invalid_input_type():
-    for x in [[], set(), TypeError]:  # random other objects
-        with pytest.raises(ValueError):
-            geometry_utils.input_to_featurecollection(x)
-
-
-def test_input_to_featurecollection_invalid_geojson_type():
+def test_any_geojson_to_featurecollection_invalid_geojson_type():
     with pytest.raises(ValueError):
-        geometry_utils.input_to_featurecollection({"type": "InvalidGeoJSONType"})
+        geometry_utils.any_geojson_to_featurecollection({"type": "InvalidGeoJSONType"})
 
 
 def test_prepare_geometries_for_checks():

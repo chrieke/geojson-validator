@@ -3,12 +3,18 @@ import sys
 import copy
 from collections import Counter
 from pathlib import Path
+import json
 
+import jsonschema
 from loguru import logger
 from shapely.geometry import shape
 
 from . import checks_invalid, checks_problematic, fixes_invalid
-from .geometry_utils import input_to_featurecollection, prepare_geometries_for_checks
+from .geometry_utils import (
+    input_to_geojson,
+    any_geojson_to_featurecollection,
+    prepare_geometries_for_checks,
+)
 
 
 logger.remove()
@@ -197,7 +203,10 @@ def validate(
     check_criteria(criteria_invalid, criteria_type="invalid")
     check_criteria(criteria_problematic, criteria_type="problematic")
 
-    fc = input_to_featurecollection(geojson_input)
+    geojson_input = input_to_geojson(geojson_input)
+    # TODO: what happens
+    validate_schema(geojson_input)
+    fc = any_geojson_to_featurecollection(geojson_input)
 
     geometries = [feature["geometry"] for feature in fc["features"]]
     # TODO: Could extract geometries here and use as input as before.
@@ -246,7 +255,10 @@ def fix(geojson_input):
     results = validate(
         geojson_input, criteria_invalid=criteria_to_fix, criteria_problematic=None
     )
-    fc = input_to_featurecollection(geojson_input)
+    # TODO: Reptition from validate, same task twice. Output from validation? even validate schema here?
+    geojson_input = input_to_geojson(geojson_input)
+    validate_schema(geojson_input)
+    fc = any_geojson_to_featurecollection(geojson_input)
 
     # Apply results and fix.
     fixed_fc = process_fix(

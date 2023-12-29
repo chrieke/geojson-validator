@@ -27,8 +27,8 @@ def read_geojson_file_or_url(fp_or_url: Union[str, Path]):
             return response.json()
 
 
-def input_to_featurecollection(geojson_input: Union[str, Path, dict, Any]) -> dict:
-    """Take the input which can be various types and reads/transforms it to a FeatureCollection"""
+def input_to_geojson(geojson_input: Union[str, Path, dict, Any]) -> dict:
+    """Take the input which can be various types and reads/transforms it to Geojson"""
     if isinstance(geojson_input, (str, Path)):
         geojson_input = read_geojson_file_or_url(geojson_input)
     elif hasattr(
@@ -40,7 +40,13 @@ def input_to_featurecollection(geojson_input: Union[str, Path, dict, Any]) -> di
             f"Unsupported input {type(geojson_input)}. Input must be a GeoJSON, filepath/url to GeoJSON, "
             f"shapely geometry or any object with a __geo_interface__"
         )
+    return geojson_input
 
+
+def any_geojson_to_featurecollection(
+    geojson_input: Union[str, Path, dict, Any]
+) -> dict:
+    """Take a geojson of various types (Feature, Geometry, Fc) and transform it to a featurecollection"""
     supported_geojson_types = [
         "Point",
         "MultiPoint",
@@ -49,7 +55,6 @@ def input_to_featurecollection(geojson_input: Union[str, Path, dict, Any]) -> di
         "Polygon",
         "MultiPolygon",
     ]
-    # TODO: Validate all required geojson fields
     type_ = geojson_input.get("type", None)  # FeatureCollection, Feature, Geometry
     if type_ is None:
         raise ValueError("No 'type' field found in GeoJSON")
