@@ -1,7 +1,7 @@
 from shapely.geometry import shape
 
 from .context import fixes_invalid, checks_invalid
-from .fixtures_utils import read_geojson
+from .fixtures import read_geojson
 
 
 def test_fix_unclosed():

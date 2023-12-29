@@ -1,7 +1,7 @@
 from shapely.geometry import shape
 
 from .context import checks_problematic
-from .fixtures_utils import read_geojson
+from .fixtures import read_geojson
 
 
 def test_check_holes():

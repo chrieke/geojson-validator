@@ -12,5 +12,4 @@ from geojson_validator import (
     checks_invalid,
     checks_problematic,
     fixes_invalid,
-    fixes_problematic,
 )

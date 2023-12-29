@@ -4,7 +4,7 @@ import pytest
 from shapely.geometry import shape, Point, LineString
 
 from .context import geometry_utils
-from .fixtures_utils import read_geojson
+from .fixtures import read_geojson
 
 
 def test_read_geojson_file_or_url_filepath():

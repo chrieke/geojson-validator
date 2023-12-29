@@ -2,7 +2,7 @@ from shapely.geometry import shape
 import pytest
 
 from .context import checks_invalid
-from .fixtures_utils import read_geojson
+from .fixtures import read_geojson
 
 
 @pytest.fixture(scope="session")
