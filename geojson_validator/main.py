@@ -6,8 +6,7 @@ from pathlib import Path
 from loguru import logger
 from shapely.geometry import shape
 
-from . import checks_invalid
-from . import checks_problematic
+from . import checks_invalid, checks_problematic, fixes_invalid
 from .geometry_utils import input_to_featurecollection
 
 
@@ -82,12 +81,13 @@ VALIDATION_CRITERIA = {
 
 
 def check_criteria(selected_criteria, criteria_type):
-    for criterium in selected_criteria:
-        if criterium not in VALIDATION_CRITERIA[criteria_type]:
-            raise ValueError(
-                f"The selected criterium {criterium} is not a valid argument for {criteria_type}"
-            )
-    logger.info(f"Validation criteria '{criteria_type}': {selected_criteria}")
+    if selected_criteria:
+        for criterium in selected_criteria:
+            if criterium not in VALIDATION_CRITERIA[criteria_type]:
+                raise ValueError(
+                    f"The selected criterium {criterium} is not a valid argument for {criteria_type}"
+                )
+        logger.info(f"Validation criteria '{criteria_type}': {selected_criteria}")
 
 
 def prepare_geometries_for_checks(geometry):
@@ -165,14 +165,18 @@ def process_validation(geometries, criteria_invalid, criteria_problematic):
 
         # Handle Single-Geometries
         geometry, shapely_geom = prepare_geometries_for_checks(geometry)
-        for criterium in criteria_invalid:
-            if apply_check(criterium, geometry, shapely_geom, geometry_type, "invalid"):
-                results_invalid.setdefault(criterium, []).append(i)
-        for criterium in criteria_problematic:
-            if apply_check(
-                criterium, geometry, shapely_geom, geometry_type, "problematic"
-            ):
-                results_problematic.setdefault(criterium, []).append(i)
+        if criteria_invalid:
+            for criterium in criteria_invalid:
+                if apply_check(
+                    criterium, geometry, shapely_geom, geometry_type, "invalid"
+                ):
+                    results_invalid.setdefault(criterium, []).append(i)
+        if criteria_problematic:
+            for criterium in criteria_problematic:
+                if apply_check(
+                    criterium, geometry, shapely_geom, geometry_type, "problematic"
+                ):
+                    results_problematic.setdefault(criterium, []).append(i)
 
     # TODO: Results format better: feature1: flaws, feature4: flaws, feature9: flaws?
     results = {
@@ -187,8 +191,8 @@ def process_validation(geometries, criteria_invalid, criteria_problematic):
 
 def validate(
     geojson_input: Union[dict, str, Path],
-    criteria_invalid: Union[List[str], None] = VALIDATION_CRITERIA["invalid"],
-    criteria_problematic: Union[List[str], None] = VALIDATION_CRITERIA["problematic"],
+    criteria_invalid: List[str] = VALIDATION_CRITERIA["invalid"],
+    criteria_problematic: List[str] = VALIDATION_CRITERIA["problematic"],
 ) -> Dict:
     """
     Validate that a GeoJSON conforms to the geojson specs.
@@ -201,6 +205,10 @@ def validate(
     Returns:
         The validated & fixed GeoJSON feature collection.
     """
+    if not criteria_invalid and not criteria_problematic:
+        raise ValueError(
+            "Select at least one criteria in `criteria_invalid` or `criteria_problematic`"
+        )
     check_criteria(criteria_invalid, criteria_type="invalid")
     check_criteria(criteria_problematic, criteria_type="problematic")
 
@@ -210,7 +218,7 @@ def validate(
     # TODO: Could extract geometries here and use as input as before.
     results = process_validation(geometries, criteria_invalid, criteria_problematic)
 
-    if "crs_defined" in criteria_invalid and "crs" in fc:
+    if criteria_invalid and "crs_defined" in criteria_invalid and "crs" in fc:
         results["invalid"]["crs_defined"] = True
 
     logger.info(f"Validation results: {results}")

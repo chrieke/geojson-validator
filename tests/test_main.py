@@ -76,6 +76,26 @@ def test_validate_invalid():
     assert "duplicate_nodes" in result["invalid"]
 
 
+def test_validate_invalid_no_checks():
+    fc = read_geojson(
+        "./tests/examples_geojson/invalid/polygon_has_duplicate_nodes.geojson"
+    )
+    with pytest.raises(ValueError):
+        main.validate(fc, criteria_invalid=None, criteria_problematic=[])
+
+
+def test_validate_invalid_no_invalid_or_problematic_checks():
+    fc = read_geojson(
+        "./tests/examples_geojson/invalid/polygon_has_duplicate_nodes.geojson"
+    )
+    result = main.validate(fc, criteria_problematic=[])
+    assert "duplicate_nodes" in result["invalid"]
+
+    result = main.validate(fc, criteria_invalid=[])
+    assert not result["invalid"]
+    assert not result["problematic"]
+
+
 def test_validate_valid():
     fp = "./tests/examples_geojson/valid/simple_polygon.geojson"
     fc = read_geojson(fp)
@@ -94,18 +114,17 @@ def test_validate_url():
 
 geojson_examples = [
     ("Point", "./tests/examples_geojson/valid/simple_point.geojson"),
-    # ("MultiPoint", "./tests/examples_geojson/valid/simple_multipoint.geojson"),
+    ("MultiPoint", "./tests/examples_geojson/valid/simple_multipoint.geojson"),
     ("LineString", "./tests/examples_geojson/valid/simple_linestring.geojson"),
     (
         "MultiLineString",
         "./tests/examples_geojson/valid/simple_multilinestring.geojson",
     ),
-    # ("Polygon", "./tests/examples_geojson/valid/simple_polygon.geojson"),
-    # ("MultiPolygon", "./tests/examples_geojson/valid/simple_multipolygon.geojson"),
+    ("Polygon", "./tests/examples_geojson/valid/simple_polygon.geojson"),
+    ("MultiPolygon", "./tests/examples_geojson/valid/simple_multipolygon.geojson"),
 ]
 
 
-# TODO: Linestring
 @pytest.mark.parametrize("geometry_type, file_path", geojson_examples)
 def test_process_validation_valid_all_geometry_types(geometry_type, file_path):
     fc = read_geojson(
@@ -117,7 +136,6 @@ def test_process_validation_valid_all_geometry_types(geometry_type, file_path):
     assert not results["invalid"]
     assert not results["problematic"]
     assert results["count_geometry_types"] == {geometry_type: 1}
-    # TODO: Check that not skipped
     assert not results["skipped_validation"]
 
 
