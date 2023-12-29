@@ -78,17 +78,20 @@ VALIDATION_CRITERIA = {
 }
 
 
-def validate_geojson_schema(geojson_data):
+def validate_geojson_schema_conformity(geojson_data):
+    """Returns True if the input geojson conforms to the geojson json schema.
+    This only checks if the keys are written correctly, not if they exist?
+    # TODO: Check and improve
+    """
     with open("geojson_validator/data/geojson-schema.json", "r") as f:
         geojson_schema = json.load(f)  # "http://json.schemastore.org/geojson"
 
     # Validate the GeoJSON
     try:
         jsonschema.validate(instance=geojson_data, schema=geojson_schema)
-        print("GeoJSON is valid!")
-    except jsonschema.exceptions.ValidationError as ve:
-        print("GeoJSON is not valid!")
-        print(ve)
+        return True, None
+    except jsonschema.exceptions.ValidationError as e:
+        return False, e
 
 
 def check_criteria(selected_criteria, criteria_type):
