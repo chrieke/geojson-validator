@@ -3,9 +3,7 @@ import sys
 import copy
 from collections import Counter
 from pathlib import Path
-import json
 
-import jsonschema
 from loguru import logger
 from shapely.geometry import shape
 
@@ -15,86 +13,16 @@ from .geometry_utils import (
     any_geojson_to_featurecollection,
     prepare_geometries_for_checks,
 )
-
+from .validation import (
+    VALIDATION_CRITERIA,
+    ALL_ACCEPTED_GEOMETRY_TYPES,
+    check_criteria,
+    validate_geojson_schema,
+)
 
 logger.remove()
 logger_format = "{time:YYYY-MM-DD_HH:mm:ss.SSS} | {message}"
 logger.add(sink=sys.stderr, format=logger_format, level="INFO")
-
-
-ALL_ACCEPTED_GEOMETRY_TYPES = POI, MPOI, LS, MLS, POL, MPOL = [
-    "Point",
-    "MultiPoint",
-    "LineString",
-    "MultiLineString",
-    "Polygon",
-    "MultiPolygon",
-]
-
-VALIDATION_CRITERIA = {
-    "invalid": {
-        "unclosed": {"relevant": [POL, MPOL], "input": "json_geometry"},
-        "duplicate_nodes": {
-            "relevant": [LS, MLS, POL, MPOL],
-            "input": "json_geometry",
-        },
-        "less_three_unique_nodes": {
-            "relevant": [POL, MPOL],
-            "input": "json_geometry",
-        },
-        "exterior_not_ccw": {
-            "relevant": [POL, MPOL],
-            "input": "shapely_geom",
-        },
-        "interior_not_cw": {
-            "relevant": [POL, MPOL],
-            "input": "shapely_geom",
-        },
-        "inner_and_exterior_ring_intersect": {
-            "relevant": [POL, MPOL],
-            "input": "shapely_geom",
-        },
-        "outside_lat_lon_boundaries": {
-            "relevant": ALL_ACCEPTED_GEOMETRY_TYPES,
-            "input": "json_geometry",
-        },
-        "crs_defined": {
-            "relevant": ["FeatureCollection"],
-            "input": "json_geometry",
-        },
-        # "zero-length": {"relevant": ["LineString"], "input": "json_geometry"},
-    },
-    "problematic": {
-        "holes": {"relevant": [POL, MPOL], "input": "shapely_geom"},
-        "self_intersection": {
-            "relevant": [POL, MPOL],
-            "input": "shapely_geom",
-        },
-        "excessive_coordinate_precision": {
-            "relevant": ALL_ACCEPTED_GEOMETRY_TYPES,
-            "input": "json_geometry",
-        },
-        "more_than_2d_coordinates": {
-            "relevant": ALL_ACCEPTED_GEOMETRY_TYPES,
-            "input": "json_geometry",
-        },
-        "crosses_antimeridian": {
-            "relevant": [LS, MLS, POL, MPOL],
-            "input": "json_geometry",
-        },
-        # "wrong_bbox_order: {}"
-    },
-}
-
-
-def check_criteria(selected_criteria, criteria_type):
-    if selected_criteria:
-        for criterium in selected_criteria:
-            if criterium not in VALIDATION_CRITERIA[criteria_type]:
-                raise ValueError(
-                    f"The selected criterium {criterium} is not a valid argument for {criteria_type}"
-                )
-        logger.info(f"Validation criteria '{criteria_type}': {selected_criteria}")
 
 
 def apply_check(
@@ -205,7 +133,7 @@ def validate(
 
     geojson_input = input_to_geojson(geojson_input)
     # TODO: what happens
-    validate_schema(geojson_input)
+    validate_geojson_schema(geojson_input)
     fc = any_geojson_to_featurecollection(geojson_input)
 
     geometries = [feature["geometry"] for feature in fc["features"]]
@@ -257,7 +185,7 @@ def fix(geojson_input):
     )
     # TODO: Reptition from validate, same task twice. Output from validation? even validate schema here?
     geojson_input = input_to_geojson(geojson_input)
-    validate_schema(geojson_input)
+    validate_geojson_schema(geojson_input)
     fc = any_geojson_to_featurecollection(geojson_input)
 
     # Apply results and fix.
@@ -265,16 +193,3 @@ def fix(geojson_input):
         fc, results, criteria_to_fix
     )  # TODO: check if the original fc was edited
     return fixed_fc
-
-
-def validate_schema(geojson_data):
-    with open("geojson_validator/geojson-schema.json", "r") as f:
-        geojson_schema = json.load(f)  # "http://json.schemastore.org/geojson"
-
-    # Validate the GeoJSON
-    try:
-        jsonschema.validate(instance=geojson_data, schema=geojson_schema)
-        print("GeoJSON is valid!")
-    except jsonschema.exceptions.ValidationError as ve:
-        print("GeoJSON is not valid!")
-        print(ve)
