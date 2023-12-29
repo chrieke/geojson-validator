@@ -5,6 +5,7 @@ from shapely.geometry import Polygon, LinearRing
 # Possible but problematic: check_outside_lat_lon_boundaries, check_inner_and_exterior_ring_intersect
 def fix_unclosed(geom: Polygon):
     """Close the geometry by adding the first coordinate at the end if not closed."""
+    # TODO Shapely closes anyway
     coords = list(geom.exterior.coords)
     if coords[0] != coords[-1]:
         coords.append(coords[0])

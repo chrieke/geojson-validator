@@ -1,6 +1,6 @@
 <img src="./preview-images/header_img.jpeg">
 
-**Validate and automatically fixes invalid GeoJSON. 🌎 Webapp and 🐍 Python package.** 
+**Validate and automatically fix invalid GeoJSON. 🌎 Webapp and 🐍 Python package.** 
 
 The only tool that addresses all issues:
 - **Invalid** GeoJSON according to specification: e.g. duplicate nodes, wrong winding order, unclosed 
@@ -33,21 +33,33 @@ geojson_input = {'type': 'FeatureCollection',
 
 geojson_validator.validate(geojson_input)
 ```
-The result gives the reason and positional index of the invalid geometry.
-```json
+The result gives the reason and positional indices of the invalid geometries e.g. `[0, 3]`. 
+It also shows which of the sub-geometries within a MultiType geometry make it invalid e.g. `{2:[0, 5]}`.
+
+```
 {"invalid": 
-      {"duplicate_nodes": [2]},
- "problematic": 
-      {"self_intersection": [0, 2], 
-        "crosses_antimeridian": [1]},
+      {"duplicate_nodes": [0, 3],
+       "exterior_not_ccw":  [{2:[0, 5]}],  
+ "problematic":
+      {"crosses_antimeridian": [1]},
  "count_geometry_types": 
-      {"Polygon": 2, 
-        "MultiPolygon": 1}}
+      {"Polygon": 3,
+       "MultiPolygon": 1}}
 ```
 
 ### Fix GeoJSON
 
 **Coming Soon!**
+
+By default the `fix` function fixes 6 categories:
+
+```python
+geojson_validator.fix(geojson_input)
+```
+
+The other criteria can not be be fixed in a similarly programmatic way, they require user input or case-by-case handling.
+
+...Helpers for that coming soon!
 
 <br>
 
@@ -78,6 +90,7 @@ geojson_validator.validate(geojson, criteria_invalid, criteria_problematic)
 - Multihtreading?
 - Add tests for invalid/prob for each geometry type
 - add bbox option?
+- Add geojson library simple validity checks https://github.com/jazzband/geojson/blob/c470a1f867579a39d25db2954aa8e909e79f3848/geojson/geometry.py#L79
 
 No:
 - Filsupport wkt etc. that would require more dependencies.

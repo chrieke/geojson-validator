@@ -1,7 +1,7 @@
-from typing import List, Union, Tuple
-import json
+from typing import Union, Any
 from urllib.parse import urlparse
 from pathlib import Path
+import json
 
 import requests
 
@@ -26,21 +26,15 @@ def read_geojson_file_or_url(fp_or_url: Union[str, Path]):
             return response.json()
 
 
-def get_geometries(geojson_input: dict) -> Tuple[str, List[dict]]:
-    """
-    Extracts the geometries from the GeoJSON.
-
-    Args:
-        geojson_input: Input GeoJSON FeatureCollection, Feature or Geometry.
-
-    Returns:
-        Tuple: The geometry type of the initial input, list of GeoJSON geometries from the input
-    """
+def input_to_featurecollection(geojson_input: Union[str, Path, dict, Any]) -> dict:
+    """Take the input which can be various types and reads/transforms it to a FeatureCollection"""
     if isinstance(geojson_input, (str, Path)):
         geojson_input = read_geojson_file_or_url(geojson_input)
-    elif hasattr(geojson_input, "__geo_interface__"):
+    elif hasattr(
+        geojson_input, "__geo_interface__"
+    ):  # e.g. shapely geometry object, geojson library objects
         geojson_input = geojson_input.__geo_interface__
-    elif not isinstance(geojson_input, dict) or "type" not in geojson_input:
+    elif not isinstance(geojson_input, (dict)) or "type" not in geojson_input:
         raise ValueError(
             f"Unsupported input {type(geojson_input)}. Input must be a GeoJSON, filepath/url to GeoJSON, "
             f"shapely geometry or any object with a __geo_interface__"
@@ -59,14 +53,17 @@ def get_geometries(geojson_input: dict) -> Tuple[str, List[dict]]:
     if type_ is None:
         raise ValueError("No 'type' field found in GeoJSON")
     if type_ == "FeatureCollection":
-        geometries = [feature["geometry"] for feature in geojson_input["features"]]
+        fc = geojson_input
     elif type_ == "Feature":
-        geometries = [geojson_input["geometry"]]
+        fc = {"type": "FeatureCollection", "features": [geojson_input]}
     elif type_ in supported_geojson_types:
-        geometries = [geojson_input]
+        fc = {
+            "type": "FeatureCollection",
+            "features": [{"type": "Feature", "geometry": geojson_input}],
+        }
     else:
         raise ValueError(
             f"Unsupported GeoJSON type {type_}. Supported are {supported_geojson_types}"
         )
 
-    return type_, geometries
+    return fc

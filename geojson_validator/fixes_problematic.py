@@ -1,3 +1,6 @@
+# problematic: fix_holes, self_interactions, check_more_than_2d_coordinates, check_crosses_antimeridian
+
+
 # def fix_holes(df):
 #     def close_holes(poly: Polygon) -> Polygon:
 #         """
@@ -38,3 +41,7 @@
 # ):
 #     vector.df.geometry = vector.df.geometry.simplify(0)
 #     st.info("Removing duplicated vertices ...")
+
+
+def fix_excessive_coordinate_precision():
+    pass

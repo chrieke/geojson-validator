@@ -8,7 +8,7 @@ from shapely.geometry import shape
 
 from . import checks_invalid
 from . import checks_problematic
-from .geometry_utils import get_geometries
+from .geometry_utils import input_to_featurecollection
 
 
 logger.remove()
@@ -138,7 +138,10 @@ def process_validation(geometries, criteria_invalid, criteria_problematic):
             skipped_validation.append(i)  # TODO: Improve skipped_validation result
             continue
 
-        # Handle Multi-Geometries
+        # Handle Multi-Geometries:
+        # Explode the single geometries in the multi-geometry to a featurecollection, run a seperate validation.
+        # Output results as {3: [1,2]} (fourth geometry, the multigeometry is invalid, because the second and third
+        # subgeometries in it are invalid.
         if "Multi" in geometry_type:
             single_type = geometry_type.split("Multi")[1]
             single_geometries = [
@@ -150,9 +153,14 @@ def process_validation(geometries, criteria_invalid, criteria_problematic):
             # Take all invalid criteria from the e.g. Polygons inside the Multipolygon and indicate them
             # as the positional index of the MultiPolygon.
             for criterium in results_mp["invalid"]:
-                results_invalid.setdefault(criterium, []).append(i)
+                results_invalid.setdefault(criterium, []).append(
+                    {i: results_mp["invalid"][criterium]}
+                )
             for criterium in results_mp["problematic"]:
-                results_problematic.setdefault(criterium, []).append(i)
+                results_problematic.setdefault(criterium, []).append(
+                    {i: results_mp["problematic"][criterium]}
+                )
+                # results_problematic.setdefault(criterium, []).append(i)  # TODO: Really better?
             continue
 
         # Handle Single-Geometries
@@ -166,6 +174,7 @@ def process_validation(geometries, criteria_invalid, criteria_problematic):
             ):
                 results_problematic.setdefault(criterium, []).append(i)
 
+    # TODO: Results format better: feature1: flaws, feature4: flaws, feature9: flaws?
     results = {
         "invalid": results_invalid,
         "problematic": results_problematic,
@@ -195,22 +204,32 @@ def validate(
     check_criteria(criteria_invalid, criteria_type="invalid")
     check_criteria(criteria_problematic, criteria_type="problematic")
 
-    type_, geometries = get_geometries(geojson_input)
+    fc = input_to_featurecollection(geojson_input)
 
+    geometries = [feature["geometry"] for feature in fc["features"]]
+    # TODO: Could extract geometries here and use as input as before.
     results = process_validation(geometries, criteria_invalid, criteria_problematic)
 
-    if "crs_defined" in criteria_invalid:
-        if type_ == "FeatureCollection":
-            if checks_invalid.check_crs_defined(geojson_input):
-                results["invalid"]["crs_defined"] = True
+    if "crs_defined" in criteria_invalid and "crs" in fc:
+        results["invalid"]["crs_defined"] = True
 
     logger.info(f"Validation results: {results}")
     return results
 
 
-# def fix(
-#     geojson,
-#     criteria_invalid: Union[List[str], None] = VALIDATION_CRITERIA["invalid"],
-#     criteria_problematic: Union[List[str], None] = VALIDATION_CRITERIA["problematic"],
-# ):
+# def process_fix(a, b):
 #     pass
+
+
+# def fix(geojson_input):
+#     _, geometries = input_to_featurecollection(geojson_input)
+#
+#     criteria_to_fix = [
+#         "unclosed",
+#         "duplicate_nodes",
+#         "exterior_not_ccw",
+#         "interior_not_cc",
+#     ]
+#
+#     fixed_fc = process_fix(geometries, criteria_to_fix)
+#     return fixed_fc

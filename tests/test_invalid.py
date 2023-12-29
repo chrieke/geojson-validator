@@ -70,13 +70,6 @@ def test_check_inner_and_exterior_ring_intersect(valid_geometry):
     )
 
 
-def test_check_defined_crs(valid_geometry):
-    geojson_fp = "./tests/examples_geojson/invalid/crs_defined.geojson"
-    gj = read_geojson(geojson_fp)
-    assert checks_invalid.check_crs_defined(gj)
-    assert not checks_invalid.check_crs_defined(valid_geometry)
-
-
 def test_check_outside_lat_lon_boundaries(valid_geometry):
     geometry = read_geojson(
         "./tests/examples_geojson/invalid/outside_lat_lon_boundaries.geojson",

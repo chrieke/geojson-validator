@@ -46,11 +46,16 @@ def test_process_validation_error_no_type():
 
 
 @patch("geojson_validator.main.check_criteria")
-@patch("geojson_validator.main.get_geometries")
+@patch("geojson_validator.main.input_to_featurecollection")
 @patch("geojson_validator.main.process_validation")
-def test_validate(mock_process_validation, mock_get_geometries, mock_check_criteria):
+def test_validate(
+    mock_process_validation, mock_input_to_featurecollection, mock_check_criteria
+):
     """Ensure the validate function integrates them correctly."""
-    mock_get_geometries.return_value = ("FeatureCollection", [])
+    mock_input_to_featurecollection.return_value = {
+        "type": "FeatureCollection",
+        "features": [],
+    }
     mock_process_validation.return_value = {"invalid": {}, "problematic": {}}
 
     geojson_input = {}  # Mock input
@@ -59,7 +64,7 @@ def test_validate(mock_process_validation, mock_get_geometries, mock_check_crite
     assert "invalid" in results
     assert "problematic" in results
     mock_check_criteria.assert_called()
-    mock_get_geometries.assert_called_with(geojson_input)
+    mock_input_to_featurecollection.assert_called_with(geojson_input)
     mock_process_validation.assert_called()
 
 
@@ -124,12 +129,13 @@ def test_process_validation_multiple_types():
             "type": "MultiPolygon",
             "coordinates": [
                 [[[0, 0], [2, 2], [2, 0], [0, 0]]],
-                [[[0, 0], [1, 1], [1, 0]]],
+                [[[0, 0], [2, 2], [2, 0], [0, 1]]],  # invalid
+                [[[0, 0], [1, 1], [1, 0]]],  # invalid
             ],
         },
         {"type": "Polygon", "coordinates": [[[0, 0], [1, 1], [1, 0]]]},
     ]
     invalid_criteria = ["unclosed"]
     results = main.process_validation(geometries, invalid_criteria, [])
-    assert results["invalid"]["unclosed"] == [1, 2]
+    assert results["invalid"]["unclosed"] == [{1: [1, 2]}, 2]
     assert results["count_geometry_types"] == {"Polygon": 2, "MultiPolygon": 1}
