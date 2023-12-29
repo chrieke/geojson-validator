@@ -1,5 +1,6 @@
 from typing import Dict, Union, List
 import sys
+import copy
 from collections import Counter
 from pathlib import Path
 
@@ -225,19 +226,46 @@ def validate(
     return results
 
 
-# def process_fix(a, b):
-#     pass
+def apply_fix(criterium, shapely_geom):
+    """Applies the correct check for the criteria"""
+    fix_func = getattr(fixes_invalid, f"fix_{criterium}")
+    return fix_func(shapely_geom)
 
 
-# def fix(geojson_input):
-#     _, geometries = input_to_featurecollection(geojson_input)
-#
-#     criteria_to_fix = [
-#         "unclosed",
-#         "duplicate_nodes",
-#         "exterior_not_ccw",
-#         "interior_not_cc",
-#     ]
-#
-#     fixed_fc = process_fix(geometries, criteria_to_fix)
-#     return fixed_fc
+def process_fix(fc, results, criteria_to_fix):
+    fc_copy = copy.deepcopy(fc)
+    # Fix geometries
+    for criterium in criteria_to_fix:
+        if (
+            criterium in results["invalid"]
+        ):  # TODO: Change if problematic fixes added here
+            indices = results["invalid"][criterium]
+            for idx in indices:
+                if isinstance(idx, int):
+                    geom = shape(fc_copy["features"][idx]["geometry"])
+                    geom_fixed = apply_fix(criterium, geom)
+                elif isinstance(idx, dict):
+                    pass  # multitype result
+                fc_copy["features"][idx][
+                    "geometry"
+                ] = geom_fixed.__geo_interface__  # TODO: List instead of tuples
+    return fc_copy
+
+
+def fix(geojson_input):
+    criteria_to_fix = [
+        "unclosed",
+        "duplicate_nodes",
+        "exterior_not_ccw",
+        "interior_not_cw",
+    ]
+    results = validate(
+        geojson_input, criteria_invalid=criteria_to_fix, criteria_problematic=None
+    )
+    fc = input_to_featurecollection(geojson_input)
+
+    # Apply results and fix.
+    fixed_fc = process_fix(
+        fc, results, criteria_to_fix
+    )  # TODO: check if the original fc was edited
+    return fixed_fc

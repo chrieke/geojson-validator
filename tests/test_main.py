@@ -157,3 +157,19 @@ def test_process_validation_multiple_types():
     results = main.process_validation(geometries, invalid_criteria, [])
     assert results["invalid"]["unclosed"] == [{1: [1, 2]}, 2]
     assert results["count_geometry_types"] == {"Polygon": 2, "MultiPolygon": 1}
+
+
+def test_fix_valid():
+    fp = "./tests/examples_geojson/valid/simple_polygon.geojson"
+    fc = read_geojson(fp)
+    fixed_fc = main.fix(fc)
+    assert fixed_fc["type"] == "FeatureCollection"
+    assert fc == fixed_fc
+
+
+def test_fix_invvalid():
+    fp = "./tests/examples_geojson/invalid/polygon_has_duplicate_nodes.geojson"
+    fc = read_geojson(fp)
+    fixed_fc = main.fix(fc)
+    assert fixed_fc["type"] == "FeatureCollection"
+    assert fc != fixed_fc
