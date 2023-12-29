@@ -265,3 +265,16 @@ def fix(geojson_input):
         fc, results, criteria_to_fix
     )  # TODO: check if the original fc was edited
     return fixed_fc
+
+
+def validate_schema(geojson_data):
+    with open("geojson_validator/geojson-schema.json", "r") as f:
+        geojson_schema = json.load(f)  # "http://json.schemastore.org/geojson"
+
+    # Validate the GeoJSON
+    try:
+        jsonschema.validate(instance=geojson_data, schema=geojson_schema)
+        print("GeoJSON is valid!")
+    except jsonschema.exceptions.ValidationError as ve:
+        print("GeoJSON is not valid!")
+        print(ve)
