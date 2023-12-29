@@ -8,7 +8,7 @@ from loguru import logger
 from shapely.geometry import shape
 
 from . import checks_invalid, checks_problematic, fixes_invalid
-from .geometry_utils import input_to_featurecollection
+from .geometry_utils import input_to_featurecollection, prepare_geometries_for_checks
 
 
 logger.remove()
@@ -89,22 +89,6 @@ def check_criteria(selected_criteria, criteria_type):
                     f"The selected criterium {criterium} is not a valid argument for {criteria_type}"
                 )
         logger.info(f"Validation criteria '{criteria_type}': {selected_criteria}")
-
-
-def prepare_geometries_for_checks(geometry):
-    """Prepares the Geometries for the validation checks"""
-    # Some criteria require the original json geometry dict as shapely etc. autofixes (e.g. closes) geometries.
-    # Initiating the shapely type in each check function specifically is time intensive.
-    shapely_geom = shape(geometry)
-
-    # To avoid adjusting the checks code for each geometry type, they are brought to the same
-    # list depth (not ideal but okay).
-    geometry_type = geometry.get("type", None)
-    if geometry_type == "Point":
-        geometry["coordinates"] = [[geometry["coordinates"]]]
-    if geometry_type == "LineString":
-        geometry["coordinates"] = [geometry["coordinates"]]
-    return geometry, shapely_geom
 
 
 def apply_check(
@@ -238,7 +222,7 @@ def process_fix(fc, results, criteria_to_fix):
     for criterium in criteria_to_fix:
         if (
             criterium in results["invalid"]
-        ):  # TODO: Change if problematic fixes added here
+        ):  # TODO: Change here if problematic fixes added here
             indices = results["invalid"][criterium]
             for idx in indices:
                 if isinstance(idx, int):

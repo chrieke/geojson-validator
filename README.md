@@ -22,7 +22,7 @@ pip install geojson-validator
 
 ### Validate GeoJSON
 
-Input can be any GeoJSON (dictionary, filepath, url), shapely geometry, or anything with a `__geo_interface__`.
+Input can be any type of GeoJSON, a filepath/url to a GeoJSON, or anything with a `__geo_interface__` (shapely, geopandas etc.).
 
 ```python
 import geojson_validator
@@ -64,8 +64,8 @@ The other criteria can not be be fixed in a similarly programmatic way, they req
 <br>
 
 #### Parameters
-It is possible to select only specific criteria for validation and fixing. For comprehensive criteria descriptions,
-see the [geojson-invalid-geometry](https://github.com/chrieke/geojson-invalid-geometry) list.
+It is possible to select only specific criteria for validation and fixing, by default all are checked. 
+For detailed descriptions of the criteria, see the [geojson-invalid-geometry](https://github.com/chrieke/geojson-invalid-geometry) list.
 
 ```python
 # Invalid according to the GeoJSON specification
@@ -84,6 +84,7 @@ geojson_validator.validate(geojson, criteria_invalid, criteria_problematic)
 <br>
 
 ## TODO:
+- Schema validation
 - Automatically fix geometries
 - Check for incorrect geometry data type in type vs. geometry pattern
 - bbox order and other criteria

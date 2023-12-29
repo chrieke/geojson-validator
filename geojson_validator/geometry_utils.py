@@ -3,6 +3,7 @@ from urllib.parse import urlparse
 from pathlib import Path
 import json
 
+from shapely.geometry import shape
 import requests
 
 
@@ -67,3 +68,19 @@ def input_to_featurecollection(geojson_input: Union[str, Path, dict, Any]) -> di
         )
 
     return fc
+
+
+def prepare_geometries_for_checks(geometry):
+    """Prepares the Geometries for the validation checks"""
+    # Some criteria require the original json geometry dict as shapely etc. autofixes (e.g. closes) geometries.
+    # Initiating the shapely type in each check function specifically is time intensive.
+    shapely_geom = shape(geometry)
+
+    # To avoid adjusting the checks code for each geometry type, they are brought to the same
+    # list depth (not ideal but okay).
+    geometry_type = geometry.get("type", None)
+    if geometry_type == "Point":
+        geometry["coordinates"] = [[geometry["coordinates"]]]
+    if geometry_type == "LineString":
+        geometry["coordinates"] = [geometry["coordinates"]]
+    return geometry, shapely_geom

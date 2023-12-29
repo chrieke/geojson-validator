@@ -1,1 +1,1 @@
-from .main import validate
+from .main import validate, fix
