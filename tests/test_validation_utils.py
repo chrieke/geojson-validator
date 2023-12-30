@@ -7,17 +7,18 @@ from .fixtures import read_geojson
 def test_validate_geojson_schema_conformity_valid():
     fp = "./tests/examples_geojson/valid/simple_polygon.geojson"
     fc = read_geojson(fp)
-    result, error = validation_utils.validate_geojson_schema_conformity(fc)
+    result, message = validation_utils.validate_schema(fc)
     assert result
-    assert not error
+    assert message is None
 
 
 def test_validate_geojson_schema_conformity_invalid():
-    fp = "./tests/examples_geojson/schema_invalid/fc_schema_invalid.geojson"
+    fp = "./tests/examples_geojson/valid/simple_polygon.geojson"
     fc = read_geojson(fp)
-    result, error = validation_utils.validate_geojson_schema_conformity(fc)
+    fc["features"][0]["type"] = "NotFeature"
+    result, message = validation_utils.validate_schema(fc)
     assert not result
-    assert error
+    assert message == "'NotFeature' is not one of ['Feature']"
 
 
 def test_check_criteria_invalid():

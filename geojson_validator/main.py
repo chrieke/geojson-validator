@@ -12,7 +12,7 @@ from .geometry_utils import (
 )
 from .validation_utils import (
     VALIDATION_CRITERIA,
-    validate_geojson_schema_conformity,
+    validate_schema,
     check_criteria,
     process_validation,
 )
@@ -48,7 +48,7 @@ def validate(
 
     geojson_input = input_to_geojson(geojson_input)
     # TODO: what happens
-    validate_geojson_schema_conformity(geojson_input)
+    validate_schema(geojson_input)
     fc = any_geojson_to_featurecollection(geojson_input)
 
     geometries = [feature["geometry"] for feature in fc["features"]]
@@ -74,7 +74,7 @@ def fix(geojson_input):
     )
     # TODO: Reptition from validate, same task twice. Output from validation? even validate schema here?
     geojson_input = input_to_geojson(geojson_input)
-    validate_geojson_schema_conformity(geojson_input)
+    validate_schema(geojson_input)
     fc = any_geojson_to_featurecollection(geojson_input)
 
     # Apply results and fix.
