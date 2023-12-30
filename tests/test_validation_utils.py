@@ -19,6 +19,7 @@ def test_validate_geojson_schema_conformity_invalid():
     result, message = validation_utils.validate_schema(fc)
     assert not result
     assert message == "'NotFeature' is not one of ['Feature']"
+    print(message)
 
 
 def test_check_criteria_invalid():

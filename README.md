@@ -2,10 +2,10 @@
 
 **Validate and automatically fix invalid GeoJSON. 🌎 Webapp and 🐍 Python package.** 
 
-The only tool that addresses all issues:
-- Detects **invalid** geometries (GeoJSON **specification**): e.g. duplicate nodes, wrong winding order, ... 
-- Detects **problematic** geometries (for some tools & APIs): e.g. self-intersection, crossing anti-meridian, ...
-- Compares against the GeoJSON **schema** - if all required json elements exist
+The only tool that reliably addresses all issues:
+- Detects **invalid** geometries (GeoJSON specification): *duplicate nodes, wrong winding order, ...* 
+- Detects **problematic** geometries (for some tools & APIs): *self-intersection, crossing anti-meridian, ...*
+- Checks against **GeoJSON schema** if all required JSON elements exist 
 - Automatically **fixes** invalid geometry issues 
 
 
@@ -22,9 +22,9 @@ The only tool that addresses all issues:
 pip install geojson-validator
 ```
 
-### Validate GeoJSON
+### Validate GeoJSON geometries
 
-Input can be any type of GeoJSON, a filepath/url to a GeoJSON, or anything with a `__geo_interface__` (shapely, geopandas etc.).
+Data input can be any type of GeoJSON, a filepath/url to a GeoJSON, or anything with a `__geo_interface__` (shapely, geopandas etc.).
 
 ```python
 import geojson_validator
@@ -48,18 +48,24 @@ It also shows which of the sub-geometries within a MultiType geometry make it in
       {"Polygon": 3,
        "MultiPolygon": 1}}
 ```
+### Validate GeoJSON schema
+```
+result, message = geojson_validator.validate(geojson_input)
+```
+The result is `False` if the input doesn't conform to the GeoJSON schema. In that case the `message` gives more 
+information, e.g. that a key like 'Feature' or some coordinates pairs are incomplete.
 
-### Fix GeoJSON
+### Fix GeoJSON geometries
 
-By default the `fix` function fixes 6 categories:
+Fixes 6 of the most common categories of invalid geometries. 
+All other criteria can not be fixed in a programmatic way, they require user decisions 
+(e.g. which part of a self-intersecting geometry should be dropped). More helper-functions for this coming soon!
 
 ```python
 geojson_validator.fix(geojson_input)
 ```
 
-The other criteria can not be fixed in a similarly programmatic way, they require user input or case-by-case handling.
-
-#### Parameters
+### Parameters
 It is possible to select only specific criteria for validation and fixing, by default all are checked. 
 For detailed descriptions of the criteria, see the [geojson-invalid-geometry](https://github.com/chrieke/geojson-invalid-geometry) list.
 
@@ -80,6 +86,7 @@ geojson_validator.validate(geojson, criteria_invalid, criteria_problematic)
 <br>
 
 ## TODO:
+- Rename to `validate_geometries` and `fix_geometries`?
 - Add Schema validation as seperate func?
 - bbox order and other criteria
 - Multihtreading?

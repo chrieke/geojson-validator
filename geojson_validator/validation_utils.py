@@ -87,6 +87,9 @@ def validate_schema(geojson_data) -> Tuple[bool, Union[str, None]]:
         jsonschema.validate(instance=geojson_data, schema=geojson_schema)
         return True, None
     except jsonschema.exceptions.ValidationError as e:
+        logger.info(
+            f"The input JSON does not conform to the GeoJSON schema - {e.message}"
+        )
         return False, e.message
 
 
