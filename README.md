@@ -15,16 +15,14 @@ The only tool that reliably addresses all issues:
 
 <br>
 
-## Python package
+### Quickstart
 
-#### Installation
 ```bash
+# Installation
 pip install geojson-validator
 ```
 
-### Validate GeoJSON geometries
-
-Data input can be any type of GeoJSON, a filepath/url to a GeoJSON, or anything with a `__geo_interface__` (shapely, geopandas etc.).
+See the three main functions below. Data input can be any type of GeoJSON, a filepath/url to a GeoJSON, or anything with a `__geo_interface__` (shapely, geopandas etc.).
 
 ```python
 import geojson_validator
@@ -33,7 +31,33 @@ geojson_input = {'type': 'FeatureCollection',
                  'features': [{'type': 'Feature', 'geometry':
                      {'type': 'Polygon', 'coordinates': [[[-59.758285, 8.367035], ...]]}}]}
 
+geojson_validator.validate_schema(geojson_input)
+
 geojson_validator.validate_geometries(geojson_input)
+
+geojson_validator.fix_geometries(geojson_input)
+```
+
+### 1. Validate GeoJSON schema 📚
+
+Checks the structure of the GeoJSON dictionary, if all required elements are there and formatted correctly.
+
+```python
+result, reason = geojson_validator.validate_schema(geojson_input)
+```
+
+The result is `(True, None)` if the input conforms to the GeoJSON schema, otherwise gives a reason why it is invalid
+e.g. `(False, "key 'Feature' is missing")`.
+
+
+### 2. Validate geometries 🟥
+
+Checks the GeoJSON geometry objects for inconsistencies and geometric issues. See 
+[geojson-invalid-geometry](https://github.com/chrieke/geojson-invalid-geometry) for a detailed description of all 
+invalid and problematic criteria.
+
+```python
+result = geojson_validator.validate_geometries(geojson_input)
 ```
 The result gives the reason and positional indices of the invalid geometries e.g. `[0, 3]`. 
 It also shows which of the sub-geometries within a MultiType geometry make it invalid e.g. `{2:[0, 5]}`.
@@ -49,27 +73,7 @@ It also shows which of the sub-geometries within a MultiType geometry make it in
        "MultiPolygon": 1}}
 ```
 
-### Validate GeoJSON schema
-```
-result, message = geojson_validator.validate(geojson_input)
-```
-The result is `False` if the input doesn't conform to the GeoJSON schema. In that case the `message` gives more 
-information, e.g. that a key like 'Feature' or some coordinates pairs are incomplete.
-
-### Fix GeoJSON geometries
-
-Fixes 6 of the most common categories of invalid geometries. 
-All other criteria can not be fixed in a programmatic way, they require user decisions 
-(e.g. which part of a self-intersecting geometry should be dropped). More helper-functions for this coming soon!
-
-```python
-geojson_validator.fix_geometries(geojson_input)
-```
-
-### Parameters
-It is possible to select only specific criteria for validation and fixing, by default all are checked. 
-For detailed descriptions of the criteria, see the [geojson-invalid-geometry](https://github.com/chrieke/geojson-invalid-geometry) list.
-
+You can choose to validate only selected criteria, by default all are checked.
 ```python
 # Invalid according to the GeoJSON specification
 criteria_invalid = ["unclosed", "duplicate_nodes", "less_three_unique_nodes", "exterior_not_ccw",
@@ -83,13 +87,26 @@ criteria_problematic = ["holes", "self_intersection", "excessive_coordinate_prec
 geojson_validator.validate_geometries(geojson, criteria_invalid, criteria_problematic)
 ```
 
+
+
+### 3. Fix GeoJSON geometries 🟩
+
+Fixes 6 of the most common categories of invalid geometries.
+All other criteria can not be fixed in a programmatic way, they require user decisions 
+(e.g. which part of a self-intersecting geometry should be dropped). More helper-functions for this coming soon!
+
+```python
+# Fixes "unclosed", "duplicate_nodes", "exterior_not_ccw", "interior_not_cw"
+fixed_fc = geojson_validator.fix_geometries(geojson_input)
+```
+
+The result is a FeatureCollection with the fixed geometries.
+
 <br>
 <br>
 
 ## TODO:
-- validate schema in validate automatically, and raise. in st app catch an display. and schema also seperate function.
-- Rename to `validate_geometries` and `fix_geometries`?
-- Add Schema validation as seperate func?
+- validate schema in validate_geometries automatically?, and raise. in st app catch an display. and schema also seperate function.
 - bbox order and other criteria
 - Multihtreading?
 - add bbox option?

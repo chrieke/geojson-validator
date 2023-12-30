@@ -23,7 +23,10 @@ logger.add(sink=sys.stderr, format=logger_format, level="INFO")
 
 
 def validate_schema(geojson_input) -> Tuple[bool, Union[str, None]]:
-    """Returns True if the input geojson conforms to the geojson json schema v7."""
+    """
+    Returns (True, None) if the input geojson conforms to the geojson json schema v7,
+    and (False, "reason") if not.
+    """
     geojson_data = input_to_geojson(geojson_input)
 
     with open("geojson_validator/data/geojson-schema.json", "r") as f:
@@ -62,8 +65,6 @@ def validate_geometries(
     check_criteria(criteria_problematic, criteria_type="problematic")
 
     geojson_input = input_to_geojson(geojson_input)
-    # TODO: what happens
-    validate_schema(geojson_input)
     fc = any_geojson_to_featurecollection(geojson_input)
 
     geometries = [feature["geometry"] for feature in fc["features"]]
