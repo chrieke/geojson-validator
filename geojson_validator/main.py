@@ -1,9 +1,9 @@
-from typing import Dict, Union, List
+from typing import Dict, Union, List, Tuple
 import sys
-
-
+import json
 from pathlib import Path
 
+import jsonschema
 from loguru import logger
 
 from .geometry_utils import (
@@ -12,7 +12,6 @@ from .geometry_utils import (
 )
 from .validation_utils import (
     VALIDATION_CRITERIA,
-    validate_schema,
     check_criteria,
     process_validation,
 )
@@ -23,7 +22,23 @@ logger_format = "{time:YYYY-MM-DD_HH:mm:ss.SSS} | {message}"
 logger.add(sink=sys.stderr, format=logger_format, level="INFO")
 
 
-def validate(
+def validate_schema(geojson_input) -> Tuple[bool, Union[str, None]]:
+    """Returns True if the input geojson conforms to the geojson json schema v7."""
+    geojson_data = input_to_geojson(geojson_input)
+
+    with open("geojson_validator/data/geojson-schema.json", "r") as f:
+        geojson_schema = json.load(f)
+    try:
+        jsonschema.validate(instance=geojson_data, schema=geojson_schema)
+        return True, None
+    except jsonschema.exceptions.ValidationError as e:
+        logger.info(
+            f"The input JSON does not conform to the GeoJSON schema - {e.message}"
+        )
+        return False, e.message
+
+
+def validate_geometries(
     geojson_input: Union[dict, str, Path],
     criteria_invalid: List[str] = VALIDATION_CRITERIA["invalid"],
     criteria_problematic: List[str] = VALIDATION_CRITERIA["problematic"],
@@ -62,14 +77,14 @@ def validate(
     return results
 
 
-def fix(geojson_input):
+def fix_geometries(geojson_input):
     criteria_to_fix = [
         "unclosed",
         "duplicate_nodes",
         "exterior_not_ccw",
         "interior_not_cw",
     ]
-    results = validate(
+    results = validate_geometries(
         geojson_input, criteria_invalid=criteria_to_fix, criteria_problematic=None
     )
     # TODO: Reptition from validate, same task twice. Output from validation? even validate schema here?

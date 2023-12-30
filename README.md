@@ -33,7 +33,7 @@ geojson_input = {'type': 'FeatureCollection',
                  'features': [{'type': 'Feature', 'geometry':
                      {'type': 'Polygon', 'coordinates': [[[-59.758285, 8.367035], ...]]}}]}
 
-geojson_validator.validate(geojson_input)
+geojson_validator.validate_geometries(geojson_input)
 ```
 The result gives the reason and positional indices of the invalid geometries e.g. `[0, 3]`. 
 It also shows which of the sub-geometries within a MultiType geometry make it invalid e.g. `{2:[0, 5]}`.
@@ -48,6 +48,7 @@ It also shows which of the sub-geometries within a MultiType geometry make it in
       {"Polygon": 3,
        "MultiPolygon": 1}}
 ```
+
 ### Validate GeoJSON schema
 ```
 result, message = geojson_validator.validate(geojson_input)
@@ -62,7 +63,7 @@ All other criteria can not be fixed in a programmatic way, they require user dec
 (e.g. which part of a self-intersecting geometry should be dropped). More helper-functions for this coming soon!
 
 ```python
-geojson_validator.fix(geojson_input)
+geojson_validator.fix_geometries(geojson_input)
 ```
 
 ### Parameters
@@ -71,21 +72,22 @@ For detailed descriptions of the criteria, see the [geojson-invalid-geometry](ht
 
 ```python
 # Invalid according to the GeoJSON specification
-criteria_invalid = ["unclosed", "duplicate_nodes", "less_three_unique_nodes", "exterior_not_ccw", 
-                    "interior_not_cw", "inner_and_exterior_ring_intersect", "crs_defined", 
+criteria_invalid = ["unclosed", "duplicate_nodes", "less_three_unique_nodes", "exterior_not_ccw",
+                    "interior_not_cw", "inner_and_exterior_ring_intersect", "crs_defined",
                     "outside_lat_lon_boundaries"]
 
 # Problematic with some tools & APIs
-criteria_problematic = ["holes", "self_intersection", "excessive_coordinate_precision", 
+criteria_problematic = ["holes", "self_intersection", "excessive_coordinate_precision",
                         "more_than_2d_coordinates", "crosses_antimeridian"]
 
-geojson_validator.validate(geojson, criteria_invalid, criteria_problematic)
+geojson_validator.validate_geometries(geojson, criteria_invalid, criteria_problematic)
 ```
 
 <br>
 <br>
 
 ## TODO:
+- validate schema in validate automatically, and raise. in st app catch an display. and schema also seperate function.
 - Rename to `validate_geometries` and `fix_geometries`?
 - Add Schema validation as seperate func?
 - bbox order and other criteria

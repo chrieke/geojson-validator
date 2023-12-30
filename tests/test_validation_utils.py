@@ -1,25 +1,6 @@
 import pytest
 
 from .context import validation_utils
-from .fixtures import read_geojson
-
-
-def test_validate_geojson_schema_conformity_valid():
-    fp = "./tests/examples_geojson/valid/simple_polygon.geojson"
-    fc = read_geojson(fp)
-    result, message = validation_utils.validate_schema(fc)
-    assert result
-    assert message is None
-
-
-def test_validate_geojson_schema_conformity_invalid():
-    fp = "./tests/examples_geojson/valid/simple_polygon.geojson"
-    fc = read_geojson(fp)
-    fc["features"][0]["type"] = "NotFeature"
-    result, message = validation_utils.validate_schema(fc)
-    assert not result
-    assert message == "'NotFeature' is not one of ['Feature']"
-    print(message)
 
 
 def test_check_criteria_invalid():

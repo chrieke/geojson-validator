@@ -1,10 +1,7 @@
-from typing import Tuple, Union
 import sys
-import json
 from collections import Counter
 
 from loguru import logger
-import jsonschema
 
 from . import checks_invalid, checks_problematic
 from .geometry_utils import prepare_geometries_for_checks
@@ -77,20 +74,6 @@ VALIDATION_CRITERIA = {
         # "wrong_bbox_order: {}"
     },
 }
-
-
-def validate_schema(geojson_data) -> Tuple[bool, Union[str, None]]:
-    """Returns True if the input geojson conforms to the geojson json schema v7."""
-    with open("geojson_validator/data/geojson-schema.json", "r") as f:
-        geojson_schema = json.load(f)
-    try:
-        jsonschema.validate(instance=geojson_data, schema=geojson_schema)
-        return True, None
-    except jsonschema.exceptions.ValidationError as e:
-        logger.info(
-            f"The input JSON does not conform to the GeoJSON schema - {e.message}"
-        )
-        return False, e.message
 
 
 def check_criteria(selected_criteria, criteria_type):

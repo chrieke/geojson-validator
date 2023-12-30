@@ -1,1 +1,1 @@
-from .main import validate, fix
+from .main import validate_geometries, fix_geometries

@@ -40,7 +40,7 @@ if button_validate:
         st.error("Input GeoJSON or URL")
         st.stop()
     json_json = dict(json.loads(json_string.replace("'", '"')))
-    results = geojson_validator.validate(json_json)
+    results = geojson_validator.validate_geometries(json_json)
     if results["invalid"]:
         st.error("Invalid GeoJSON")
     elif results["problematic"]:
