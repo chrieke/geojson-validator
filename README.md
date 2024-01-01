@@ -106,7 +106,6 @@ The result is a FeatureCollection with the fixed geometries.
 <br>
 
 ## TODO:
-- validate schema in validate_geometries automatically?, and raise. in st app catch an display. and schema also seperate function.
 - bbox order and other criteria
 - Multihtreading?
 - add bbox option?
