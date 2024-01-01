@@ -31,13 +31,27 @@ json_string = st.text_area(text_instruction, height=250, help=text_help)
 st.write("")
 st.write("")
 
-_, cl1, cl2, _ = st.columns(4)
-button_validate = cl1.button("Validate")
-button_fix = cl2.button("Fix GeoJSON")
+_, cl1, cl2, cl3, _ = st.columns(5)
+button_schema = cl1.button("Validate GeoJSON Schema")
+button_geometries = cl2.button("Validate Geometries")
+button_fix = cl3.button("Fix Geometries")
 
-if button_validate:
+if button_schema:
     if not json_string:
-        st.error("Input GeoJSON or URL")
+        st.error("Please input GeoJSON or URL")
+        st.stop()
+    json_json = dict(json.loads(json_string.replace("'", '"')))
+    valid, reason = geojson_validator.validate_schema(json_json)
+    if valid:
+        st.success("Input is valid according to GeoJSON specification.")
+    if not valid:
+        st.error(
+            f"Input is invalid according to GeoJSON specification. Reason: {reason}"
+        )
+
+if button_geometries:
+    if not json_string:
+        st.error("Please input GeoJSON or URL")
         st.stop()
     json_json = dict(json.loads(json_string.replace("'", '"')))
     results = geojson_validator.validate_geometries(json_json)
@@ -53,4 +67,10 @@ if button_validate:
     st.write(results)
 
 if button_fix:
-    st.write("Coming Soon!")
+    if not json_string:
+        st.error("Please input GeoJSON or URL")
+        st.stop()
+    json_json = dict(json.loads(json_string.replace("'", '"')))
+    fixed_fc = geojson_validator.fix_geometries(json_json)
+    st.success("Fixed geoemtries")
+    st.write(fixed_fc)
