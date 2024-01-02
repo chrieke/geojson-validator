@@ -57,25 +57,19 @@ def test_validate(
 
 
 def test_validate_invalid():
-    fc = read_geojson(
-        "./tests/examples_geojson/invalid/polygon_has_duplicate_nodes.geojson"
-    )
+    fc = read_geojson("./tests/examples_geojson/invalid/duplicate_nodes.geojson")
     result = main.validate_geometries(fc)
     assert "duplicate_nodes" in result["invalid"]
 
 
 def test_validate_invalid_no_checks():
-    fc = read_geojson(
-        "./tests/examples_geojson/invalid/polygon_has_duplicate_nodes.geojson"
-    )
+    fc = read_geojson("./tests/examples_geojson/invalid/duplicate_nodes.geojson")
     with pytest.raises(ValueError):
         main.validate_geometries(fc, criteria_invalid=None, criteria_problematic=[])
 
 
 def test_validate_invalid_no_invalid_or_problematic_checks():
-    fc = read_geojson(
-        "./tests/examples_geojson/invalid/polygon_has_duplicate_nodes.geojson"
-    )
+    fc = read_geojson("./tests/examples_geojson/invalid/duplicate_nodes.geojson")
     result = main.validate_geometries(fc, criteria_problematic=[])
     assert "duplicate_nodes" in result["invalid"]
 
@@ -161,7 +155,7 @@ def test_fix_valid():
 
 
 def test_fix_invvalid():
-    fp = "./tests/examples_geojson/invalid/polygon_has_duplicate_nodes.geojson"
+    fp = "./tests/examples_geojson/invalid/duplicate_nodes.geojson"
     fc = read_geojson(fp)
     fixed_fc = main.fix_geometries(fc)
     assert fixed_fc["type"] == "FeatureCollection"
