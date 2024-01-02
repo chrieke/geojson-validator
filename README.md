@@ -106,10 +106,29 @@ The result is a FeatureCollection with the fixed geometries.
 <br>
 
 ## TODO:
+
+- antimeridian example triggers outside latitude longtiude
+- bug 3d coordinates
+- shapely.to_geojson(a.buffer(3))
+- jsondecodeerror when e.g. extra comma
+- many vertices error? excessive_nodes   e.g. > 999    Can just be a very complex geometry, or e.g. when creating buffer geometries
+- self intersections: polygons whose edges cross each other
+- Reason not clear
+- App: What was fixed & validate after again.
+- test https://github.com/mapbox/geojsonhint/tree/master/test/data/bad & https://github.com/mapbox/geojsonhint/tree/master/test/data/good
+- search chats & inet for problematic geojson/geometry for tests
 - bbox order and other criteria
 - Multihtreading?
+- Post on SO, reddit etc. sites link to app
+- fastapi as connector, not hosted just in package for others to run.
 - add bbox option?
 - Add geojson library simple validity checks https://github.com/jazzband/geojson/blob/c470a1f867579a39d25db2954aa8e909e79f3848/geojson/geometry.py#L79
+- cli (webapp replaces it)?
+- in app dataframe view with red/green. on click show in map.
 
 No:
 - Filsupport wkt etc. that would require more dependencies.
+
+Notes:
+
+old-style crs member is not recommended, this object is equivalent to the default and should be removed
