@@ -73,6 +73,7 @@ def validate_geometries(
 
     if criteria_invalid and "crs_defined" in criteria_invalid and "crs" in fc:
         results["invalid"]["crs_defined"] = True
+        # "old-style crs member is not recommended, this object should be removed"
 
     logger.info(f"Validation results: {results}")
     return results
