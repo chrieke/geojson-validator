@@ -147,6 +147,7 @@ def test_process_validation_runs_all_normal_files(geojson_examples_all_normal_fi
             assert not results["skipped_validation"]
 
 
+# TODO: Delete
 # def test_validate_just_forthis():
 #     fp = "./tests/examples_geojson/problematic/more_than_2d_coordinates_3d.geojson"
 #     fc = read_geojson(fp)

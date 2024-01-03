@@ -29,8 +29,7 @@ def test_check_excessive_coordinate_precision():
         "./tests/examples_geojson/problematic/excessive_coordinate_precision.geojson",
         geometries=True,
     )
-    problematic = checks_problematic.check_excessive_coordinate_precision(geometry)
-    assert problematic
+    assert checks_problematic.check_excessive_coordinate_precision(geometry)
 
 
 def test_check_excessive_coordinate_precision_no_after_comma_succeds():
@@ -38,7 +37,17 @@ def test_check_excessive_coordinate_precision_no_after_comma_succeds():
         "coordinates": [[[-77, 26.0], [-77.17255, 25], [-77, 26]]],
         "type": "Polygon",
     }
-    checks_problematic.check_excessive_coordinate_precision(geometry_no_after_comma)
+    assert not checks_problematic.check_excessive_coordinate_precision(
+        geometry_no_after_comma
+    )
+
+
+def test_check_excessive_vertices():
+    geometry = read_geojson(
+        "./tests/examples_geojson/problematic/excessive_vertices.geojson",
+        geometries=True,
+    )
+    assert checks_problematic.check_excessive_vertices(geometry)
 
 
 def test_check_more_than_2d_coordinates():
@@ -46,8 +55,7 @@ def test_check_more_than_2d_coordinates():
         "./tests/examples_geojson/problematic/more_than_2d_coordinates_3d.geojson",
         geometries=True,
     )
-    problematic = checks_problematic.check_more_than_2d_coordinates(geometry)
-    assert problematic
+    assert checks_problematic.check_more_than_2d_coordinates(geometry)
 
 
 def test_check_crosses_antimeridian():
@@ -55,5 +63,4 @@ def test_check_crosses_antimeridian():
         "./tests/examples_geojson/problematic/crosses_antimeridian.geojson",
         geometries=True,
     )
-    problematic = checks_problematic.check_crosses_antimeridian(geometry)
-    assert problematic
+    assert checks_problematic.check_crosses_antimeridian(geometry)

@@ -32,6 +32,15 @@ def check_excessive_coordinate_precision(
     return False
 
 
+def check_excessive_vertices(
+    geometry: dict,
+) -> bool:
+    """Return True if geometry has more than 999 vertices"""
+    ### TODO: For multipolygon should this be applied on the multipolygon not like here on the poly in split
+    # up processing???
+    return len(geometry["coordinates"][0]) > 999
+
+
 def check_more_than_2d_coordinates(geometry: dict, n_first_coords=2) -> bool:
     """Return True if any coordinates are more than 2D."""
     # TODO: should all coordinates be checked?
