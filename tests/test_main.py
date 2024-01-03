@@ -1,4 +1,5 @@
 from unittest.mock import patch
+from pathlib import Path
 
 import pytest
 
@@ -121,6 +122,39 @@ def test_process_validation_valid_all_geometry_types(geometry_type, file_path):
     assert not results["skipped_validation"]
 
 
+@pytest.fixture(scope="module")
+def geojson_examples_all_normal_files():
+    base_path = Path("tests/examples_geojson")
+    return list(base_path.rglob("*.geojson"))
+
+
+def test_process_validation_runs_all_normal_files(geojson_examples_all_normal_files):
+    ### All test files for invalid/probelamtic/valid geometry checks
+    for file_path in geojson_examples_all_normal_files:
+        print(file_path)
+        if file_path.name not in [
+            "incorrect_geometry_data_type.geojson",
+            "feature_has_no_geometry.geojson",
+        ]:  # schema checks
+            fc = read_geojson(
+                file_path
+            )  # read_geojson function should be defined in main module
+            results = main.validate_geometries(
+                fc
+            )  # validate function should process the feature collection and return results
+
+            assert results["count_geometry_types"]
+            assert not results["skipped_validation"]
+
+
+# def test_validate_just_forthis():
+#     fp = "./tests/examples_geojson/problematic/more_than_2d_coordinates_3d.geojson"
+#     fc = read_geojson(fp)
+#     result = main.validate_geometries(fc)
+#     assert not result["invalid"]
+#     assert not result["problematic"]
+
+
 @pytest.mark.skip(reason="1mb file")
 def test_validate_countries_dataset():
     fc = read_geojson("./tests/examples_geojson/countries.geojson")
@@ -154,7 +188,7 @@ def test_fix_valid():
     assert fc == fixed_fc
 
 
-def test_fix_invvalid():
+def test_fix_invalid():
     fp = "./tests/examples_geojson/invalid/duplicate_nodes.geojson"
     fc = read_geojson(fp)
     fixed_fc = main.fix_geometries(fc)

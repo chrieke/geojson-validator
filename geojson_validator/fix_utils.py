@@ -25,7 +25,5 @@ def process_fix(fc, results, criteria_to_fix):
                     geom_fixed = apply_fix(criterium, geom)
                 elif isinstance(idx, dict):
                     pass  # multitype result
-                fc_copy["features"][idx][
-                    "geometry"
-                ] = geom_fixed.__geo_interface__  # TODO: List instead of tuples
+                fc_copy["features"][idx]["geometry"] = geom_fixed.__geo_interface__
     return fc_copy
