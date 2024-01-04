@@ -15,7 +15,7 @@ setup(
     url="https://github.com/chrieke/geojson-validator",
     license="MIT",
     packages=find_packages(
-        exclude=("tests", "streamlit-geojson_validator", "docs", "examples")
+        exclude=("tests", "streamlit-webapp", "docs", "examples")
     ),
     data_files=[
         (
