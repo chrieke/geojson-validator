@@ -63,6 +63,10 @@ VALIDATION_CRITERIA = {
             "relevant": ALL_ACCEPTED_GEOMETRY_TYPES,
             "input": "json_geometry",
         },
+        "excessive_vertices": {
+            "relevant": [LS, MLS, POL, MPOL],
+            "input": "json_geometry",
+        },
         "more_than_2d_coordinates": {
             "relevant": ALL_ACCEPTED_GEOMETRY_TYPES,
             "input": "json_geometry",

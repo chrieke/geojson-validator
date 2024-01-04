@@ -36,8 +36,6 @@ def check_excessive_vertices(
     geometry: dict,
 ) -> bool:
     """Return True if geometry has more than 999 vertices"""
-    ### TODO: For multipolygon should this be applied on the multipolygon not like here on the poly in split
-    # up processing???
     return len(geometry["coordinates"][0]) > 999
 
 
