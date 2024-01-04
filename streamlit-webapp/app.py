@@ -32,7 +32,7 @@ st.write("")
 st.write("")
 
 _, cl1, cl2, cl3, _ = st.columns(5)
-button_schema = cl1.button("Validate GeoJSON Schema")
+button_schema = cl1.button("Validate Schema")
 button_geometries = cl2.button("Validate Geometries")
 button_fix = cl3.button("Fix Geometries")
 
@@ -41,12 +41,12 @@ if button_schema:
         st.error("Please input GeoJSON or URL")
         st.stop()
     json_json = dict(json.loads(json_string.replace("'", '"')))
-    valid, reason = geojson_validator.validate_schema(json_json)
-    if valid:
+    errors = geojson_validator.validate_schema(json_json)
+    if not errors:
         st.success("Input is valid according to GeoJSON specification.")
-    if not valid:
+    if errors:
         st.error(
-            f"Input is invalid according to GeoJSON specification. Reason: {reason}"
+            f"Input is invalid according to GeoJSON specification. Reasons: {errors}"
         )
 
 if button_geometries:
