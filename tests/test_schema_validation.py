@@ -45,7 +45,17 @@ def test_schema_validation():
 
 
 def test_schema_validation_str_around_geometry():
-    geojson_data = {"type": "FeatureCollection", "features": [{"type": "Feature", "geometry": "{\"type\":\"Polygon\",\"coordinates\":[[[6.66079022243348,51.140794993202],[6.66080873391236,51.1407981018504],[6.66079022243348,51.140794993202]]]}", "properties": {}}]}
+    geojson_data = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "geometry": '{"type":"Polygon","coordinates":[[[6.66079022243348,51.140794993202],'
+                            '[6.66080873391236,51.1407981018504],[6.66079022243348,51.140794993202]]]}',
+                "properties": {},
+            }
+        ],
+    }
 
     errors = schema_validation.GeoJsonLint().lint(geojson_data)
     assert errors
