@@ -11,8 +11,7 @@ class GeoJsonLint:
     error line positions and clearer handling.
 
     Inspired by https://github.com/mapbox/geojsonhint (paused Javascript library)
-    Adapted to Python and focuses on structural GEOJSON schema validation, not GeoJSON
-    specification geometry rules.
+    Focuses on structural GEOJSON schema validation, not GeoJSON specification geometry rules.
     """
 
     def __init__(self):
