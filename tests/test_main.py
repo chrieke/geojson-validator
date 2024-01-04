@@ -10,19 +10,17 @@ from .context import main
 def test_validate_geojson_schema_conformity_valid():
     fp = "./tests/examples_geojson/valid/simple_polygon.geojson"
     fc = read_geojson(fp)
-    result, message = main.validate_schema(fc)
-    assert result
-    assert message is None
+    errors = main.validate_schema(fc)
+    assert not errors
 
 
 def test_validate_geojson_schema_conformity_invalid():
     fp = "./tests/examples_geojson/valid/simple_polygon.geojson"
     fc = read_geojson(fp)
     fc["features"][0]["type"] = "NotFeature"
-    result, message = main.validate_schema(fc)
-    assert not result
-    assert message == "'NotFeature' is not one of ['Feature']"
-    print(message)
+    errors = main.validate_schema(fc)
+    assert errors
+    assert errors[0] == {"line": 3, "message": "Invalid type 'NotFeature'"}
 
 
 @patch("geojson_validator.main.check_criteria")
@@ -151,7 +149,7 @@ def test_process_validation_runs_all_normal_files(geojson_examples_all_normal_fi
 # def test_validate_just_forthis():
 #     fp = "./tests/examples_geojson/problematic/more_than_2d_coordinates_3d.geojson"
 #     fc = read_geojson(fp)
-#     result = main.validate_geometries(fc)
+#     result = main.validate_geometries(a)
 #     assert not result["invalid"]
 #     assert not result["problematic"]
 

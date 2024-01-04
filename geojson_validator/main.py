@@ -1,11 +1,10 @@
 from typing import Dict, Union, List, Tuple
 import sys
-import json
 from pathlib import Path
 
-import jsonschema
 from loguru import logger
 
+from .schema_validation import GeoJsonLint
 from .geometry_utils import (
     input_to_geojson,
     any_geojson_to_featurecollection,
@@ -26,19 +25,11 @@ def validate_schema(geojson_input) -> Tuple[bool, Union[str, None]]:
     """
     Returns (True, None) if the input geojson conforms to the geojson json schema v7,
     and (False, "reason") if not.
+    Enhances error messages by specifying which elements failed validation.
     """
     geojson_data = input_to_geojson(geojson_input)
-
-    with open("geojson_validator/data/geojson-schema.json", "r") as f:
-        geojson_schema = json.load(f)
-    try:
-        jsonschema.validate(instance=geojson_data, schema=geojson_schema)
-        return True, None
-    except jsonschema.exceptions.ValidationError as e:
-        logger.info(
-            f"The input JSON does not conform to the GeoJSON schema - {e.message}"
-        )
-        return False, e.message
+    errors = GeoJsonLint().lint(geojson_data)
+    return errors
 
 
 def validate_geometries(
