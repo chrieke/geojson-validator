@@ -124,6 +124,8 @@ class GeoJsonLint:
         return None
 
     def invalid_required_type(self, obj, path):
+        if not isinstance(obj, dict):
+            return True
         obj_type = obj.get("type")
         if not obj_type or obj_type not in self.geojson_types:
             if not obj_type:
