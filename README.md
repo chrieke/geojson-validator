@@ -107,13 +107,21 @@ The result is a FeatureCollection with the fixed geometries.
 
 ## TODO:
 
-
+High:
+- MP fails validation
+- Schema validate all testdata
+- Improve app & gif. Map? Checkboxes? Options?
 - jsondecodeerror when e.g. extra comma
 - App: What was fixed & validate after again.
 - test https://github.com/mapbox/geojsonhint/tree/master/test/data/bad & https://github.com/mapbox/geojsonhint/tree/master/test/data/good
-- bbox order and other criteria
-- Multihtreading?
-- advanced fix (e.g. coordinate preicisoon)
-- fastapi as connector, not hosted just in package for others to run.
-- in app dataframe view with red/green. on click show in map.
-- gif app
+
+Medium:
+    - advanced fix (e.g. coordinate preicisoon)
+  - bbox order and other criteria
+- Low:
+  - Multihtreading?
+  - fastapi as connector, not hosted just in package for others to run.
+
+Notes:
+- https://geojson.yanzi.dev/
+- Does not require a feature id, and it doesnt need to be unique
