@@ -61,7 +61,6 @@ class GeoJsonLint:
             self.feature(obj, path)
         elif obj_type in self.geojson_types:
             self.geometry(obj, path)
-        # self.geometry_types[obj.get('type')](obj, path)
 
     def feature_collection(self, feature_collection, path):
         self.invalid_required_type(feature_collection, path)
@@ -154,7 +153,7 @@ class GeoJsonLint:
             )
             return True
         elif type_str == "object" and not isinstance(obj[name], dict):
-            # TODO: For geometry this is valid but problematic?
+            # TODO: For geometry None is valid but problematic?
             self.errors.append(
                 {
                     "message": f'"{name}" member should be an object, but is a {type(obj[name]).__name__} instead',
@@ -175,7 +174,7 @@ class GeoJsonLint:
         if len(coords) < 2 or len(coords) > 3:
             return self.errors.append(
                 {
-                    "message": "Position must have 2 or more elements",
+                    "message": "Position must have exactly 2 or 3 values",
                     "line": self.get_line_number(path),
                 }
             )

@@ -40,7 +40,7 @@ geojson_validator.fix_geometries(geojson_input)
 
 ### 1. Validate GeoJSON schema 📚
 
-Checks the structure of the GeoJSON dictionary, if all required elements are there and formatted correctly.
+Checks the structure & formatting of the GeoJSON, e.g. if all required elements exist.
 
 ```python
 errors = geojson_validator.validate_schema(geojson_input)
@@ -113,14 +113,7 @@ The result is a FeatureCollection with the fixed geometries.
 - test https://github.com/mapbox/geojsonhint/tree/master/test/data/bad & https://github.com/mapbox/geojsonhint/tree/master/test/data/good
 - bbox order and other criteria
 - Multihtreading?
+- advanced fix (e.g. coordinate preicisoon)
 - fastapi as connector, not hosted just in package for others to run.
-- add bbox option?
-- activate check_excessive_vertices
-- Add geojson library simple validity checks https://github.com/jazzband/geojson/blob/c470a1f867579a39d25db2954aa8e909e79f3848/geojson/geometry.py#L79
-- cli (webapp replaces it)?
 - in app dataframe view with red/green. on click show in map.
-- own website?
 - gif app
-- 
-No:
-- formatsupport e.g. wkt etc. that would require more dependencies.
