@@ -108,12 +108,8 @@ geojson_examples = [
 
 @pytest.mark.parametrize("geometry_type, file_path", geojson_examples)
 def test_process_validation_valid_all_geometry_types(geometry_type, file_path):
-    fc = read_geojson(
-        file_path
-    )  # read_geojson function should be defined in main module
-    results = main.validate_geometries(
-        fc
-    )  # validate function should process the feature collection and return results
+    fc = read_geojson(file_path)
+    results = main.validate_geometries(fc)
     assert not results["invalid"]
     assert not results["problematic"]
     assert results["count_geometry_types"] == {geometry_type: 1}
@@ -129,17 +125,12 @@ def geojson_examples_all_normal_files():
 def test_process_validation_runs_all_normal_files(geojson_examples_all_normal_files):
     ### All test files for invalid/probelamtic/valid geometry checks
     for file_path in geojson_examples_all_normal_files:
-        print(file_path)
         if file_path.name not in [
             "incorrect_geometry_data_type.geojson",
             "feature_has_no_geometry.geojson",
         ]:  # schema checks
-            fc = read_geojson(
-                file_path
-            )  # read_geojson function should be defined in main module
-            results = main.validate_geometries(
-                fc
-            )  # validate function should process the feature collection and return results
+            fc = read_geojson(file_path)
+            results = main.validate_geometries(fc)
 
             assert results["count_geometry_types"]
             assert not results["skipped_validation"]
