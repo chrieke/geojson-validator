@@ -114,7 +114,7 @@ class GeoJsonLint:
             elif obj_type in ["Polygon", "MultiLineString"]:
                 self.position_array(obj["coordinates"], 2, f"{path}/coordinates")
             elif obj_type in ["MultiPolygon"]:
-                self.position_array(obj["coordinates"], 2, f"{path}/coordinates")
+                self.position_array(obj["coordinates"], 3, f"{path}/coordinates")
 
     def get_line_number(self, path):
         entry = self.line_map.get(path)
