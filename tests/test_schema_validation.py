@@ -86,15 +86,30 @@ def geojson_examples_all_normal_files():
     return list(base_path.rglob("*.geojson"))
 
 
-def test_schema_validation_all_normal_files(geojson_examples_all_normal_files):
-    ### All test files for invalid/probelamtic/valid geometry checks, they all have correct schema
+def test_schema_validation_all_normal_files_succedds(geojson_examples_all_normal_files):
+    ### All test files with correct schema (from invalid/probelamtic/valid geometry checks)
     for file_path in geojson_examples_all_normal_files:
         if file_path.name not in [
             "incorrect_geometry_data_type.geojson",
-            "feature_has_no_geometry.geojson",
+            "feature_has_no_geometry.geojson",  # TODO
         ]:
+            fc = read_geojson(file_path)
+            errors = schema_validation.GeoJsonLint().lint(fc)
+            assert not errors
+
+
+@pytest.fixture(scope="module")
+def geojson_invalid_schema():
+    base_path = Path("tests/invalid_schema")
+    return list(base_path.rglob("*.geojson"))
+
+
+def test_schema_validation_all_invalid_schema_files_fail(geojson_invalid_schema):
+    ### All invalid schema test files
+    for file_path in geojson_invalid_schema:
+        if file_path.name not in []:
             fc = read_geojson(file_path)
             errors = schema_validation.GeoJsonLint().lint(fc)
 
             print(file_path.name)
-            assert not errors
+            assert errors

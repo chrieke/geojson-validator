@@ -3,7 +3,7 @@
 from pathlib import Path
 import requests
 
-testfiles_dir = Path("tests/")
+testfiles_dir = Path("tests/data/")
 
 # GitHub repository details
 user = "chrieke"
