@@ -1,0 +1,29 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature",
+      "geometry": {"coordinates": [80.2066734649931, 13.0187039189613]},
+      "properties": {
+          "assetStatus": "FULL",
+          "id": 1747,
+          "item": "53 Trailer"
+      }
+    },
+    { "type": "Feature",
+      "geometry": {"coordinates": [ 80.2072495864164, 13.0191043036246]},
+      "properties": {
+          "assetStatus": "EMPTY",
+          "id": 1746,
+          "item": "53 Trailer"
+      }
+    },
+    { "type": "Feature",
+      "geometry": { "coordinates": [ 80.2067574402883, 13.0191983952581]},
+      "properties": {
+          "assetStatus": "LOADED",
+          "id": 1745,
+          "item": "53 Trailer"
+      }
+    }
+  ]
+}

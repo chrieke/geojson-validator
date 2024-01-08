@@ -1,0 +1,22 @@
+{
+    "type": "FeatureCollection",
+    "crs": {
+        "type": "name"
+    },
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[[103.92240800000013,21.69931],[100.93664,21.66959500000013],[108.031899,18.67076]]]
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[[-5e6, -1e6], [-4e6, 1e6], [-3e6, -1e6]]]
+            }
+        }
+    ]
+}

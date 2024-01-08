@@ -108,7 +108,7 @@ The result is a FeatureCollection with the fixed geometries.
 ## TODO:
 
 High:
-- Schema validate all invalid testdata
+- Check handling of geometrcollcetion
 - Improve app & gif. Map? Checkboxes? Options?
 - jsondecodeerror when e.g. extra comma
 - App: What was fixed & validate after again.
