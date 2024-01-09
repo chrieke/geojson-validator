@@ -1,22 +1,22 @@
-# Downloads testfiles from https://github.com/chrieke/geojson-invalid-geometry
+# Downloads example files from https://github.com/chrieke/geojson-invalid-geometry to ./tests/data
 
 from pathlib import Path
 import requests
 
-testfiles_dir = Path("tests/data/")
+TESTFILES_DIR = Path("tests/data/")
 
 # GitHub repository details
-user = "chrieke"
-repo = "geojson-invalid-geometry"
-branch = "main"
-folders = [
-    "examples_geojson/invalid",
-    "examples_geojson/problematic",
-    "examples_geojson/valid",
+USER = "chrieke"
+REPO = "geojson-invalid-geometry"
+BRANCH = "main"
+FOLDERS = [
+    "examples/invalid",
+    "examples/problematic",
+    "examples/valid",
 ]
 
 # GitHub API URL for contents
-api_base_url = f"https://api.github.com/repos/{user}/{repo}/contents/"
+API_BASE_URL = f"https://api.github.com/repos/{USER}/{REPO}/contents/"
 
 
 def download_file(url, local_path):
@@ -25,7 +25,7 @@ def download_file(url, local_path):
 
 
 def download_folder_contents(folder):
-    folder_url = f"{api_base_url}{folder}?ref={branch}"
+    folder_url = f"{API_BASE_URL}{folder}?ref={BRANCH}"
     response = requests.get(
         folder_url, timeout=5
     )  # Include auth token in headers if needed
@@ -34,18 +34,18 @@ def download_folder_contents(folder):
     for item in items:
         if item["type"] == "file" and item["name"].endswith(".geojson"):
             file_url = item["download_url"]
-            local_path = testfiles_dir / folder / item["name"]
+            base_folder_name = str(Path(folder).name)
+            local_path = TESTFILES_DIR / base_folder_name / item["name"]
             print(f"Downloading {item['name']} to {local_path}")
             download_file(file_url, local_path)
 
 
 def main():
-    for folder in folders:
-        folder_path = testfiles_dir / folder
+    for folder in FOLDERS:
+        base_folder_name = str(Path(folder).name)
+        folder_path = TESTFILES_DIR / base_folder_name
         if folder_path.exists():
-            raise ValueError(
-                f"Folder {folder_path} already exists. Delete 'examples_geojson' folder manually."
-            )
+            raise ValueError(f"Folder {folder_path} already exists. Delete manually.")
         folder_path.mkdir(parents=True)
         download_folder_contents(folder)
 

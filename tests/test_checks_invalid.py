@@ -7,13 +7,13 @@ from .fixtures import read_geojson
 
 @pytest.fixture(scope="session")
 def valid_geometry():
-    geojson_fp = "./tests/data/examples_geojson/valid/simple_polygon.geojson"
+    geojson_fp = "./tests/data/valid/valid_featurecollection.geojson"
     return read_geojson(geojson_fp, geometries=True)
 
 
 def test_check_unclosed(valid_geometry):
     geometry = read_geojson(
-        "./tests/data/examples_geojson/invalid/unclosed.geojson",
+        "./tests/data/invalid/invalid_unclosed.geojson",
         geometries=True,
     )
     assert checks_invalid.check_unclosed(geometry)
@@ -22,7 +22,7 @@ def test_check_unclosed(valid_geometry):
 
 def test_check_duplicate_nodes(valid_geometry):
     geometry = read_geojson(
-        "./tests/data/examples_geojson/invalid/duplicate_nodes.geojson",
+        "./tests/data/invalid/invalid_duplicate_nodes.geojson",
         geometries=True,
     )
     assert checks_invalid.check_duplicate_nodes(geometry)
@@ -31,7 +31,7 @@ def test_check_duplicate_nodes(valid_geometry):
 
 def test_less_three_unique_nodes(valid_geometry):
     geometry = read_geojson(
-        "./tests/data/examples_geojson/invalid/less_three_unique_nodes.geojson",
+        "./tests/data/invalid/invalid_less_three_unique_nodes.geojson",
         geometries=True,
     )
     assert checks_invalid.check_less_three_unique_nodes(geometry)
@@ -40,7 +40,7 @@ def test_less_three_unique_nodes(valid_geometry):
 
 def test_check_exterior_not_ccw(valid_geometry):
     geometry = read_geojson(
-        "./tests/data/examples_geojson/invalid/exterior_not_ccw.geojson",
+        "./tests/data/invalid/invalid_exterior_not_ccw.geojson",
         geometries=True,
     )
     geom = shape(geometry)
@@ -50,7 +50,7 @@ def test_check_exterior_not_ccw(valid_geometry):
 
 def test_check_interior_not_cw(valid_geometry):
     geometry = read_geojson(
-        "./tests/data/examples_geojson/invalid/interior_not_cw.geojson",
+        "./tests/data/invalid/invalid_interior_not_cw.geojson",
         geometries=True,
     )
     geom = shape(geometry)
@@ -60,7 +60,7 @@ def test_check_interior_not_cw(valid_geometry):
 
 def test_check_inner_and_exterior_ring_intersect(valid_geometry):
     geometry = read_geojson(
-        "./tests/data/examples_geojson/invalid/inner_and_exterior_ring_intersect.geojson",
+        "./tests/data/invalid/invalid_inner_and_exterior_ring_intersect.geojson",
         geometries=True,
     )
     geom = shape(geometry)
@@ -72,7 +72,7 @@ def test_check_inner_and_exterior_ring_intersect(valid_geometry):
 
 def test_check_outside_lat_lon_boundaries(valid_geometry):
     geometry = read_geojson(
-        "./tests/data/examples_geojson/invalid/outside_lat_lon_boundaries.geojson",
+        "./tests/data/invalid/invalid_outside_lat_lon_boundaries.geojson",
         geometries=True,
     )
     assert checks_invalid.check_outside_lat_lon_boundaries(geometry)

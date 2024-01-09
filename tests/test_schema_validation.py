@@ -82,7 +82,7 @@ def test_schema_validation_quotes_around_geometry():
 
 @pytest.fixture(scope="module")
 def geojson_examples_all_normal_files():
-    base_path = Path("tests/examples_geojson")
+    base_path = Path("tests/data/good")
     return list(base_path.rglob("*.geojson"))
 
 
@@ -94,6 +94,7 @@ def test_schema_validation_all_normal_files(geojson_examples_all_normal_files):
             "feature_has_no_geometry.geojson",  # TODO
         ]:
             fc = read_geojson(file_path)
+            print(file_path.name)
             errors = schema_validation.GeoJsonLint().lint(fc)
             assert not errors
 
