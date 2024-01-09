@@ -1,9 +1,13 @@
 from unittest.mock import patch
-from pathlib import Path
 
 import pytest
 
 from .fixtures import read_geojson
+
+# pylint: disable=unused-import
+from .fixtures import (
+    fixture_geojson_examples_all_normal_files,
+)
 from .context import main
 
 
@@ -56,19 +60,19 @@ def test_validate(
 
 
 def test_validate_invalid():
-    fc = read_geojson("./tests/data/invalid/duplicate_nodes.geojson")
+    fc = read_geojson("./tests/data/invalid/invalid_duplicate_nodes.geojson")
     result = main.validate_geometries(fc)
     assert "duplicate_nodes" in result["invalid"]
 
 
 def test_validate_invalid_no_checks():
-    fc = read_geojson("./tests/data/invalid/duplicate_nodes.geojson")
+    fc = read_geojson("./tests/data/invalid/invalid_duplicate_nodes.geojson")
     with pytest.raises(ValueError):
         main.validate_geometries(fc, criteria_invalid=None, criteria_problematic=[])
 
 
 def test_validate_invalid_no_invalid_or_problematic_checks():
-    fc = read_geojson("./tests/data/invalid/duplicate_nodes.geojson")
+    fc = read_geojson("./tests/data/invalid/invalid_duplicate_nodes.geojson")
     result = main.validate_geometries(fc, criteria_problematic=[])
     assert "duplicate_nodes" in result["invalid"]
 
@@ -93,20 +97,20 @@ def test_validate_url():
     assert len(result["invalid"]["exterior_not_ccw"]) == 16
 
 
-geojson_examples = [
-    ("Point", "./tests/data/valid/simple_point.geojson"),
-    ("MultiPoint", "./tests/data/valid/simple_multipoint.geojson"),
-    ("LineString", "./tests/data/valid/simple_linestring.geojson"),
+geojson_geometry_examples = [
+    ("Point", "./tests/data/valid/valid_geometry_point.geojson"),
+    ("MultiPoint", "./tests/data/valid/valid_geometry_multipoint.geojson"),
+    ("LineString", "./tests/data/valid/valid_geometry_linestring.geojson"),
     (
         "MultiLineString",
-        "./tests/data/valid/simple_multilinestring.geojson",
+        "./tests/data/valid/valid_geometry_multilinestring.geojson",
     ),
-    ("Polygon", "./tests/data/valid/valid_featurecollection.geojson"),
-    ("MultiPolygon", "./tests/data/valid/simple_multipolygon.geojson"),
+    ("Polygon", "./tests/data/valid/valid_geometry_polygon.geojson"),
+    ("MultiPolygon", "./tests/data/valid/valid_geometry_multipolygon.geojson"),
 ]
 
 
-@pytest.mark.parametrize("geometry_type, file_path", geojson_examples)
+@pytest.mark.parametrize("geometry_type, file_path", geojson_geometry_examples)
 def test_process_validation_valid_all_geometry_types(geometry_type, file_path):
     fc = read_geojson(file_path)
     results = main.validate_geometries(fc)
@@ -116,26 +120,18 @@ def test_process_validation_valid_all_geometry_types(geometry_type, file_path):
     assert not results["skipped_validation"]
 
 
-@pytest.fixture(scope="module")
-def geojson_examples_all_normal_files():
-    base_path = Path("tests/data")
-    all_normal_files = []
-    for folder in ["valid", "invalid", "problematic"]:
-        paths_in_folder = list(Path(base_path / folder).rglob("*.geojson"))
-        assert paths_in_folder
-        all_normal_files.extend(paths_in_folder)
-    return all_normal_files
-
-
-def test_process_validation_runs_all_normal_files(geojson_examples_all_normal_files):
+def test_process_validation_runs_all_normal_files(
+    fixture_geojson_examples_all_normal_files,
+):
     ### All test files for invalid/probelamtic/valid geometry checks
-    for file_path in geojson_examples_all_normal_files:
+    for file_path in fixture_geojson_examples_all_normal_files:
         assert file_path.exists()
         if file_path.name not in [
-            "incorrect_geometry_data_type.geojson",
-            "feature_has_no_geometry.geojson",
+            "invalid_incorrect_geometry_data_type.geojson",  # TODO
+            "problematic_feature_null_geometry.geojson",  # TODO
+            "valid_feature_null_geometry.geojson",  # TODO
+            "valid_geometry_geometrycollection.geojson",  # TODO
         ]:  # schema checks
-            print(str(file_path))
             fc = read_geojson(file_path)
             results = main.validate_geometries(fc)
 
@@ -145,7 +141,7 @@ def test_process_validation_runs_all_normal_files(geojson_examples_all_normal_fi
 
 # TODO: Delete
 # def test_validate_just_forthis():
-#     fp = "./tests/examples_geojson/problematic/more_than_2d_coordinates_3d.geojson"
+#     fp = "./tests/examples_geojson/problematic/3d_coordinates.geojson"
 #     fc = read_geojson(fp)
 #     result = main.validate_geometries(a)
 #     assert not result["invalid"]

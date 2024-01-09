@@ -39,7 +39,7 @@ def check_excessive_vertices(
     return len(geometry["coordinates"][0]) > 999
 
 
-def check_more_than_2d_coordinates(geometry: dict, n_first_coords=2) -> bool:
+def check_3d_coordinates(geometry: dict, n_first_coords=2) -> bool:
     """Return True if any coordinates are more than 2D."""
     # TODO: should all coordinates be checked?
     for coords in geometry["coordinates"][0][:n_first_coords]:

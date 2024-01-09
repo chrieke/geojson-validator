@@ -82,7 +82,7 @@ criteria_invalid = ["unclosed", "duplicate_nodes", "less_three_unique_nodes", "e
 
 # Problematic with some tools & APIs
 criteria_problematic = ["holes", "self_intersection", "excessive_coordinate_precision",
-                        "more_than_2d_coordinates", "crosses_antimeridian"]
+                        "3d_coordinates", "crosses_antimeridian"]
 
 geojson_validator.validate_geometries(geojson, criteria_invalid, criteria_problematic)
 ```
@@ -108,6 +108,11 @@ The result is a FeatureCollection with the fixed geometries.
 ## TODO:
 
 High:
+- Go through NOTES
+- support geometrycollection
+- support properties null
+- main validate function, the others seperate or as _? or only in app one button maybe more sense
+- enable nullgeometry is allowed
 - Check handling of geometrcollcetion
 - Improve app & gif. Map? Checkboxes? Options?
 - jsondecodeerror when e.g. extra comma
@@ -117,6 +122,7 @@ High:
 Medium:
     - advanced fix (e.g. coordinate preicisoon)
   - bbox order and other criteria
+
 - Low:
   - Multihtreading?
   - fastapi as connector, not hosted just in package for others to run.

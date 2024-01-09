@@ -67,7 +67,7 @@ VALIDATION_CRITERIA = {
             "relevant": [LS, MLS, POL, MPOL],
             "input": "json_geometry",
         },
-        "more_than_2d_coordinates": {
+        "3d_coordinates": {
             "relevant": ALL_ACCEPTED_GEOMETRY_TYPES,
             "input": "json_geometry",
         },

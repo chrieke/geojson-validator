@@ -5,6 +5,11 @@ import pytest
 from .context import schema_validation
 from .fixtures import read_geojson
 
+# pylint: disable=unused-import
+from .fixtures import (
+    fixture_geojson_examples_all_normal_files,
+)
+
 
 def test_schema_validation_invalid_various_issues():
     geojson_data = {
@@ -80,18 +85,16 @@ def test_schema_validation_quotes_around_geometry():
     assert errors
 
 
-@pytest.fixture(scope="module")
-def geojson_examples_all_normal_files():
-    base_path = Path("tests/data/good")
-    return list(base_path.rglob("*.geojson"))
-
-
-def test_schema_validation_all_normal_files(geojson_examples_all_normal_files):
+def test_schema_validation_all_normal_files(fixture_geojson_examples_all_normal_files):
     ### All test files with correct schema (from invalid/probelamtic/valid geometry checks)
-    for file_path in geojson_examples_all_normal_files:
+    for file_path in fixture_geojson_examples_all_normal_files:
+        assert file_path.exists()
         if file_path.name not in [
-            "incorrect_geometry_data_type.geojson",
-            "feature_has_no_geometry.geojson",  # TODO
+            "invalid_incorrect_geometry_data_type.geojson",  # TODO
+            "problematic_feature_null_geometry.geojson",  # TODO
+            "valid_feature_null_geometry.geojson",  # TODO
+            "valid_feature_null_properties.geojson",  # TODO
+            "valid_geometry_geometrycollection.geojson",  # TODO
         ]:
             fc = read_geojson(file_path)
             print(file_path.name)

@@ -50,12 +50,12 @@ def test_check_excessive_vertices():
     assert checks_problematic.check_excessive_vertices(geometry)
 
 
-def test_check_more_than_2d_coordinates():
+def test_check_3d_coordinates():
     geometry = read_geojson(
-        "./tests/data/problematic/problematic_more_than_2d_coordinates_3d.geojson",
+        "./tests/data/problematic/problematic_3d_coordinates.geojson",
         geometries=True,
     )
-    assert checks_problematic.check_more_than_2d_coordinates(geometry)
+    assert checks_problematic.check_3d_coordinates(geometry)
 
 
 def test_check_crosses_antimeridian():
