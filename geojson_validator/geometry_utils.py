@@ -50,8 +50,8 @@ def any_geojson_to_featurecollection(
     supported_geojson_types = [
         "Point",
         "MultiPoint",
-        "Linestring",
-        "MulltiLineString",
+        "LineString",
+        "MultiLineString",
         "Polygon",
         "MultiPolygon",
     ]
