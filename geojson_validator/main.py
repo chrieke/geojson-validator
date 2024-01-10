@@ -14,7 +14,7 @@ from .geometry_validation import (
     check_criteria,
     process_validation,
 )
-from .fix_utils import process_fix
+from .fixes_utils import process_fix
 
 logger.remove()
 logger_format = "{time:YYYY-MM-DD_HH:mm:ss.SSS} | {message}"
