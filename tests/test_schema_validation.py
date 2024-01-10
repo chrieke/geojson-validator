@@ -93,7 +93,6 @@ def test_schema_validation_all_normal_files(fixture_geojson_examples_all_normal_
             "invalid_incorrect_geometry_data_type.geojson",  # TODO
             "problematic_feature_null_geometry.geojson",  # TODO
             "valid_feature_null_geometry.geojson",  # TODO
-            "valid_feature_null_properties.geojson",  # TODO
             "valid_geometry_geometrycollection.geojson",  # TODO
         ]:
             fc = read_geojson(file_path)

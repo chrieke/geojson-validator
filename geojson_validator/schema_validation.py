@@ -153,7 +153,9 @@ class GeoJsonLint:
             )
             return True
         elif type_str == "object" and not isinstance(obj[name], dict):
-            # TODO: For geometry None is valid but problematic?
+            if name in ["properties"] and obj[name] is None:
+                return False
+
             self.errors.append(
                 {
                     "message": f'"{name}" member should be an object, but is a {type(obj[name]).__name__} instead',
