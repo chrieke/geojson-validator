@@ -69,8 +69,8 @@ class GeoJsonLint:
         if self.check_crs and "crs" in feature_collection:
             self.errors.append(
                 {
-                    "message": "Specification of crs member (coordinate reference system) is no longer used in "
-                    f"the GeoJSON specification, should be removed.",
+                    "message": "Specification of crs member (coordinate reference system) is no longer used "
+                               "in the GeoJSON specification, should be removed.",
                     "line": self.get_line_number(f"{path}/crs"),
                 }
             )

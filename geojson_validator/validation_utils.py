@@ -107,9 +107,11 @@ def process_validation(geometries, criteria_invalid, criteria_problematic):
     geometry_types = []
 
     for i, geometry in enumerate(geometries):
+        if geometry is None:
+            logger.info("Null geometry found in GeoJSON Feature, skipping.")
+            skipped_validation.append(i)  # TODO: Improve skipped_validation result
+            continue
         geometry_type = geometry.get("type", None)
-        if geometry_type is None:
-            raise ValueError("no 'geometry' field found in GeoJSON Feature")
         geometry_types.append(geometry_type)
         if geometry_type not in ALL_ACCEPTED_GEOMETRY_TYPES:
             logger.info(

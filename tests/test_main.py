@@ -128,15 +128,12 @@ def test_process_validation_runs_all_normal_files(
         assert file_path.exists()
         if file_path.name not in [
             "invalid_incorrect_geometry_data_type.geojson",  # TODO
-            "problematic_feature_null_geometry.geojson",  # TODO
-            "valid_feature_null_geometry.geojson",  # TODO
             "valid_geometry_geometrycollection.geojson",  # TODO
         ]:  # schema checks
             fc = read_geojson(file_path)
             results = main.validate_geometries(fc)
 
-            assert results["count_geometry_types"]
-            assert not results["skipped_validation"]
+            assert results["count_geometry_types"] or results["skipped_validation"]
 
 
 # TODO: Delete

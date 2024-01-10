@@ -35,11 +35,10 @@ def test_process_validation_invalid_geometry():
     assert "unclosed" in results["invalid"]
 
 
-def test_process_validation_error_no_type():
+def test_process_validation_no_error_no_type():
     # Test handling of geometry missing the 'type' field
     geometries = [{"coordinates": [[[0, 0], [1, 1], [1, 0], [0, 0]]]}]  # No type field
-    with pytest.raises(ValueError):
-        validation_utils.process_validation(geometries, [], [])
+    assert validation_utils.process_validation(geometries, [], [])
 
 
 def test_process_validation_multiple_types():
