@@ -21,14 +21,16 @@ logger_format = "{time:YYYY-MM-DD_HH:mm:ss.SSS} | {message}"
 logger.add(sink=sys.stderr, format=logger_format, level="INFO")
 
 
-def validate_schema(geojson_input) -> Tuple[bool, Union[str, None]]:
+def validate_schema(
+    geojson_input, check_crs: bool = False
+) -> Tuple[bool, Union[str, None]]:
     """
     Returns (True, None) if the input geojson conforms to the geojson json schema v7,
     and (False, "reason") if not.
     Enhances error messages by specifying which elements failed validation.
     """
     geojson_data = input_to_geojson(geojson_input)
-    errors = GeoJsonLint().lint(geojson_data)
+    errors = GeoJsonLint(check_crs=check_crs).lint(geojson_data)
     return errors
 
 
@@ -61,10 +63,6 @@ def validate_geometries(
     geometries = [feature["geometry"] for feature in fc["features"]]
     # TODO: Could extract geometries here and use as input as before.
     results = process_validation(geometries, criteria_invalid, criteria_problematic)
-
-    if criteria_invalid and "crs_defined" in criteria_invalid and "crs" in fc:
-        results["invalid"]["crs_defined"] = True
-        # "old-style crs member is not recommended, this object should be removed"
 
     logger.info(f"Validation results: {results}")
     return results

@@ -42,6 +42,29 @@ def test_schema_validation_invalid_various_issues():
     ]
 
 
+def test_schema_validation_crs_member_optional_check():
+    geojson_data = {
+        "type": "FeatureCollection",
+        "crs": {
+            "type": "crs-name",
+            "properties": {"name": "urn:ogc:def:crs:EPSG::32632"},
+        },
+        "features": [
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [81.2072495864164, 13.0187039189613],
+                },
+                "properties": {},
+            },
+        ],
+    }
+    assert not schema_validation.GeoJsonLint().lint(geojson_data)
+    errors = schema_validation.GeoJsonLint(check_crs=True).lint(geojson_data)
+    assert errors[0]["line"] == 2
+
+
 def test_schema_validation_quotes_around_geometry():
     geojson_data = {
         "type": "FeatureCollection",

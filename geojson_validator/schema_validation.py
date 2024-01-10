@@ -14,8 +14,9 @@ class GeoJsonLint:
     Focuses on structural GEOJSON schema validation, not GeoJSON specification geometry rules.
     """
 
-    def __init__(self):
+    def __init__(self, check_crs=False):
         self.errors = []
+        self.check_crs = check_crs
         self.line_map = None
         self.geojson_types = [
             "FeatureCollection",
@@ -64,6 +65,17 @@ class GeoJsonLint:
 
     def feature_collection(self, feature_collection, path):
         self.invalid_required_type(feature_collection, path)
+
+        if self.check_crs and "crs" in feature_collection:
+            self.errors.append(
+                {
+                    "message": "Specification of crs member (coordinate reference system) is no longer used in "
+                    f"the GeoJSON specification, should be removed.",
+                    "line": self.get_line_number(f"{path}/crs"),
+                }
+            )
+            # ""
+
         if not self.invalid_required_property(
             feature_collection, "features", "array", path
         ):

@@ -47,10 +47,6 @@ VALIDATION_CRITERIA = {
             "relevant": ALL_ACCEPTED_GEOMETRY_TYPES,
             "input": "json_geometry",
         },
-        "crs_defined": {
-            "relevant": ["FeatureCollection"],
-            "input": "json_geometry",
-        },
         # "zero-length": {"relevant": ["LineString"], "input": "json_geometry"},
     },
     "problematic": {

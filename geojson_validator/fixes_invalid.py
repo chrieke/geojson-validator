@@ -1,7 +1,7 @@
 from shapely.geometry import Polygon, LinearRing
 
 
-# Needs manual: check_crs_defined, check_less_three_unique_nodes
+# Needs manual check: check_less_three_unique_nodes
 # Possible but problematic: check_outside_lat_lon_boundaries, check_inner_and_exterior_ring_intersect
 def fix_unclosed(geom: Polygon):
     """Close the geometry by adding the first coordinate at the end if not closed."""
