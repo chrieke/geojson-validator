@@ -42,32 +42,6 @@ def test_schema_validation_invalid_various_issues():
     ]
 
 
-# TODO: This is actually allowed in geojson spec
-def test_schema_validation_geometry_None():
-    geojson_data = {
-        "type": "FeatureCollection",
-        "features": [
-            {
-                "type": "Feature",
-                "geometry": None,
-                "properties": {
-                    "assetStatus": "EMPTY",
-                    "id": 1746,
-                    "item": "53 Trailer",
-                },
-            },
-        ],
-    }
-    errors = schema_validation.GeoJsonLint().lint(geojson_data)
-    assert errors
-    assert errors == [
-        {
-            "message": '"geometry" member should be an object, but is a NoneType instead',
-            "line": 4,
-        },
-    ]
-
-
 def test_schema_validation_quotes_around_geometry():
     geojson_data = {
         "type": "FeatureCollection",
@@ -91,8 +65,6 @@ def test_schema_validation_all_normal_files(fixture_geojson_examples_all_normal_
         assert file_path.exists()
         if file_path.name not in [
             "invalid_incorrect_geometry_data_type.geojson",  # TODO
-            "problematic_feature_null_geometry.geojson",  # TODO
-            "valid_feature_null_geometry.geojson",  # TODO
             "valid_geometry_geometrycollection.geojson",  # TODO
         ]:
             fc = read_geojson(file_path)

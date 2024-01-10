@@ -153,7 +153,7 @@ class GeoJsonLint:
             )
             return True
         elif type_str == "object" and not isinstance(obj[name], dict):
-            if name in ["properties"] and obj[name] is None:
+            if name in ["geometry", "properties"] and obj[name] is None:
                 return False
 
             self.errors.append(
