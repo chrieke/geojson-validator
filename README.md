@@ -22,7 +22,7 @@ The only tool that reliably addresses all issues:
 pip install geojson-validator
 ```
 
-See the three main functions below. Data input can be any type of GeoJSON, a filepath/url to a GeoJSON, or anything with a `__geo_interface__` (shapely, geopandas etc.).
+See the three main functions below. Data input can be any type of GeoJSON dictionary, a filepath/url to a GeoJSON, shapely geometries and anything with a `__geo_interface__` (e.g. Geopandas GeoDataFrame).
 
 ```python
 import geojson_validator
@@ -100,7 +100,7 @@ All other criteria can not be fixed in a programmatic way, they require user dec
 fixed_fc = geojson_validator.fix_geometries(geojson_input)
 ```
 
-The result is a FeatureCollection with the fixed geometries.
+The result is a FeatureCollection with the fixed geometries. The `check_crs` parameter is `False` by default, the test is optional.
 
 <br>
 <br>
@@ -108,23 +108,21 @@ The result is a FeatureCollection with the fixed geometries.
 ## TODO:
 
 High:
-- Go through NOTES
 - support geometrycollection
-- support properties null
 - main validate function, the others seperate or as _? or only in app one button maybe more sense
-- enable nullgeometry is allowed
-- Check handling of geometrcollcetion
 - Improve app & gif. Map? Checkboxes? Options?
 - jsondecodeerror when e.g. extra comma
 - App: What was fixed & validate after again.
-- test https://github.com/mapbox/geojsonhint/tree/master/test/data/bad & https://github.com/mapbox/geojsonhint/tree/master/test/data/good
+- test https://github.com/mapbox/geojsonhint/tree/master/test/data/bad
 
 Medium:
     - advanced fix (e.g. coordinate preicisoon)
   - bbox order and other criteria
+  - app infos ueber file
 
 - Low:
   - Multihtreading?
+  - versioning?
   - fastapi as connector, not hosted just in package for others to run.
 
 Notes:

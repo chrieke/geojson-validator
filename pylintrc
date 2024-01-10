@@ -22,7 +22,8 @@ disable=
     logging-fstring-interpolation,
     logging-format-interpolation,
     unspecified-encoding,
-    dangerous-default-value
+    dangerous-default-value,
+    too-many-branches
 
 [FORMAT]
 max-line-length=120
