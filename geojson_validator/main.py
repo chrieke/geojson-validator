@@ -9,7 +9,7 @@ from .geometry_utils import (
     input_to_geojson,
     any_geojson_to_featurecollection,
 )
-from .validation_utils import (
+from .geometry_validation import (
     VALIDATION_CRITERIA,
     check_criteria,
     process_validation,
