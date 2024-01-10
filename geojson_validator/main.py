@@ -61,7 +61,6 @@ def validate_geometries(
     fc = any_geojson_to_featurecollection(geojson_input)
 
     geometries = [feature["geometry"] for feature in fc["features"]]
-    # TODO: Could extract geometries here and use as input as before.
     results = process_validation(geometries, criteria_invalid, criteria_problematic)
 
     logger.info(f"Validation results: {results}")
@@ -78,7 +77,7 @@ def fix_geometries(geojson_input):
     results = validate_geometries(
         geojson_input, criteria_invalid=criteria_to_fix, criteria_problematic=None
     )
-    # TODO: Reptition from validate, same task twice. Output from validation? even validate schema here?
+    # TODO: Reptition from validate, same readin task twice. Output from validation? even validate schema here?
     geojson_input = input_to_geojson(geojson_input)
     validate_schema(geojson_input)
     fc = any_geojson_to_featurecollection(geojson_input)

@@ -17,7 +17,7 @@ def process_fix(fc, results, criteria_to_fix):
     for criterium in criteria_to_fix:
         if (
             criterium in results["invalid"]
-        ):  # TODO: Change here if problematic fixes added here
+        ):  # TODO: Change here if more problematic fixes added here
             indices = results["invalid"][criterium]
             for idx in indices:
                 if isinstance(idx, int):

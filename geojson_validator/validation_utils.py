@@ -109,7 +109,7 @@ def process_validation(geometries, criteria_invalid, criteria_problematic):
     for i, geometry in enumerate(geometries):
         if geometry is None:
             logger.info("Null geometry found in GeoJSON Feature, skipping.")
-            skipped_validation.append(i)  # TODO: Improve skipped_validation result
+            skipped_validation.append(i)
             continue
         geometry_type = geometry.get("type", None)
         geometry_types.append(geometry_type)
@@ -121,9 +121,9 @@ def process_validation(geometries, criteria_invalid, criteria_problematic):
             continue
 
         # Handle Multi-Geometries:
-        # Explode the single geometries in the multi-geometry to a featurecollection, run a seperate validation.
-        # Output results as {3: [1,2]} (fourth geometry, the multigeometry is invalid, because the second and third
-        # subgeometries in it are invalid.
+        # Extract the single geometries in the multi-geometry, run a separate validation on each.
+        # Output results in this style: {3: [1,2]} (fourth geometry, the multigeometry is invalid,
+        # because the second and third sub-geometries in it are invalid).
         if "Multi" in geometry_type:
             single_type = geometry_type.split("Multi")[1]
             single_geometries = [
@@ -142,7 +142,6 @@ def process_validation(geometries, criteria_invalid, criteria_problematic):
                 results_problematic.setdefault(criterium, []).append(
                     {i: results_mp["problematic"][criterium]}
                 )
-                # results_problematic.setdefault(criterium, []).append(i)  # TODO: Really better?
             continue
 
         # Handle Single-Geometries
