@@ -1,4 +1,4 @@
-from typing import Dict, Union, List, Tuple
+from typing import Dict, Union, List, Tuple, Any
 import sys
 from pathlib import Path
 
@@ -22,7 +22,7 @@ logger.add(sink=sys.stderr, format=logger_format, level="INFO")
 
 
 def validate_schema(
-    geojson_input, check_crs: bool = False
+    geojson_input: Union[dict, str, Path, Any], check_crs: bool = False
 ) -> Tuple[bool, Union[str, None]]:
     """
     Returns (True, None) if the input geojson conforms to the geojson json schema v7,
@@ -67,7 +67,7 @@ def validate_geometries(
     return results
 
 
-def fix_geometries(geojson_input):
+def fix_geometries(geojson_input: Union[dict, str, Path, Any]):
     criteria_to_fix = [
         "unclosed",
         "duplicate_nodes",

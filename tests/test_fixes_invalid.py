@@ -6,7 +6,7 @@ from .fixtures import read_geojson
 
 def test_fix_unclosed():
     geometry = read_geojson(
-        "./tests/data/invalid/invalid_unclosed.geojson",
+        "./tests/data/invalid_geometries/invalid_unclosed.geojson",
         geometries=True,
     )
     geom = shape(geometry)
@@ -17,7 +17,7 @@ def test_fix_unclosed():
 
 def test_fix_duplicate_nodes():
     geometry = read_geojson(
-        "./tests/data/invalid/invalid_duplicate_nodes.geojson",
+        "./tests/data/invalid_geometries/invalid_duplicate_nodes.geojson",
         geometries=True,
     )
     geom = shape(geometry)
@@ -28,7 +28,7 @@ def test_fix_duplicate_nodes():
 
 def test_fix_exterior_not_ccw():
     geometry = read_geojson(
-        "./tests/data/invalid/invalid_exterior_not_ccw.geojson",
+        "./tests/data/invalid_geometries/invalid_exterior_not_ccw.geojson",
         geometries=True,
     )
     geom = shape(geometry)
@@ -39,7 +39,7 @@ def test_fix_exterior_not_ccw():
 
 def test_fix_interior_not_cw():
     geometry = read_geojson(
-        "./tests/data/invalid/invalid_interior_not_cw.geojson",
+        "./tests/data/invalid_geometries/invalid_interior_not_cw.geojson",
         geometries=True,
     )
     geom = shape(geometry)

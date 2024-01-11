@@ -17,7 +17,7 @@ def read_geojson(file_path: str, geometries=False):
 def fixture_geojson_examples_all_normal_files() -> List[Path]:
     base_path = Path("tests/data")
     all_normal_files = []
-    for folder in ["valid", "invalid", "problematic"]:
+    for folder in ["valid", "invalid_geometries", "problematic_geometries"]:
         paths_in_folder = list(Path(base_path / folder).rglob("*.geojson"))
         assert paths_in_folder
         all_normal_files.extend(paths_in_folder)

@@ -60,19 +60,19 @@ def test_validate(
 
 
 def test_validate_invalid():
-    fc = read_geojson("./tests/data/invalid/invalid_duplicate_nodes.geojson")
+    fc = read_geojson("./tests/data/invalid_geometries/invalid_duplicate_nodes.geojson")
     result = main.validate_geometries(fc)
     assert "duplicate_nodes" in result["invalid"]
 
 
 def test_validate_invalid_no_checks():
-    fc = read_geojson("./tests/data/invalid/invalid_duplicate_nodes.geojson")
+    fc = read_geojson("./tests/data/invalid_geometries/invalid_duplicate_nodes.geojson")
     with pytest.raises(ValueError):
         main.validate_geometries(fc, criteria_invalid=None, criteria_problematic=[])
 
 
 def test_validate_invalid_no_invalid_or_problematic_checks():
-    fc = read_geojson("./tests/data/invalid/invalid_duplicate_nodes.geojson")
+    fc = read_geojson("./tests/data/invalid_geometries/invalid_duplicate_nodes.geojson")
     result = main.validate_geometries(fc, criteria_problematic=[])
     assert "duplicate_nodes" in result["invalid"]
 
@@ -142,7 +142,7 @@ def test_process_validation_runs_all_normal_files(
 
 # TODO: Delete
 # def test_validate_just_forthis():
-#     fp = "./tests/examples_geojson/problematic/3d_coordinates.geojson"
+#     fp = "./tests/examples_geojson/problematic_geometries/3d_coordinates.geojson"
 #     fc = read_geojson(fp)
 #     result = main.validate_geometries(a)
 #     assert not result["invalid"]
@@ -183,7 +183,7 @@ def test_fix_valid():
 
 
 def test_fix_invalid():
-    fp = "./tests/data/invalid/invalid_duplicate_nodes.geojson"
+    fp = "./tests/data/invalid_geometries/invalid_duplicate_nodes.geojson"
     fc = read_geojson(fp)
     fixed_fc = main.fix_geometries(fc)
     assert fixed_fc["type"] == "FeatureCollection"

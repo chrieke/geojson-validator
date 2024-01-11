@@ -10,9 +10,10 @@ USER = "chrieke"
 REPO = "geojson-invalid-geometry"
 BRANCH = "main"
 FOLDERS = [
-    "examples/invalid",
-    "examples/problematic",
+    "examples/invalid_geometries",
+    "examples/problematic_geometries",
     "examples/valid",
+    "examples/invalid_schema",
 ]
 
 # GitHub API URL for contents

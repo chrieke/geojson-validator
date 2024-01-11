@@ -108,16 +108,20 @@ The result is a FeatureCollection with the fixed geometries. The `check_crs` par
 ## TODO:
 
 High:
-- main validate function, the others seperate or as _? or only in app one button maybe more sense
-- Improve app & gif. Map? Checkboxes? Options?
+- Improve app & gif. 
+  - Map? 
+  - Checkboxes? 
+  - Options? 
+  - just one button for validation. 
+  - What was fixed & validate after again. 
+  - https://geojson.yanzi.dev/
+  - infos re file
 - jsondecodeerror when e.g. extra comma
-- App: What was fixed & validate after again.
 - test https://github.com/mapbox/geojsonhint/tree/master/test/data/bad
 
 Medium:
-    - advanced fix (e.g. coordinate preicisoon)
-  - bbox order and other criteria
-  - app infos ueber file
+  - advanced fix (e.g. coordinate preicisoon)
+  - fc bbox order, feature bbox, geometry bbox order and other criteria
 
 - Low:
   - Multihtreading?
@@ -125,5 +129,5 @@ Medium:
   - fastapi as connector, not hosted just in package for others to run.
 
 Notes:
-- https://geojson.yanzi.dev/
+- 
 - Does not require a feature id, and it doesnt need to be unique
