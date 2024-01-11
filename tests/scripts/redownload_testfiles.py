@@ -12,7 +12,7 @@ BRANCH = "main"
 FOLDERS = [
     "examples/invalid_geometries",
     "examples/problematic_geometries",
-    "examples/valid_schema",
+    "examples/valid",
     "examples/invalid_schema",
 ]
 
