@@ -127,12 +127,12 @@ class GeoJsonLint:
                 self._get_line_number(path),
             )
         if len(coords) < 2 or len(coords) > 3:
-            return self._add_error(
+            self._add_error(
                 "Position must have exactly 2 or 3 values",
                 self._get_line_number(path),
             )
         if not all(isinstance(coord, (int, float)) for coord in coords):
-            return self._add_error(
+            self._add_error(
                 "Each element in a position must be a number",
                 self._get_line_number(path),
             )
