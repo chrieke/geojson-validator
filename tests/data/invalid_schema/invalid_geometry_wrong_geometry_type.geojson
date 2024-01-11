@@ -1,10 +1,4 @@
 {
-  "type": "FeatureCollection",
-  "features": [
-    {
-      "type": "Feature",
-      "properties": {},
-      "geometry": {
         "coordinates": [
           [
             [
@@ -31,6 +25,3 @@
         ],
         "type": "SomeThingElse"
       }
-    }
-  ]
-}
