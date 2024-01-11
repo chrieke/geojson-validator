@@ -4,7 +4,7 @@
     {
       "type": "Feature",
       "properties": {},
-      "geometries": [
+      "not-geometry": [
         {
             "type": "Point",
             "coordinates": [

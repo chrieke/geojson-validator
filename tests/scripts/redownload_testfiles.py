@@ -12,7 +12,7 @@ BRANCH = "main"
 FOLDERS = [
     "examples/invalid_geometries",
     "examples/problematic_geometries",
-    "examples/valid",
+    "examples/valid_schema",
     "examples/invalid_schema",
 ]
 
@@ -33,12 +33,13 @@ def download_folder_contents(folder):
     items = response.json()
 
     for item in items:
+        print(f"Downloading {item['name']} ...")
         if item["type"] == "file" and item["name"].endswith(".geojson"):
             file_url = item["download_url"]
             base_folder_name = str(Path(folder).name)
             local_path = TESTFILES_DIR / base_folder_name / item["name"]
-            print(f"Downloading {item['name']} to {local_path}")
             download_file(file_url, local_path)
+            print(f"Downloaded {item['name']} to {local_path}")
 
 
 def main():
