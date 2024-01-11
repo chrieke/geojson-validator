@@ -109,5 +109,4 @@ def test_schema_validation_all_invalid_schema_files(geojson_invalid_schema):
             fc = read_geojson(file_path)
             errors = schema_validation.GeoJsonLint().lint(fc)
 
-
             assert errors
