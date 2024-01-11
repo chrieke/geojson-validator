@@ -4,7 +4,7 @@ from collections import Counter
 from loguru import logger
 
 from . import checks_invalid, checks_problematic
-from .geometry_utils import prepare_geometries_for_checks
+from .geometry_utils import prepare_geometries_for_checks, extract_single_geometries
 
 logger.remove()
 logger_format = "{time:YYYY-MM-DD_HH:mm:ss.SSS} | {message}"
@@ -129,26 +129,19 @@ def process_validation(geometries, criteria_invalid, criteria_problematic):
         # Output results in this style: {3: [1,2]} (fourth geometry, the multigeometry is invalid,
         # because the second and third sub-geometries in it are invalid).
         if "Multi" in geometry_type or geometry_type == "GeometryCollection":
-            if "Multi" in geometry_type:
-                single_type = geometry_type.split("Multi")[1]
-                single_geometries = [
-                    {"type": single_type, "coordinates": g}
-                    for g in geometry["coordinates"]
-                ]
-            elif geometry_type == "GeometryCollection":
-                single_geometries = geometry["geometries"]
-            results_mp = process_validation(
+            single_geometries = extract_single_geometries(geometry, geometry_type)
+            results_multi = process_validation(
                 single_geometries, criteria_invalid, criteria_problematic
             )
             # Take all invalid criteria from the e.g. Polygons inside the Multipolygon and indicate them
             # as the positional index of the MultiPolygon.
-            for criterium in results_mp["invalid"]:
+            for criterium in results_multi["invalid"]:
                 results_invalid.setdefault(criterium, []).append(
-                    {i: results_mp["invalid"][criterium]}
+                    {i: results_multi["invalid"][criterium]}
                 )
-            for criterium in results_mp["problematic"]:
+            for criterium in results_multi["problematic"]:
                 results_problematic.setdefault(criterium, []).append(
-                    {i: results_mp["problematic"][criterium]}
+                    {i: results_multi["problematic"][criterium]}
                 )
             continue
 

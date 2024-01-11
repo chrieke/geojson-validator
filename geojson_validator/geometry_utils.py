@@ -76,6 +76,16 @@ def any_geojson_to_featurecollection(
     return fc
 
 
+def extract_single_geometries(geometry, geometry_type):
+    if "Multi" in geometry_type:
+        single_type = geometry_type.split("Multi")[1]
+        return [
+            {"type": single_type, "coordinates": g} for g in geometry["coordinates"]
+        ]
+    elif geometry_type == "GeometryCollection":
+        return geometry["geometries"]
+
+
 def prepare_geometries_for_checks(geometry):
     """Prepares the Geometries for the validation checks"""
     # Some criteria require the original json geometry dict as shapely etc. autofixes (e.g. closes) geometries.
