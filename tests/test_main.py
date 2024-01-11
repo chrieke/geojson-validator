@@ -97,7 +97,7 @@ def test_validate_url():
     assert len(result["invalid"]["exterior_not_ccw"]) == 16
 
 
-geojson_geometry_examples = [
+geojson_geometry_type_examples = [
     ("Point", "./tests/data/valid/valid_geometry_point.geojson"),
     ("MultiPoint", "./tests/data/valid/valid_geometry_multipoint.geojson"),
     ("LineString", "./tests/data/valid/valid_geometry_linestring.geojson"),
@@ -114,7 +114,7 @@ geojson_geometry_examples = [
 ]
 
 
-@pytest.mark.parametrize("geometry_type, file_path", geojson_geometry_examples)
+@pytest.mark.parametrize("geometry_type, file_path", geojson_geometry_type_examples)
 def test_process_validation_valid_all_geometry_types(geometry_type, file_path):
     fc = read_geojson(file_path)
     results = main.validate_geometries(fc)
@@ -147,31 +147,6 @@ def test_process_validation_runs_all_normal_files(
 #     result = main.validate_geometries(a)
 #     assert not result["invalid"]
 #     assert not result["problematic"]
-
-
-@pytest.mark.skip(reason="1mb file")
-def test_validate_countries_dataset():
-    fc = read_geojson("./tests/data/countries.geojson")
-    result = main.validate_geometries(fc)
-    assert len(result["invalid"]) == 0
-    assert len(result["problematic"]["self_intersection"]) == 1
-    assert result["problematic"]["crosses_antimeridian"] == [
-        {12: [7]},
-        {59: [1]},
-        {142: [3, 9]},
-    ]
-    assert len(result["problematic"]["excessive_coordinate_precision"]) == 51
-    assert result["problematic"]["holes"] == [181]
-    assert len(result["problematic"]) == 4
-    assert result["count_geometry_types"] == {"Polygon": 188, "MultiPolygon": 46}
-
-
-@pytest.mark.skip(reason="Takes 10sec, 20mb file")
-def test_validate_buildings_dataset():
-    fc = read_geojson("./tests/data/buildings.json")
-    result = main.validate_geometries(fc)
-    assert len(result["problematic"]["excessive_coordinate_precision"]) == 66510
-    assert result["count_geometry_types"]["Polygon"] == 66510
 
 
 def test_fix_valid():
