@@ -107,6 +107,10 @@ geojson_geometry_examples = [
     ),
     ("Polygon", "./tests/data/valid/valid_geometry_polygon.geojson"),
     ("MultiPolygon", "./tests/data/valid/valid_geometry_multipolygon.geojson"),
+    (
+        "GeometryCollection",
+        "./tests/data/valid/valid_geometry_geometrycollection.geojson",
+    ),
 ]
 
 

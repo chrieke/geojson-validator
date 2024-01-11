@@ -41,6 +41,68 @@ def test_process_validation_no_error_no_type():
     assert geometry_validation.process_validation(geometries, [], [])
 
 
+def test_process_validation_multipolygon():
+    # Second geometry in Multipolygon and third geometry is unclosed
+    geometries = [
+        {
+            "type": "MultiPolygon",
+            "coordinates": [
+                [[[0, 0], [2, 2], [2, 0], [0, 0]]],
+                [[[0, 0], [2, 2], [2, 0], [0, 1]]],  # invalid
+                [[[0, 0], [1, 1], [1, 0]]],  # invalid
+            ],
+        },
+    ]
+    invalid_criteria = ["unclosed"]
+    results = geometry_validation.process_validation(geometries, invalid_criteria, [])
+    assert results["invalid"]["unclosed"] == [{0: [1, 2]}]
+    assert results["count_geometry_types"] == {"MultiPolygon": 1}
+
+
+def test_process_validation_geometrycollection():
+    geometries = [
+        {
+            "type": "GeometryCollection",
+            "geometries": [
+                {"coordinates": [11.691336, 51.804026], "type": "Point"},
+                {
+                    "coordinates": [[[0, 0], [1, 1], [1, 0]]],
+                    "type": "Polygon",
+                },  # invalid
+                {"coordinates": [[[0, 0], [2, 2], [2, 0], [0, 0]]], "type": "Polygon"},
+            ],
+        }
+    ]
+    invalid_criteria = ["unclosed"]
+    results = geometry_validation.process_validation(geometries, invalid_criteria, [])
+    assert results["invalid"]["unclosed"] == [{0: [1]}]
+    assert results["count_geometry_types"] == {"GeometryCollection": 1}
+
+
+def test_process_validation_multipolygon_in_geometrycollection():
+    # Second geometry in Multipolygon and third geometry is unclosed
+    geometries = [
+        {
+            "type": "GeometryCollection",
+            "geometries": [
+                {"coordinates": [11.691336, 51.804026], "type": "Point"},
+                {
+                    "type": "MultiPolygon",
+                    "coordinates": [
+                        [[[0, 0], [2, 2], [2, 0], [0, 0]]],
+                        [[[0, 0], [2, 2], [2, 0], [0, 1]]],  # invalid
+                        [[[0, 0], [1, 1], [1, 0]]],  # invalid
+                    ],
+                },
+            ],
+        }
+    ]
+    invalid_criteria = ["unclosed"]
+    results = geometry_validation.process_validation(geometries, invalid_criteria, [])
+    assert results["invalid"]["unclosed"] == [{0: [{1: [1, 2]}]}]
+    assert results["count_geometry_types"] == {"GeometryCollection": 1}
+
+
 def test_process_validation_multiple_types():
     # Second geometry in Multipolygon and third geometry is unclosed
     geometries = [

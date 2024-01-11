@@ -11,64 +11,65 @@ logger_format = "{time:YYYY-MM-DD_HH:mm:ss.SSS} | {message}"
 logger.add(sink=sys.stderr, format=logger_format, level="INFO")
 
 
-ALL_ACCEPTED_GEOMETRY_TYPES = POI, MPOI, LS, MLS, POL, MPOL = [
+ALL_ACCEPTED_GEOMETRY_TYPES = POI, MPOI, LS, MLS, POL, MPOL, GC = [
     "Point",
     "MultiPoint",
     "LineString",
     "MultiLineString",
     "Polygon",
     "MultiPolygon",
+    "GeometryCollection",
 ]
 
 VALIDATION_CRITERIA = {
     "invalid": {
-        "unclosed": {"relevant": [POL, MPOL], "input": "json_geometry"},
+        "unclosed": {"relevant": [POL], "input": "json_geometry"},
         "duplicate_nodes": {
-            "relevant": [LS, MLS, POL, MPOL],
+            "relevant": [LS, POL],
             "input": "json_geometry",
         },
         "less_three_unique_nodes": {
-            "relevant": [POL, MPOL],
+            "relevant": [POL],
             "input": "json_geometry",
         },
         "exterior_not_ccw": {
-            "relevant": [POL, MPOL],
+            "relevant": [POL],
             "input": "shapely_geom",
         },
         "interior_not_cw": {
-            "relevant": [POL, MPOL],
+            "relevant": [POL],
             "input": "shapely_geom",
         },
         "inner_and_exterior_ring_intersect": {
-            "relevant": [POL, MPOL],
+            "relevant": [POL],
             "input": "shapely_geom",
         },
         "outside_lat_lon_boundaries": {
-            "relevant": ALL_ACCEPTED_GEOMETRY_TYPES,
+            "relevant": [POI, LS, POL],
             "input": "json_geometry",
         },
         # "zero-length": {"relevant": ["LineString"], "input": "json_geometry"},
     },
     "problematic": {
-        "holes": {"relevant": [POL, MPOL], "input": "shapely_geom"},
+        "holes": {"relevant": [POL], "input": "shapely_geom"},
         "self_intersection": {
-            "relevant": [POL, MPOL],
+            "relevant": [POL],
             "input": "shapely_geom",
         },
         "excessive_coordinate_precision": {
-            "relevant": ALL_ACCEPTED_GEOMETRY_TYPES,
+            "relevant": [POI, LS, POL],
             "input": "json_geometry",
         },
         "excessive_vertices": {
-            "relevant": [LS, MLS, POL, MPOL],
+            "relevant": [LS, POL],
             "input": "json_geometry",
         },
         "3d_coordinates": {
-            "relevant": ALL_ACCEPTED_GEOMETRY_TYPES,
+            "relevant": [POI, LS, POL],
             "input": "json_geometry",
         },
         "crosses_antimeridian": {
-            "relevant": [LS, MLS, POL, MPOL],
+            "relevant": [LS, POL],
             "input": "json_geometry",
         },
         # "wrong_bbox_order: {}"
@@ -87,10 +88,13 @@ def check_criteria(selected_criteria, criteria_type):
 
 
 def apply_check(
-    criterium, geometry, shapely_geom, geometry_type, criteria_type="invalid"
+    criterium, single_geometry, shapely_geom, geometry_type, criteria_type="invalid"
 ):
-    """Applies the correct check for the criteria"""
-    geometry_input_options = {"json_geometry": geometry, "shapely_geom": shapely_geom}
+    """Applies the correct check for the criteria. Only accepts single geometries."""
+    geometry_input_options = {
+        "json_geometry": single_geometry,
+        "shapely_geom": shapely_geom,
+    }
     relevant_geometry_type = VALIDATION_CRITERIA[criteria_type][criterium]["relevant"]
     if geometry_type in relevant_geometry_type:
         check_module = (
@@ -120,15 +124,19 @@ def process_validation(geometries, criteria_invalid, criteria_problematic):
             skipped_validation.append(i)  # TODO: Improve skipped_validation result
             continue
 
-        # Handle Multi-Geometries:
-        # Extract the single geometries in the multi-geometry, run a separate validation on each.
+        # Handle Multi-Geometries & Geometrycollections:
+        # Extract the single geometries in the multi-geometry/collection, run a separate validation on each.
         # Output results in this style: {3: [1,2]} (fourth geometry, the multigeometry is invalid,
         # because the second and third sub-geometries in it are invalid).
-        if "Multi" in geometry_type:
-            single_type = geometry_type.split("Multi")[1]
-            single_geometries = [
-                {"type": single_type, "coordinates": g} for g in geometry["coordinates"]
-            ]
+        if "Multi" in geometry_type or geometry_type == "GeometryCollection":
+            if "Multi" in geometry_type:
+                single_type = geometry_type.split("Multi")[1]
+                single_geometries = [
+                    {"type": single_type, "coordinates": g}
+                    for g in geometry["coordinates"]
+                ]
+            elif geometry_type == "GeometryCollection":
+                single_geometries = geometry["geometries"]
             results_mp = process_validation(
                 single_geometries, criteria_invalid, criteria_problematic
             )

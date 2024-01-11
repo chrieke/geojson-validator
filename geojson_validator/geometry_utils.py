@@ -54,6 +54,7 @@ def any_geojson_to_featurecollection(
         "MultiLineString",
         "Polygon",
         "MultiPolygon",
+        "GeometryCollection",
     ]
     type_ = geojson_input.get("type", None)  # FeatureCollection, Feature, Geometry
     if type_ is None:

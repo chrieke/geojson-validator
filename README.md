@@ -108,7 +108,6 @@ The result is a FeatureCollection with the fixed geometries. The `check_crs` par
 ## TODO:
 
 High:
-- support geometrycollection
 - main validate function, the others seperate or as _? or only in app one button maybe more sense
 - Improve app & gif. Map? Checkboxes? Options?
 - jsondecodeerror when e.g. extra comma
