@@ -11,14 +11,14 @@ from .fixtures import (
 from .context import main
 
 
-def test_validate_geojson_schema_conformity_valid():
+def test_validate_schema_conformity_valid():
     fp = "./tests/data/valid/valid_featurecollection.geojson"
     fc = read_geojson(fp)
     errors = main.validate_schema(fc)
     assert not errors
 
 
-def test_validate_geojson_schema_conformity_invalid():
+def test_validate_schema_conformity_invalid():
     fp = "./tests/data/valid/valid_featurecollection.geojson"
     fc = read_geojson(fp)
     fc["features"][0]["type"] = "NotFeature"
@@ -31,7 +31,7 @@ def test_validate_geojson_schema_conformity_invalid():
 @patch("geojson_validator.main.input_to_geojson")
 @patch("geojson_validator.main.any_geojson_to_featurecollection")
 @patch("geojson_validator.main.process_validation")
-def test_validate(
+def test_validate_geometries_calls(
     mock_process_validation,
     mock_input_to_geojson,
     mock_any_geojson_to_featurecollection,
@@ -59,19 +59,19 @@ def test_validate(
     mock_process_validation.assert_called()
 
 
-def test_validate_invalid():
+def test_validate__geometries_invalid():
     fc = read_geojson("./tests/data/invalid_geometries/invalid_duplicate_nodes.geojson")
     result = main.validate_geometries(fc)
     assert "duplicate_nodes" in result["invalid"]
 
 
-def test_validate_invalid_no_checks():
+def test_validate_geometries_invalid_no_checks():
     fc = read_geojson("./tests/data/invalid_geometries/invalid_duplicate_nodes.geojson")
     with pytest.raises(ValueError):
         main.validate_geometries(fc, criteria_invalid=None, criteria_problematic=[])
 
 
-def test_validate_invalid_no_invalid_or_problematic_checks():
+def test_validate_geometries_invalid_no_invalid_or_problematic_checks():
     fc = read_geojson("./tests/data/invalid_geometries/invalid_duplicate_nodes.geojson")
     result = main.validate_geometries(fc, criteria_problematic=[])
     assert "duplicate_nodes" in result["invalid"]
@@ -81,7 +81,7 @@ def test_validate_invalid_no_invalid_or_problematic_checks():
     assert not result["problematic"]
 
 
-def test_validate_valid():
+def test_validate__geometries_valid():
     fp = "./tests/data/valid/valid_featurecollection.geojson"
     fc = read_geojson(fp)
     for input_ in [fc, fp]:
@@ -91,7 +91,7 @@ def test_validate_valid():
 
 
 @pytest.mark.skip(reason="online file")
-def test_validate_url():
+def test_validate_geometries_url():
     url = "https://raw.githubusercontent.com/isellsoap/deutschlandGeoJSON/main/2_bundeslaender/1_sehr_hoch.geo.json"
     result = main.validate_geometries(url)
     assert len(result["invalid"]["exterior_not_ccw"]) == 16
@@ -115,7 +115,7 @@ geojson_geometry_type_examples = [
 
 
 @pytest.mark.parametrize("geometry_type, file_path", geojson_geometry_type_examples)
-def test_process_validation_valid_all_geometry_types(geometry_type, file_path):
+def test_process_validate_geometries_valid_all_geometry_types(geometry_type, file_path):
     fc = read_geojson(file_path)
     results = main.validate_geometries(fc)
     assert not results["invalid"]
@@ -124,7 +124,7 @@ def test_process_validation_valid_all_geometry_types(geometry_type, file_path):
     assert not results["skipped_validation"]
 
 
-def test_process_validation_runs_all_normal_files(
+def test_process_validate_geometries_runs_all_normal_files(
     fixture_geojson_examples_all_normal_files,
 ):
     ### All test files for invalid/probelamtic/valid geometry checks
@@ -132,7 +132,6 @@ def test_process_validation_runs_all_normal_files(
         assert file_path.exists()
         if file_path.name not in [
             "invalid_incorrect_geometry_data_type.geojson",  # TODO
-            "valid_geometry_geometrycollection.geojson",  # TODO
         ]:  # schema checks
             fc = read_geojson(file_path)
             results = main.validate_geometries(fc)
