@@ -107,6 +107,8 @@ The result is a FeatureCollection with the fixed geometries. The `check_crs` par
 
 ## TODO:
 
+- advanced fix (e.g. coordinate preicisoon)
+- 
 High:
 - Improve app & gif. 
   - jsondecode
@@ -119,7 +121,7 @@ High:
   - infos re file
 
 Medium:
-  - advanced fix (e.g. coordinate preicisoon)
+  - more fixes?
   - fc bbox order, feature bbox, geometry bbox order and other criteria
 
 - Low:

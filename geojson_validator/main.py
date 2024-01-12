@@ -14,7 +14,7 @@ from .geometry_validation import (
     check_criteria,
     process_validation,
 )
-from .fixes_utils import process_fix, CRITERIA_FIX, CRITERIA_FIX_OPTIONAL
+from .fixes_utils import process_fix
 
 logger.remove()
 logger_format = "{time:YYYY-MM-DD_HH:mm:ss.SSS} | {message}"
@@ -70,14 +70,22 @@ def validate_geometries(
 
 
 def fix_geometries(
-    geojson_input: Union[dict, str, Path, Any], criteria: List[str] = CRITERIA_FIX
+    geojson_input: Union[dict, str, Path, Any],
+    optional=["excessive_coordinate_precision"],
 ):
-    if not criteria:
-        raise ValueError("Select at least one criteria to fix!")
-    check_criteria(criteria, CRITERIA_FIX + CRITERIA_FIX_OPTIONAL, name="fix")
+    criteria_always = [
+        "unclosed",
+        "duplicate_nodes",
+        "exterior_not_ccw",
+        "interior_not_cw",
+    ]
+    criteria_optional = ["excessive_coordinate_precision"]
+    check_criteria(optional, criteria_optional, name="optional")
 
     results = validate_geometries(
-        geojson_input, criteria_invalid=criteria, criteria_problematic=None
+        geojson_input,
+        criteria_invalid=criteria_always,
+        criteria_problematic=optional,
     )
     # TODO: Reptition from validate, same readin task twice. Output from validation? even validate schema here?
     geojson_input = input_to_geojson(geojson_input)
@@ -86,6 +94,6 @@ def fix_geometries(
 
     # Apply results and fix.
     fixed_fc = process_fix(
-        fc, results, criteria
+        fc, results, criteria_always + criteria_optional
     )  # TODO: check if the original fc was edited
     return fixed_fc
