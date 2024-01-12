@@ -5,6 +5,16 @@ from shapely.geometry import shape
 from . import fixes_invalid
 
 
+CRITERIA_FIX = [
+    "unclosed",
+    "duplicate_nodes",
+    "exterior_not_ccw",
+    "interior_not_cw",
+]
+
+CRITERIA_FIX_OPTIONAL = ["excessive_coordinate_precision"]
+
+
 def apply_fix(criterium, shapely_geom):
     """Applies the correct check for the criteria"""
     fix_func = getattr(fixes_invalid, f"fix_{criterium}")

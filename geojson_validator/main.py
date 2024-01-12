@@ -14,7 +14,7 @@ from .geometry_validation import (
     check_criteria,
     process_validation,
 )
-from .fixes_utils import process_fix
+from .fixes_utils import process_fix, CRITERIA_FIX, CRITERIA_FIX_OPTIONAL
 
 logger.remove()
 logger_format = "{time:YYYY-MM-DD_HH:mm:ss.SSS} | {message}"
@@ -54,8 +54,10 @@ def validate_geometries(
         raise ValueError(
             "Select at least one criteria in `criteria_invalid` or `criteria_problematic`"
         )
-    check_criteria(criteria_invalid, criteria_type="invalid")
-    check_criteria(criteria_problematic, criteria_type="problematic")
+    check_criteria(criteria_invalid, VALIDATION_CRITERIA["invalid"], name="invalid")
+    check_criteria(
+        criteria_problematic, VALIDATION_CRITERIA["problematic"], name="problematic"
+    )
 
     geojson_input = input_to_geojson(geojson_input)
     fc = any_geojson_to_featurecollection(geojson_input)
@@ -67,15 +69,15 @@ def validate_geometries(
     return results
 
 
-def fix_geometries(geojson_input: Union[dict, str, Path, Any]):
-    criteria_to_fix = [
-        "unclosed",
-        "duplicate_nodes",
-        "exterior_not_ccw",
-        "interior_not_cw",
-    ]
+def fix_geometries(
+    geojson_input: Union[dict, str, Path, Any], criteria: List[str] = CRITERIA_FIX
+):
+    if not criteria:
+        raise ValueError("Select at least one criteria to fix!")
+    check_criteria(criteria, CRITERIA_FIX + CRITERIA_FIX_OPTIONAL, name="fix")
+
     results = validate_geometries(
-        geojson_input, criteria_invalid=criteria_to_fix, criteria_problematic=None
+        geojson_input, criteria_invalid=criteria, criteria_problematic=None
     )
     # TODO: Reptition from validate, same readin task twice. Output from validation? even validate schema here?
     geojson_input = input_to_geojson(geojson_input)
@@ -84,6 +86,6 @@ def fix_geometries(geojson_input: Union[dict, str, Path, Any]):
 
     # Apply results and fix.
     fixed_fc = process_fix(
-        fc, results, criteria_to_fix
+        fc, results, criteria
     )  # TODO: check if the original fc was edited
     return fixed_fc

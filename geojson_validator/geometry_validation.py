@@ -1,3 +1,4 @@
+from typing import List
 import sys
 from collections import Counter
 
@@ -77,14 +78,16 @@ VALIDATION_CRITERIA = {
 }
 
 
-def check_criteria(selected_criteria, criteria_type):
+def check_criteria(
+    selected_criteria: List[str], allowed_criteria: List[str], name: str
+):
     if selected_criteria:
         for criterium in selected_criteria:
-            if criterium not in VALIDATION_CRITERIA[criteria_type]:
+            if criterium not in allowed_criteria:
                 raise ValueError(
-                    f"The selected criterium {criterium} is not a valid argument for {criteria_type}"
+                    f"The selected criterium {criterium} is not a valid argument for {name}"
                 )
-        logger.info(f"Validation criteria '{criteria_type}': {selected_criteria}")
+        logger.info(f"Criteria '{name}': {selected_criteria}")
 
 
 def apply_check(

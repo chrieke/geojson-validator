@@ -5,13 +5,25 @@ from .context import geometry_validation
 
 def test_check_criteria_invalid():
     with pytest.raises(ValueError):
-        geometry_validation.check_criteria(["non_existent_criteria"], "invalid")
+        geometry_validation.check_criteria(
+            ["non_existent_criteria"],
+            geometry_validation.VALIDATION_CRITERIA["invalid"],
+            "invalid",
+        )
 
 
 def test_check_criteria_valid():
     try:
-        geometry_validation.check_criteria(["unclosed", "duplicate_nodes"], "invalid")
-        geometry_validation.check_criteria(["holes"], "problematic")
+        geometry_validation.check_criteria(
+            ["unclosed", "duplicate_nodes"],
+            geometry_validation.VALIDATION_CRITERIA["invalid"],
+            "invalid",
+        )
+        geometry_validation.check_criteria(
+            ["holes"],
+            geometry_validation.VALIDATION_CRITERIA["problematic"],
+            "problematic",
+        )
     except ValueError:
         pytest.fail("Unexpected ValueError for valid criteria")
 
