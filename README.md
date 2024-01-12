@@ -109,6 +109,7 @@ The result is a FeatureCollection with the fixed geometries. The `check_crs` par
 
 High:
 - Improve app & gif. 
+  - jsondecode
   - Map? 
   - Checkboxes? 
   - Options? 
@@ -116,8 +117,6 @@ High:
   - What was fixed & validate after again. 
   - https://geojson.yanzi.dev/
   - infos re file
-- jsondecodeerror when e.g. extra comma
-- test https://github.com/mapbox/geojsonhint/tree/master/test/data/bad
 
 Medium:
   - advanced fix (e.g. coordinate preicisoon)
@@ -129,5 +128,7 @@ Medium:
   - fastapi as connector, not hosted just in package for others to run.
 
 Notes:
-- 
 - Does not require a feature id, and it doesnt need to be unique
+
+Don't:
+- jsondecodeerror,
