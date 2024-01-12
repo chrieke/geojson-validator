@@ -16,15 +16,13 @@ def read_geojson_file_or_url(fp_or_url: Union[str, Path]):
         ".GEOJSON",
     ]:
         raise ValueError("Filepath or URL must be a geojson or json file")
-    if isinstance(fp_or_url, Path) or Path(fp_or_url).is_file():
-        fp = Path(fp_or_url)
-        if fp.exists():
-            with fp.open(encoding="UTF-8") as f:
-                return json.load(f)
-    elif urlparse(fp_or_url).scheme in ("http", "https", "ftp", "ftps"):
+    if urlparse(str(fp_or_url)).scheme in ("http", "https", "ftp", "ftps"):
         response = requests.get(str(fp_or_url), timeout=5)
         if response.status_code == 200:  # Check if the request was successful
             return response.json()
+
+    with Path(fp_or_url).open(encoding="UTF-8") as f:
+        return json.load(f)
 
 
 def input_to_geojson(geojson_input: Union[str, Path, dict, Any]) -> dict:

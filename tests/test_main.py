@@ -115,7 +115,7 @@ geojson_geometry_type_examples = [
 
 
 @pytest.mark.parametrize("geometry_type, file_path", geojson_geometry_type_examples)
-def test_process_validate_geometries_valid_all_geometry_types(geometry_type, file_path):
+def test_validate_geometries_valid_all_geometry_types(geometry_type, file_path):
     fc = read_geojson(file_path)
     results = main.validate_geometries(fc)
     assert not results["invalid"]
@@ -124,7 +124,7 @@ def test_process_validate_geometries_valid_all_geometry_types(geometry_type, fil
     assert not results["skipped_validation"]
 
 
-def test_process_validate_geometries_runs_all_normal_files(
+def test_validate_geometries_runs_all_normal_files(
     fixture_geojson_examples_all_normal_files,
 ):
     ### All test files for invalid/probelamtic/valid geometry checks
@@ -146,6 +146,14 @@ def test_process_validate_geometries_runs_all_normal_files(
 #     result = main.validate_geometries(a)
 #     assert not result["invalid"]
 #     assert not result["problematic"]
+
+
+def test_validations_raise_bad_filepath():
+    filepath = "abc.geojson"
+    with pytest.raises(FileNotFoundError):
+        main.validate_schema(filepath)
+    with pytest.raises(FileNotFoundError):
+        main.validate_geometries(filepath)
 
 
 def test_fix_valid():
