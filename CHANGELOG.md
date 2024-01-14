@@ -5,17 +5,17 @@ Update your installation to the latest version:
 === "pip"
 
     ```bash
-    pip install up42-py --upgrade
+    # pip show geojson-validator # check currently installed version
+    pip install geojson-validator --upgrade
     ```
 
-Check which version is currently installed:
+## 0.4.0
+**January 04, 2024**
 
-=== "pip"
-
-    ```bash
-    pip show up42-py
-    ```
-
+- Change .validate_schema result from list to dictionary of error messages, with line and feature position of each error.
+- Move crs check to .validate_schema, now optional.
+- Enable Geometrycollection as valid type.
+- Various improvements and fixes
 
 ## 0.3.0
 **January 04, 2024**
