@@ -1,4 +1,4 @@
-<img src="./preview-images/header_img.jpeg">
+<img src="./repo-images/header_img.jpeg">
 
 **Validate and automatically fix invalid GeoJSON. 🌎 Webapp and 🐍 Python package.** 
 
@@ -8,6 +8,7 @@ The only tool that reliably addresses all issues:
 - Checks against **GeoJSON schema** if all required JSON elements exist 
 - Automatically **fixes** invalid geometry issues 
 
+<br>
 
 <h3 align="center">
     🎈 <a href="https://geojson-validator.streamlit.app/">Try it out: geojson-validator webapp 🎈 </a>
@@ -37,6 +38,7 @@ geojson_validator.validate_geometries(geojson_input)
 
 geojson_validator.fix_geometries(geojson_input)
 ```
+<br>
 
 ### 1. Validate GeoJSON schema 📚
 
@@ -46,8 +48,8 @@ Checks the structure & formatting of the GeoJSON, e.g. if all required elements 
 errors = geojson_validator.validate_schema(geojson_input)
 ```
 
-If the input conforms to the GeoJSON schema returns an empty list, otherwise all the reasons why it is invalid
-e.g. `[{"message": "Missing 'type'", "line": 4}]`.
+If the input conforms to the GeoJSON schema returns an empty list, otherwise all the reasons and respective
+line/feature position where it is invalid: e.g. `{"Missing 'type'": {"lines": [4], "features": [0]}`.
 
 
 ### 2. Validate geometries 🟥
@@ -105,8 +107,10 @@ The result is a FeatureCollection with the fixed geometries. The `check_crs` par
 <br>
 <br>
 
-## TODO:
+<details><summary>TODO</summary>
+<p>
 
+- additional reasons invalidaity
 - advanced fix (e.g. coordinate preicisoon)
 - 
 High:
@@ -133,4 +137,10 @@ Notes:
 - Does not require a feature id, and it doesnt need to be unique
 
 Don't:
-- jsondecodeerror,
+- jsondecodeerror
+
+</p>
+</details>
+
+
+
