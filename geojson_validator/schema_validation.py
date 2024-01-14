@@ -27,9 +27,10 @@ class GeoJsonLint:
     ]
 
     def __init__(self, check_crs=False):
-        self.errors = []
         self.check_crs = check_crs
+        self.feature_idx = None
         self.line_map = None
+        self.errors = {}
 
     def lint(self, geojson_data):
         if not isinstance(geojson_data, (dict, list)):
@@ -42,10 +43,6 @@ class GeoJsonLint:
         self.line_map = calculate(formatted_geojson_string)
 
         self._validate_geojson_root(geojson_data)
-
-        for err in self.errors:
-            if "line" in err and err["line"] is None:
-                del err["line"]
 
         return self.errors
 
@@ -74,9 +71,10 @@ class GeoJsonLint:
 
         if not self._is_invalid_property(feature_collection, "features", "array", path):
             for idx, feature in enumerate(feature_collection["features"]):
+                self.feature_idx = idx
                 if not isinstance(feature, dict):
                     self._add_error(
-                        f"Every feature must be a dictionary/object.",
+                        "Every feature must be a dictionary/object.",
                         self._get_line_number(f"{path}/features/{idx}"),
                     )
                 else:
@@ -95,29 +93,29 @@ class GeoJsonLint:
         if geom:
             self._validate_geometry(geom, f"{path}/geometry")
 
-    def _validate_geometry(self, obj, path):
-        if self._is_invalid_type(obj, path):
+    def _validate_geometry(self, geometry, path: str):
+        if self._is_invalid_type(geometry, path):
             return
 
-        obj_type = obj.get("type")
+        obj_type = geometry.get("type")
         if obj_type == "GeometryCollection":
-            if not self._is_invalid_property(obj, "geometries", "array", path):
-                for idx, geom in enumerate(obj["geometries"]):
+            if not self._is_invalid_property(geometry, "geometries", "array", path):
+                for idx, geom in enumerate(geometry["geometries"]):
                     self._validate_geometry(geom, f"{path}/geometries/{idx}")
-        elif not self._is_invalid_property(obj, "coordinates", "array", path):
+        elif not self._is_invalid_property(geometry, "coordinates", "array", path):
             if obj_type in ["Point"]:
-                self._validate_position(obj["coordinates"], f"{path}/coordinates")
+                self._validate_position(geometry["coordinates"], f"{path}/coordinates")
             elif obj_type in ["LineString", "MultiPoint"]:
                 self._validate_position_array(
-                    obj["coordinates"], 1, f"{path}/coordinates"
+                    geometry["coordinates"], 1, f"{path}/coordinates"
                 )
             elif obj_type in ["Polygon", "MultiLineString"]:
                 self._validate_position_array(
-                    obj["coordinates"], 2, f"{path}/coordinates"
+                    geometry["coordinates"], 2, f"{path}/coordinates"
                 )
             elif obj_type in ["MultiPolygon"]:
                 self._validate_position_array(
-                    obj["coordinates"], 3, f"{path}/coordinates"
+                    geometry["coordinates"], 3, f"{path}/coordinates"
                 )
 
     def _validate_position(self, coords, path):
@@ -149,7 +147,12 @@ class GeoJsonLint:
             self._validate_position_array(c, depth - 1, f"{path}/{idx}")
 
     def _add_error(self, message, line):
-        self.errors.append({"message": message, "line": line or None})
+        # self.errors.append({"message": message, "line": line or None})
+        if message not in self.errors:
+            self.errors[message] = {"lines": [line], "features": [self.feature_idx]}
+        else:
+            self.errors[message]["lines"].append(line)
+            self.errors[message]["features"].append(self.feature_idx)
 
     def _get_line_number(self, path):
         entry = self.line_map.get(path)

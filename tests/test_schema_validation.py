@@ -32,14 +32,13 @@ def test_schema_validation_invalid_various_issues():
     }
     errors = schema_validation.GeoJsonLint().lint(geojson_data)
     assert errors
-    assert errors == [
-        {"message": "Missing 'type'", "line": 3},
-        {"message": "Missing 'type'", "line": 4},
-        {
-            "message": '"geometry" member should be an object, but is a list instead',
-            "line": 17,
+    assert errors == {
+        "Missing 'type' member": {"lines": [3, 4], "features": [0, 0]},
+        '"geometry" member must be a dictionary/object, but is a list instead': {
+            "lines": [17],
+            "features": [1],
         },
-    ]
+    }
 
 
 def test_schema_validation_crs_member_optional_check():
@@ -62,7 +61,7 @@ def test_schema_validation_crs_member_optional_check():
     }
     assert not schema_validation.GeoJsonLint().lint(geojson_data)
     errors = schema_validation.GeoJsonLint(check_crs=True).lint(geojson_data)
-    assert errors[0]["line"] == 2
+    assert errors[list(errors.keys())[0]]["lines"][0] == 2
 
 
 def test_schema_validation_quotes_around_geometry():

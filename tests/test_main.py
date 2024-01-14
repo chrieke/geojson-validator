@@ -24,7 +24,7 @@ def test_validate_schema_conformity_invalid():
     fc["features"][0]["type"] = "NotFeature"
     errors = main.validate_schema(fc)
     assert errors
-    assert errors[0] == {"line": 3, "message": "Invalid type 'NotFeature'"}
+    assert errors == {"Invalid type 'NotFeature'": {"lines": [3], "features": [0]}}
 
 
 @patch("geojson_validator.main.check_criteria")
