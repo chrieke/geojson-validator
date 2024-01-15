@@ -14,7 +14,7 @@ class GeoJsonLint:
     Focuses on structural GEOJSON schema validation, not GeoJSON specification geometry rules.
     """
 
-    GEOJSON_TYPES = [
+    GEOMETRY_TYPES = [
         "FeatureCollection",
         "Feature",
         "Point",
@@ -25,6 +25,10 @@ class GeoJsonLint:
         "MultiPolygon",
         "GeometryCollection",
     ]
+    GEOJSON_TYPES = [
+        "FeatureCollection",
+        "Feature",
+    ] + GEOMETRY_TYPES
 
     def __init__(self, check_crs=False):
         self.check_crs = check_crs
@@ -48,7 +52,7 @@ class GeoJsonLint:
 
     def _validate_geojson_root(self, obj):
         root_path = ""
-        if self._is_invalid_type(obj, root_path):
+        if self._is_invalid_type(obj, self.GEOJSON_TYPES, root_path):
             return
 
         obj_type = obj.get("type")
@@ -60,7 +64,7 @@ class GeoJsonLint:
             self._validate_geometry(obj, root_path)
 
     def _validate_feature_collection(self, feature_collection, path):
-        self._is_invalid_type(feature_collection, path)
+        self._is_invalid_type(feature_collection, ["FeatureCollection"], path)
 
         if self.check_crs and "crs" in feature_collection:
             self._add_error(
@@ -81,7 +85,7 @@ class GeoJsonLint:
                     self._validate_feature(feature, f"{path}/features/{idx}")
 
     def _validate_feature(self, feature, path):
-        self._is_invalid_type(feature, path)
+        self._is_invalid_type(feature, ["Feature"], path)
         if "id" in feature and not isinstance(feature["id"], (str, int)):
             self._add_error(
                 'Feature "id" member must be a string or int number',
@@ -94,7 +98,7 @@ class GeoJsonLint:
             self._validate_geometry(geom, f"{path}/geometry")
 
     def _validate_geometry(self, geometry, path: str):
-        if self._is_invalid_type(geometry, path):
+        if self._is_invalid_type(geometry, self.GEOMETRY_TYPES, path):
             return
 
         obj_type = geometry.get("type")
@@ -159,17 +163,20 @@ class GeoJsonLint:
         # +1 as lines are zero-indexed
         return entry.value_start.line + 1 if entry else None
 
-    def _is_invalid_type(self, obj, path):
+    def _is_invalid_type(self, obj, allowed_types, path):
         if not isinstance(obj, dict):
             return True
         obj_type = obj.get("type")
-        if not obj_type or obj_type not in self.GEOJSON_TYPES:
-            message = (
-                "Missing 'type' member"
-                if not obj_type
-                else f"Invalid type '{obj_type}'"
+        if not obj_type:
+            self._add_error("Missing 'type' member", self._get_line_number(path))
+            return True
+        # This is specific to fc, f, geometries.
+        # TODO: Take it outside of typecheck
+        elif obj_type not in allowed_types:
+            self._add_error(
+                f"Invalid 'type', is '{obj_type}', must be one of '{allowed_types}'",
+                self._get_line_number(path),
             )
-            self._add_error(message, self._get_line_number(path))
             return True
         return False
 

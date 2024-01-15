@@ -10,7 +10,7 @@ Update your installation to the latest version:
     ```
 
 ## 0.4.0
-**January 04, 2024**
+**January 14, 2024**
 
 - Change .validate_schema result from list to dictionary of error messages, with line and feature position of each error.
 - Move crs check to .validate_schema, now optional.

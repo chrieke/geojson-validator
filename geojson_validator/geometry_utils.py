@@ -35,7 +35,7 @@ def input_to_geojson(geojson_input: Union[str, Path, dict, Any]) -> dict:
         geojson_input = geojson_input.__geo_interface__
     elif not isinstance(geojson_input, (dict)) or "type" not in geojson_input:
         raise ValueError(
-            f"Unsupported input {type(geojson_input)}. Input must be a GeoJSON, filepath/url to GeoJSON, "
+            f"Unsupported input '{type(geojson_input)}'. Input must be a GeoJSON, filepath/url to GeoJSON, "
             f"shapely geometry or any object with a __geo_interface__"
         )
     return geojson_input
