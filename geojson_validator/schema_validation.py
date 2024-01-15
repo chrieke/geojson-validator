@@ -53,13 +53,13 @@ class GeoJsonLint:
 
     def _add_error(self, message: str, line: int):
         if message not in self.errors:
-            self.errors[message] = {"lines": [line]}
+            self.errors[message] = {"line": [line]}
             if self.feature_idx is not None:
-                self.errors[message]["features"] = [self.feature_idx]
+                self.errors[message]["feature"] = [self.feature_idx]
         else:
-            self.errors[message]["lines"].append(line)
+            self.errors[message]["line"].append(line)
             if self.feature_idx is not None:
-                self.errors[message]["features"].append(self.feature_idx)
+                self.errors[message]["feature"].append(self.feature_idx)
 
     def _get_line_number(self, path: str):
         entry = self.line_map.get(path)

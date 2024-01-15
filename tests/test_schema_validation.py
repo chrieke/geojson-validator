@@ -33,10 +33,10 @@ def test_schema_validation_invalid_various_issues():
     errors = schema_validation.GeoJsonLint().lint(geojson_data)
     assert errors
     assert errors == {
-        "Missing 'type' member": {"lines": [3, 4], "features": [0, 0]},
+        "Missing 'type' member": {"line": [3, 4], "feature": [0, 0]},
         '"geometry" member must be an object/dictionary, but is a list instead': {
-            "lines": [17],
-            "features": [1],
+            "line": [17],
+            "feature": [1],
         },
     }
 
@@ -61,7 +61,7 @@ def test_schema_validation_crs_member_optional_check():
     }
     assert not schema_validation.GeoJsonLint().lint(geojson_data)
     errors = schema_validation.GeoJsonLint(check_crs=True).lint(geojson_data)
-    assert errors[list(errors.keys())[0]]["lines"][0] == 2
+    assert errors[list(errors.keys())[0]]["line"][0] == 2
 
 
 def test_schema_validation_quotes_around_geometry():
@@ -114,3 +114,30 @@ def test_schema_validation_all_invalid_schema_files(geojson_invalid_schema):
             errors = schema_validation.GeoJsonLint().lint(fc)
 
             assert errors
+
+
+# def test_justnow(geojson_invalid_schema):
+#     fc = {
+#         "type": "FeatureCollection",
+#         "features": [
+#             {
+#                 "type": "Feature",
+#                 "properties": {},
+#                 "geometry": {
+#                     "coordinates": [
+#                         [
+#                             [12.624027, 52.326463],
+#                             [12.624027, 51.877858],
+#                             [13.354359, 51.877858],
+#                             [13.354359, 52.326463],
+#                             [12.624027, 52.326463],
+#                         ]
+#                     ],
+#                     "type": "notPolygon",
+#                 },
+#             }
+#         ],
+#     }
+#     errors = schema_validation.GeoJsonLint().lint(fc)
+#
+#     assert errors

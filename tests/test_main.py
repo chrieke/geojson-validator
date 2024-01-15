@@ -26,8 +26,8 @@ def test_validate_schema_conformity_invalid():
     assert errors
     assert errors == {
         "Invalid 'type' member, is 'Some_weird_Feature_name', must be one of ['Feature']": {
-            "lines": [32],
-            "features": [0],
+            "line": [32],
+            "feature": [0],
         }
     }
 

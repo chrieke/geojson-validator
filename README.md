@@ -49,7 +49,7 @@ errors = geojson_validator.validate_schema(geojson_input)
 ```
 
 If the input conforms to the GeoJSON schema returns an empty list, otherwise all the reasons and respective
-line/feature position where it is invalid: e.g. `{"Missing 'type'": {"lines": [4], "features": [0]}`.
+line/feature positions where it is invalid: e.g. `{"Missing 'type'": {"line": [4], "feature": [0]}`.
 
 
 ### 2. Validate geometries 🟥
