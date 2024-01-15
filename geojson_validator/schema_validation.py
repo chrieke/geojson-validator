@@ -43,7 +43,7 @@ class GeoJsonLint:
             return self.errors
 
         formatted_geojson_string = json.dumps(
-            geojson_data, sort_keys=True, indent=2, separators=(",", ": ")
+            geojson_data, indent=2, separators=(",", ": ")
         )
         self.line_map = calculate(formatted_geojson_string)
 
@@ -133,7 +133,9 @@ class GeoJsonLint:
                     self._validate_geometry(geom, f"{path}/geometries/{idx}")
         elif not self._is_invalid_property(geometry, "coordinates", "array", path):
             if obj_type in ["Point"]:
-                self._validate_position(geometry["coordinates"], f"{path}/coordinates")
+                self._validate_position_array(
+                    geometry["coordinates"], 0, f"{path}/coordinates"
+                )
             elif obj_type in ["LineString", "MultiPoint"]:
                 self._validate_position_array(
                     geometry["coordinates"], 1, f"{path}/coordinates"
