@@ -54,10 +54,13 @@ class GeoJsonLint:
     def _add_error(self, message: str, line: int):
         # self.errors.append({"message": message, "line": line or None})
         if message not in self.errors:
-            self.errors[message] = {"lines": [line], "features": [self.feature_idx]}
+            self.errors[message] = {"lines": [line]}
+            if self.feature_idx is not None:
+                self.errors[message]["features"] = [self.feature_idx]
         else:
             self.errors[message]["lines"].append(line)
-            self.errors[message]["features"].append(self.feature_idx)
+            if self.feature_idx is not None:
+                self.errors[message]["features"].append(self.feature_idx)
 
     def _get_line_number(self, path: str):
         entry = self.line_map.get(path)
@@ -121,9 +124,7 @@ class GeoJsonLint:
 
     def _validate_geometry(self, geometry: dict, path: str):
         """Validate that the geometry object conforms to the requirements."""
-        if self._is_invalid_type_member(
-            geometry, self.GEOMETRY_TYPES, f"{path}/type"
-        ):  # TODO: path
+        if self._is_invalid_type_member(geometry, self.GEOMETRY_TYPES, f"{path}/type"):
             return
 
         obj_type = geometry.get("type")
