@@ -21,12 +21,12 @@ def test_validate_schema_conformity_valid():
 def test_validate_schema_conformity_invalid():
     fp = "./tests/data/valid/valid_featurecollection.geojson"
     fc = read_geojson(fp)
-    fc["features"][0]["type"] = "NotFeature"
+    fc["features"][0]["type"] = "Some_weird_Feature_name"
     errors = main.validate_schema(fc)
     assert errors
     assert errors == {
-        "Invalid 'type', is 'NotFeature', must be one of '['Feature']'": {
-            "lines": [3],
+        "Invalid 'type' member, is 'Some_weird_Feature_name', must be one of ['Feature']": {
+            "lines": [32],
             "features": [0],
         }
     }

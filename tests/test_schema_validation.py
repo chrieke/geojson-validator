@@ -34,7 +34,7 @@ def test_schema_validation_invalid_various_issues():
     assert errors
     assert errors == {
         "Missing 'type' member": {"lines": [3, 4], "features": [0, 0]},
-        '"geometry" member must be a dictionary/object, but is a list instead': {
+        '"geometry" member must be an object/dictionary, but is a list instead': {
             "lines": [17],
             "features": [1],
         },
