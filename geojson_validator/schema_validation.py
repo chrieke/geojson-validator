@@ -63,7 +63,7 @@ class GeoJsonLint:
         entry = self.line_map.get(path)
         return entry.value_start.line + 1 if entry else None  # zero-indexed
 
-    def _validate_geojson_root(self, obj: Union[dict, list, Any]):
+    def _validate_geojson_root(self, obj: Union[dict, Any]):
         """Validate that the geojson object root directory conforms to the requirements."""
         root_path = ""
         if self._is_invalid_type_member(obj, self.GEOJSON_TYPES, root_path):
@@ -74,14 +74,16 @@ class GeoJsonLint:
             self._validate_feature_collection(obj, root_path)
         elif obj_type == "Feature":
             self._validate_feature(obj, root_path)
-        elif obj_type in self.GEOJSON_TYPES:
+        elif obj_type in self.GEOMETRY_TYPES:
             self._validate_geometry(obj, root_path)
 
     def _validate_feature_collection(
         self, feature_collection: Union[dict, Any], path: str
     ):
         """Validate that the featurecollection object conforms to the requirements."""
-        self._is_invalid_type_member(feature_collection, ["FeatureCollection"], path)
+        self._is_invalid_type_member(
+            feature_collection, ["FeatureCollection"], f"{path}/type"
+        )
 
         if self.check_crs and "crs" in feature_collection:
             self._add_error(
@@ -105,7 +107,7 @@ class GeoJsonLint:
 
     def _validate_feature(self, feature: Union[dict, Any], path: str):
         """Validate that the feature object conforms to the requirements."""
-        self._is_invalid_type_member(feature, ["Feature"], path)
+        self._is_invalid_type_member(feature, ["Feature"], f"{path}/type")
         if "id" in feature and not isinstance(feature["id"], (str, int)):
             self._add_error(
                 'Feature "id" member must be a string or int number',
@@ -120,7 +122,7 @@ class GeoJsonLint:
     def _validate_geometry(self, geometry: dict, path: str):
         """Validate that the geometry object conforms to the requirements."""
         if self._is_invalid_type_member(
-            geometry, self.GEOMETRY_TYPES, f"{path}"
+            geometry, self.GEOMETRY_TYPES, f"{path}/type"
         ):  # TODO: path
             return
 
@@ -145,32 +147,36 @@ class GeoJsonLint:
                     geometry["coordinates"], 3, f"{path}/coordinates"
                 )
 
-    def _is_invalid_type_member(self, obj, allowed_types: List[str], path: str):
+    def _is_invalid_type_member(
+        self, obj: Union[dict, Any], allowed_types: List[str], path: str
+    ):
         """
-        Checks if an object type conforms to the requirements.
+        Checks if an object type member conforms to the requirements.
 
         Args:
             obj: The object to check the property of
             allowed_types: List of the allowed types to check against.
-            path: The line_map path pointing to the property in question.
+            path: The line_map path pointing to the type property in question.
         """
         if not isinstance(obj, dict):
             return True
         obj_type = obj.get("type")
         if not obj_type:
-            self._add_error("Missing 'type' member", self._get_line_number(path))
+            self._add_error(
+                "Missing 'type' member", self._get_line_number(path.split("/type")[0])
+            )
             return True
-        # This is specific to fc, f, geometries.
-        # TODO: Take it outside of typecheck
         elif obj_type not in allowed_types:
             self._add_error(
-                f"Invalid 'type', is '{obj_type}', must be one of '{allowed_types}'",
+                f"Invalid 'type' member, is '{obj_type}', must be one of {allowed_types}",
                 self._get_line_number(path),
             )
             return True
         return False
 
-    def _is_invalid_property(self, obj, name: str, type_str: str, path: str):
+    def _is_invalid_property(
+        self, obj: Union[dict, Any], name: str, type_str: str, path: str
+    ):
         """
         Checks if an object property conforms to the requirements.
 
@@ -196,7 +202,7 @@ class GeoJsonLint:
             if name in ["geometry", "properties"] and obj[name] is None:
                 return False
             self._add_error(
-                f'"{name}" member must be a dictionary/object, but is a {type(obj[name]).__name__} instead',
+                f'"{name}" member must be an object/dictionary, but is a {type(obj[name]).__name__} instead',
                 self._get_line_number(path),
             )
             return True
@@ -229,5 +235,5 @@ class GeoJsonLint:
                 "Coordinates must be an array",
                 self._get_line_number(path),
             )
-        for idx, c in enumerate(coords):
-            self._validate_position_array(c, depth - 1, f"{path}/{idx}")
+        for p in coords:
+            self._validate_position_array(p, depth - 1, path)
