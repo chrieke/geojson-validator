@@ -1,3 +1,4 @@
+from typing import List, Any, Union
 import json
 from json_source_map import calculate
 
@@ -30,15 +31,15 @@ class GeoJsonLint:
         "Feature",
     ] + GEOMETRY_TYPES
 
-    def __init__(self, check_crs=False):
+    def __init__(self, check_crs: bool = False):
         self.check_crs = check_crs
         self.feature_idx = None
         self.line_map = None
         self.errors = {}
 
-    def lint(self, geojson_data):
-        if not isinstance(geojson_data, (dict, list)):
-            self._add_error("Root of GeoJSON must be object/dictionary", 0)
+    def lint(self, geojson_data: Union[dict, Any]):
+        if not isinstance(geojson_data, dict):
+            self._add_error("Root of GeoJSON must be an object/dictionary", 0)
             return self.errors
 
         formatted_geojson_string = json.dumps(
@@ -50,9 +51,22 @@ class GeoJsonLint:
 
         return self.errors
 
-    def _validate_geojson_root(self, obj):
+    def _add_error(self, message: str, line: int):
+        # self.errors.append({"message": message, "line": line or None})
+        if message not in self.errors:
+            self.errors[message] = {"lines": [line], "features": [self.feature_idx]}
+        else:
+            self.errors[message]["lines"].append(line)
+            self.errors[message]["features"].append(self.feature_idx)
+
+    def _get_line_number(self, path: str):
+        entry = self.line_map.get(path)
+        return entry.value_start.line + 1 if entry else None  # zero-indexed
+
+    def _validate_geojson_root(self, obj: Union[dict, list, Any]):
+        """Validate that the geojson object root directory conforms to the requirements."""
         root_path = ""
-        if self._is_invalid_type(obj, self.GEOJSON_TYPES, root_path):
+        if self._is_invalid_type_member(obj, self.GEOJSON_TYPES, root_path):
             return
 
         obj_type = obj.get("type")
@@ -63,8 +77,11 @@ class GeoJsonLint:
         elif obj_type in self.GEOJSON_TYPES:
             self._validate_geometry(obj, root_path)
 
-    def _validate_feature_collection(self, feature_collection, path):
-        self._is_invalid_type(feature_collection, ["FeatureCollection"], path)
+    def _validate_feature_collection(
+        self, feature_collection: Union[dict, Any], path: str
+    ):
+        """Validate that the featurecollection object conforms to the requirements."""
+        self._is_invalid_type_member(feature_collection, ["FeatureCollection"], path)
 
         if self.check_crs and "crs" in feature_collection:
             self._add_error(
@@ -73,7 +90,9 @@ class GeoJsonLint:
                 self._get_line_number(f"{path}/crs"),
             )
 
-        if not self._is_invalid_property(feature_collection, "features", "array", path):
+        if not self._is_invalid_property(
+            feature_collection, "features", "array", f"{path}/features"
+        ):
             for idx, feature in enumerate(feature_collection["features"]):
                 self.feature_idx = idx
                 if not isinstance(feature, dict):
@@ -84,8 +103,9 @@ class GeoJsonLint:
                 else:
                     self._validate_feature(feature, f"{path}/features/{idx}")
 
-    def _validate_feature(self, feature, path):
-        self._is_invalid_type(feature, ["Feature"], path)
+    def _validate_feature(self, feature: Union[dict, Any], path: str):
+        """Validate that the feature object conforms to the requirements."""
+        self._is_invalid_type_member(feature, ["Feature"], path)
         if "id" in feature and not isinstance(feature["id"], (str, int)):
             self._add_error(
                 'Feature "id" member must be a string or int number',
@@ -97,8 +117,11 @@ class GeoJsonLint:
         if geom:
             self._validate_geometry(geom, f"{path}/geometry")
 
-    def _validate_geometry(self, geometry, path: str):
-        if self._is_invalid_type(geometry, self.GEOMETRY_TYPES, path):
+    def _validate_geometry(self, geometry: dict, path: str):
+        """Validate that the geometry object conforms to the requirements."""
+        if self._is_invalid_type_member(
+            geometry, self.GEOMETRY_TYPES, f"{path}"
+        ):  # TODO: path
             return
 
         obj_type = geometry.get("type")
@@ -122,48 +145,15 @@ class GeoJsonLint:
                     geometry["coordinates"], 3, f"{path}/coordinates"
                 )
 
-    def _validate_position(self, coords, path):
-        if not isinstance(coords, list):
-            return self._add_error(
-                "Coordinate position must be an array",
-                self._get_line_number(path),
-            )
-        if len(coords) < 2 or len(coords) > 3:
-            self._add_error(
-                "Coordinate position must have exactly 2 or 3 values",
-                self._get_line_number(path),
-            )
-        if not all(isinstance(coord, (int, float)) for coord in coords):
-            self._add_error(
-                "Each element in a coordinate position must be a number",
-                self._get_line_number(path),
-            )
+    def _is_invalid_type_member(self, obj, allowed_types: List[str], path: str):
+        """
+        Checks if an object type conforms to the requirements.
 
-    def _validate_position_array(self, coords, depth, path):
-        if depth == 0:
-            return self._validate_position(coords, path)
-        if not isinstance(coords, list):
-            return self._add_error(
-                "Coordinates must be an array",
-                self._get_line_number(path),
-            )
-        for idx, c in enumerate(coords):
-            self._validate_position_array(c, depth - 1, f"{path}/{idx}")
-
-    def _add_error(self, message, line):
-        # self.errors.append({"message": message, "line": line or None})
-        if message not in self.errors:
-            self.errors[message] = {"lines": [line], "features": [self.feature_idx]}
-        else:
-            self.errors[message]["lines"].append(line)
-            self.errors[message]["features"].append(self.feature_idx)
-
-    def _get_line_number(self, path):
-        entry = self.line_map.get(path)
-        # +1 as lines are zero-indexed
-        return entry.value_start.line + 1 if entry else None
-
-    def _is_invalid_type(self, obj, allowed_types, path):
+        Args:
+            obj: The object to check the property of
+            allowed_types: List of the allowed types to check against.
+            path: The line_map path pointing to the property in question.
+        """
         if not isinstance(obj, dict):
             return True
         obj_type = obj.get("type")
@@ -180,7 +170,16 @@ class GeoJsonLint:
             return True
         return False
 
-    def _is_invalid_property(self, obj, name, type_str, path):
+    def _is_invalid_property(self, obj, name: str, type_str: str, path: str):
+        """
+        Checks if an object property conforms to the requirements.
+
+        Args:
+            obj: The object to check the property of
+            type_str: The expected type as a string, one of "array" or "object"
+            name: The property name
+            path: The line_map path pointing to the property in question.
+        """
         if name not in obj:
             self._add_error(
                 f'"{name}" member required',
@@ -202,3 +201,33 @@ class GeoJsonLint:
             )
             return True
         return False
+
+    def _validate_position(self, coords: Union[list, Any], path: str):
+        """Validate that the single coordinate position conforms to the requirements."""
+        if not isinstance(coords, list):
+            return self._add_error(
+                "Coordinate position must be an array",
+                self._get_line_number(path),
+            )
+        if len(coords) < 2 or len(coords) > 3:
+            self._add_error(
+                "Coordinate position must have exactly 2 or 3 values",
+                self._get_line_number(path),
+            )
+        if not all(isinstance(coord, (int, float)) for coord in coords):
+            self._add_error(
+                "Each element in a coordinate position must be a number",
+                self._get_line_number(path),
+            )
+
+    def _validate_position_array(self, coords: Union[list, Any], depth: int, path: str):
+        """Validate that the array of multiple coordinate positions conforms to the requirements."""
+        if depth == 0:
+            return self._validate_position(coords, path)
+        if not isinstance(coords, list):
+            return self._add_error(
+                "Coordinates must be an array",
+                self._get_line_number(path),
+            )
+        for idx, c in enumerate(coords):
+            self._validate_position_array(c, depth - 1, f"{path}/{idx}")
