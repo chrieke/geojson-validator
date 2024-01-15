@@ -112,6 +112,8 @@ The result is a FeatureCollection with the fixed geometries. The `check_crs` par
 
 - additional reasons invalidaity
 - advanced fix (e.g. coordinate preicisoon)
+- No holes intersecting/outside the outer ring (expensive)
+- can also be given as str?
 - 
 High:
 - Improve app & gif. 

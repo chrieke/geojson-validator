@@ -52,7 +52,6 @@ class GeoJsonLint:
         return self.errors
 
     def _add_error(self, message: str, line: int):
-        # self.errors.append({"message": message, "line": line or None})
         if message not in self.errors:
             self.errors[message] = {"lines": [line]}
             if self.feature_idx is not None:
