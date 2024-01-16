@@ -15,17 +15,16 @@ class GeoJsonLint:
     Focuses on structural GEOJSON schema validation, not GeoJSON specification geometry rules.
     """
 
-    GEOMETRY_TYPES = [
-        "FeatureCollection",
-        "Feature",
-        "Point",
-        "LineString",
-        "Polygon",
-        "MultiPoint",
-        "MultiLineString",
-        "MultiPolygon",
-        "GeometryCollection",
-    ]
+    GEOMETRY_TYPES_DEPTHS = {
+        "Point": 1,
+        "LineString": 2,
+        "MultiPoint": 2,
+        "Polygon": 3,
+        "MultiLineString": 3,
+        "MultiPolygon": 4,
+        "GeometryCollection": -1,
+    }
+    GEOMETRY_TYPES = list(GEOMETRY_TYPES_DEPTHS.keys())
     GEOJSON_TYPES = [
         "FeatureCollection",
         "Feature",
@@ -94,9 +93,12 @@ class GeoJsonLint:
                 self._get_line_number(f"{path}/crs"),
             )
 
-        if not self._is_invalid_property(
-            feature_collection, "features", "array", f"{path}/features"
-        ) and feature_collection["features"]: # allowed to be empty
+        if (
+            not self._is_invalid_property(
+                feature_collection, "features", "array", f"{path}/features"
+            )
+            and feature_collection["features"]
+        ):  # allowed to be empty
             for idx, feature in enumerate(feature_collection["features"]):
                 self.feature_idx = idx
                 if not isinstance(feature, dict):
@@ -141,21 +143,12 @@ class GeoJsonLint:
                 for idx, geom in enumerate(geometry["geometries"]):
                     self._validate_geometry(geom, f"{path}/geometries/{idx}")
         elif not self._is_invalid_property(geometry, "coordinates", "array", path):
-            if obj_type == "Point":
+            # All other geometry types
+            if not self._is_incorrect_coordinates_depth(
+                geometry["coordinates"], obj_type, f"{path}/coordinates"
+            ):
                 self._validate_position_array(
-                    geometry["coordinates"], 0, f"{path}/coordinates"
-                )
-            elif obj_type in ["LineString", "MultiPoint"]:
-                self._validate_position_array(
-                    geometry["coordinates"], 1, f"{path}/coordinates"
-                )
-            elif obj_type in ["Polygon", "MultiLineString"]:
-                self._validate_position_array(
-                    geometry["coordinates"], 2, f"{path}/coordinates"
-                )
-            elif obj_type == "MultiPolygon":
-                self._validate_position_array(
-                    geometry["coordinates"], 3, f"{path}/coordinates"
+                    geometry["coordinates"], f"{path}/coordinates"
                 )
 
         bbox = geometry.get("bbox")
@@ -223,6 +216,26 @@ class GeoJsonLint:
             return True
         return False
 
+    def _is_incorrect_coordinates_depth(self, coords, obj_type, path):
+        def _determine_array_depth(array, current_depth=0):
+            """Recursively determine the depth of an array."""
+            if not isinstance(array, list) or not array:
+                return current_depth
+            return _determine_array_depth(array[0], current_depth + 1)
+
+        expected_depth = self.GEOMETRY_TYPES_DEPTHS[obj_type]
+        actual_depth = _determine_array_depth(coords)
+
+        if actual_depth != expected_depth:
+            message = "not deep enough" if actual_depth < expected_depth else "too much"
+            self._add_error(
+                f"Array is {message} nested, expected depth {expected_depth} for type '{obj_type}', "
+                f"found depth {actual_depth}",
+                self._get_line_number(path),
+            )
+            return True
+        return False
+
     def _validate_position(self, coords: Union[list, Any], path: str):
         """Validate that the single coordinate position conforms to the requirements."""
         if len(coords) < 2:
@@ -230,7 +243,7 @@ class GeoJsonLint:
                 "Coordinate position must have at least 2 values (longitude, latitude)",
                 self._get_line_number(path),
             )
-        elif len(coords) > 2:
+        elif len(coords) > 3:
             self._add_error(
                 "Coordinate position should not have more than 3 values (longitude, latitude and optional elevation).",
                 self._get_line_number(path),
@@ -241,13 +254,15 @@ class GeoJsonLint:
                 self._get_line_number(path),
             )
 
-    def _validate_position_array(self, coords: Union[list, Any], depth: int, path: str):
+    def _validate_position_array(self, coords: Union[list, Any], path: str):
         """Validate that the array of multiple coordinate positions conforms to the requirements."""
-        if depth == 0:
+        if not isinstance(coords[0], list):
             return self._validate_position(coords, path)
-        if not isinstance(coords, list):
-            return self._add_error(
-                "Coordinates must be an array",
+
+        # Check if the current level array contains the expected nested arrays
+        for subarray in coords:  # TODO: Correct?
+            self._validate_position_array(subarray, "{path}/0")
+
     def _validate_bbox(self, bbox: Union[list, Any], path):
         if not isinstance(bbox, list):
             self._add_error(
