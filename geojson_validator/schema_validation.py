@@ -132,7 +132,7 @@ class GeoJsonLint:
                 for idx, geom in enumerate(geometry["geometries"]):
                     self._validate_geometry(geom, f"{path}/geometries/{idx}")
         elif not self._is_invalid_property(geometry, "coordinates", "array", path):
-            if obj_type in ["Point"]:
+            if obj_type == "Point":
                 self._validate_position_array(
                     geometry["coordinates"], 0, f"{path}/coordinates"
                 )
@@ -144,10 +144,11 @@ class GeoJsonLint:
                 self._validate_position_array(
                     geometry["coordinates"], 2, f"{path}/coordinates"
                 )
-            elif obj_type in ["MultiPolygon"]:
+            elif obj_type == "MultiPolygon":
                 self._validate_position_array(
                     geometry["coordinates"], 3, f"{path}/coordinates"
                 )
+            #check_bbox #TODO
 
     def _is_invalid_type_member(
         self, obj: Union[dict, Any], allowed_types: List[str], path: str
@@ -212,14 +213,14 @@ class GeoJsonLint:
 
     def _validate_position(self, coords: Union[list, Any], path: str):
         """Validate that the single coordinate position conforms to the requirements."""
-        if not isinstance(coords, list):
-            return self._add_error(
-                "Coordinate position must be an array",
+        if len(coords) < 2:
+            self._add_error(
+                "Coordinate position must have at least 2 values (longitude, latitude)",
                 self._get_line_number(path),
             )
-        if len(coords) < 2 or len(coords) > 3:
+        elif len(coords) > 2:
             self._add_error(
-                "Coordinate position must have exactly 2 or 3 values",
+                "Coordinate position should not have more than 3 values (longitude, latitude and optional elevation).",
                 self._get_line_number(path),
             )
         if not all(isinstance(coord, (int, float)) for coord in coords):
