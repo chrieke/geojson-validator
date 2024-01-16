@@ -107,6 +107,10 @@ class GeoJsonLint:
                 else:
                     self._validate_feature(feature, f"{path}/features/{idx}")
 
+        bbox = feature_collection.get("bbox")
+        if bbox:
+            self._validate_bbox(bbox, f"{path}/bbox")
+
     def _validate_feature(self, feature: Union[dict, Any], path: str):
         """Validate that the feature object conforms to the requirements."""
         self._is_invalid_type_member(feature, ["Feature"], f"{path}/type")
@@ -117,9 +121,14 @@ class GeoJsonLint:
             )
         self._is_invalid_property(feature, "properties", "object", f"{path}/properties")
         self._is_invalid_property(feature, "geometry", "object", f"{path}/geometry")
+
         geom = feature.get("geometry")
         if geom:
             self._validate_geometry(geom, f"{path}/geometry")
+
+        bbox = feature.get("bbox")
+        if bbox:
+            self._validate_bbox(bbox, f"{path}/bbox")
 
     def _validate_geometry(self, geometry: dict, path: str):
         """Validate that the geometry object conforms to the requirements."""
@@ -148,7 +157,10 @@ class GeoJsonLint:
                 self._validate_position_array(
                     geometry["coordinates"], 3, f"{path}/coordinates"
                 )
-            #check_bbox #TODO
+
+        bbox = geometry.get("bbox")
+        if bbox:
+            self._validate_bbox(bbox, f"{path}/bbox")
 
     def _is_invalid_type_member(
         self, obj: Union[dict, Any], allowed_types: List[str], path: str
@@ -236,7 +248,13 @@ class GeoJsonLint:
         if not isinstance(coords, list):
             return self._add_error(
                 "Coordinates must be an array",
+    def _validate_bbox(self, bbox: Union[list, Any], path):
+        if not isinstance(bbox, list):
+            self._add_error(
+                "'bbox' member must be a one-dimensional array with bounding box coordinates",
                 self._get_line_number(path),
             )
-        for p in coords:
-            self._validate_position_array(p, depth - 1, path)
+        # TODO: Check order.
+
+        # if 2*coord_dimensions != len(bbox):
+        #     pass #TODO
