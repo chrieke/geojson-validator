@@ -87,7 +87,6 @@ def fix_geometries(
         criteria_invalid=criteria,
         criteria_problematic=optional,
     )
-    # TODO: Reptition from validate, same readin task twice. Output from validation? even validate schema here?
     geojson_input = input_to_geojson(geojson_input)
     validate_schema(geojson_input)
     fc = any_geojson_to_featurecollection(geojson_input)
