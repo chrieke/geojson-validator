@@ -129,7 +129,7 @@ High:
 Medium:
   - more fixes?
   - fc bbox order, feature bbox, geometry bbox order and other criteria
-
+  - move invalid schema examples to other repo
 - Low:
   - Multihtreading?
   - versioning?
