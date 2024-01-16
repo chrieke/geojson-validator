@@ -73,7 +73,7 @@ class GeoJsonLint:
     def _validate_geojson_root(self, obj: Union[dict, Any]):
         """Validate that the geojson object root directory conforms to the requirements."""
         root_path = ""
-        if self._is_invalid_type_member(obj, self.GEOJSON_TYPES, root_path):
+        if self._is_invalid_type_property(obj, self.GEOJSON_TYPES, root_path):
             return
 
         obj_type = obj.get("type")
@@ -88,7 +88,7 @@ class GeoJsonLint:
         self, feature_collection: Union[dict, Any], path: str
     ):
         """Validate that the featurecollection object conforms to the requirements."""
-        self._is_invalid_type_member(
+        self._is_invalid_type_property(
             feature_collection, ["FeatureCollection"], f"{path}/type"
         )
 
@@ -121,7 +121,7 @@ class GeoJsonLint:
 
     def _validate_feature(self, feature: Union[dict, Any], path: str):
         """Validate that the feature object conforms to the requirements."""
-        self._is_invalid_type_member(feature, ["Feature"], f"{path}/type")
+        self._is_invalid_type_property(feature, ["Feature"], f"{path}/type")
         if "id" in feature and not isinstance(feature["id"], (str, int)):
             self._add_error(
                 'Feature "id" member must be a string or int number',
@@ -140,7 +140,9 @@ class GeoJsonLint:
 
     def _validate_geometry(self, geometry: dict, path: str):
         """Validate that the geometry object conforms to the requirements."""
-        if self._is_invalid_type_member(geometry, self.GEOMETRY_TYPES, f"{path}/type"):
+        if self._is_invalid_type_property(
+            geometry, self.GEOMETRY_TYPES, f"{path}/type"
+        ):
             return
 
         obj_type = geometry.get("type")
@@ -162,7 +164,16 @@ class GeoJsonLint:
         if bbox:
             self._validate_bbox(bbox, f"{path}/bbox")
 
-    def _is_invalid_type_member(
+    def _is_invalid_datatype(
+        self, obj: Union[dict, list, Any], required_data_type, path
+    ):
+        if not isinstance(obj, required_data_type):
+            self._add_error(
+                "Object must be a '{data_type}', instead is a f{type(obj)}", path
+            )
+            return True
+
+    def _is_invalid_type_property(
         self, obj: Union[dict, Any], allowed_types: List[str], path: str
     ):
         """
@@ -188,34 +199,38 @@ class GeoJsonLint:
         return False
 
     def _is_invalid_property(
-        self, obj: Union[dict, Any], name: str, type_str: str, path: str
+        self, obj: Union[dict, Any], property_name: str, required_type: str, path: str
     ):
         """
         Checks if an object property conforms to the requirements.
 
         Args:
             obj: The object to check the property of
-            type_str: The expected type as a string, one of "array" or "object"
-            name: The property name
+            required_type: The expected type as a string, one of "array" or "object"
+            property_name: The property name
             path: The line_map path pointing to the property in question.
         """
-        if name not in obj:
+        if property_name not in obj:
             self._add_error(
-                f'"{name}" member required',
-                path.split("/" + name)[0],
+                f'"{property_name}" member required',
+                path.split("/" + property_name)[0],
             )
             return True
-        elif type_str == "array" and not isinstance(obj[name], list):
+        elif required_type == "array" and not isinstance(obj[property_name], list):
             self._add_error(
-                f'"{name}" member must be an array, but is a {type(obj[name]).__name__} instead',
+                f'"{property_name}" member must be an array, but is a {type(obj[property_name]).__name__} instead',
                 path,
             )
             return True
-        elif type_str == "object" and not isinstance(obj[name], dict):
-            if name in ["geometry", "properties"] and obj[name] is None:
+        elif required_type == "object" and not isinstance(obj[property_name], dict):
+            if (
+                property_name in ["geometry", "properties"]
+                and obj[property_name] is None
+            ):
                 return False
             self._add_error(
-                f'"{name}" member must be an object/dictionary, but is a {type(obj[name]).__name__} instead',
+                f'"{property_name}" member must be an object/dictionary, '
+                f"but is a {type(obj[property_name]).__name__} instead",
                 path,
             )
             return True

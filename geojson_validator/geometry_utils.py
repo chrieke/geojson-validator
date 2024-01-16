@@ -88,8 +88,12 @@ def prepare_geometries_for_checks(geometry):
     """Prepares the Geometries for the validation checks"""
     # Some criteria require the original json geometry dict as shapely etc. autofixes (e.g. closes) geometries.
     # Initiating the shapely type in each check function specifically is time intensive.
-    shapely_geom = shape(geometry)
-
+    try:
+        shapely_geom = shape(geometry)
+    except TypeError as e:
+        raise TypeError(
+            f"Could not convert geometry to shapely object, likely wrong type: {geometry}"
+        ) from e
     # To avoid adjusting the checks code for each geometry type, they are brought to the same
     # list depth (not ideal but okay).
     geometry_type = geometry.get("type", None)

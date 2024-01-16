@@ -86,7 +86,7 @@ def test_schema_validation_all_normal_files(fixture_geojson_examples_all_normal_
     for file_path in fixture_geojson_examples_all_normal_files:
         assert file_path.exists()
         if file_path.name not in [
-            "invalid_incorrect_geometry_data_type.geojson",  # TODO
+            "invalid_incorrect_geometry_data_type.geojson"  # too nested
         ]:
             fc = read_geojson(file_path)
             print(file_path.name)
@@ -117,27 +117,8 @@ def test_schema_validation_all_invalid_schema_files(geojson_invalid_schema):
 
 
 # def test_justnow(geojson_invalid_schema):
-#     fc = {
-#         "type": "FeatureCollection",
-#         "features": [
-#             {
-#                 "type": "Feature",
-#                 "properties": {},
-#                 "geometry": {
-#                     "coordinates": [
-#                         [
-#                             [12.624027, 52.326463],
-#                             [12.624027, 51.877858],
-#                             [13.354359, 51.877858],
-#                             [13.354359, 52.326463],
-#                             [12.624027, 52.326463],
-#                         ]
-#                     ],
-#                     "type": "notPolygon",
-#                 },
-#             }
-#         ],
-#     }
+#     fc = {"type": "GeometryCollection", "geometries": [False]}
+#
 #     errors = schema_validation.GeoJsonLint().lint(fc)
 #
-#     assert errors
+#     assert not errors

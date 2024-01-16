@@ -110,11 +110,7 @@ The result is a FeatureCollection with the fixed geometries. The `check_crs` par
 <details><summary>TODO</summary>
 <p>
 
-- additional reasons invalidaity
-- advanced fix (e.g. coordinate preicisoon)
-- No holes intersecting/outside the outer ring (expensive)
-- can also be given as str?
-- 
+
 High:
 - Improve app & gif. 
   - jsondecode
@@ -127,13 +123,27 @@ High:
   - infos re file
 
 Medium:
+  - json can also be given as str?
+  - No holes intersecting/outside the outer ring (expensive)
+  - advanced fix (e.g. coordinate preicisoon)
+  - min. positions geometry (short etc) in schema
   - more fixes?
-  - fc bbox order, feature bbox, geometry bbox order and other criteria
   - move invalid schema examples to other repo
+  'geometry object cannot contain a "properties" member',
+  'geometry object cannot contain a "geometry" member',
+  'geometry object cannot contain a "features" member',
+
+  - For Polygons with more than one of these rings, the first MUST be
+        the exterior ring, and any others MUST be interior rings.  The
+        exterior ring bounds the surface, and the interior rings (if
+        present) bound holes within the surface.
+
 - Low:
   - Multihtreading?
   - versioning?
   - fastapi as connector, not hosted just in package for others to run.
+  - To maximize interoperability, implementations SHOULD avoid nested
+   GeometryCollections
 
 Notes:
 - Does not require a feature id, and it doesnt need to be unique

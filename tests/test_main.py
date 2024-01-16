@@ -135,24 +135,15 @@ def test_validate_geometries_runs_all_normal_files(
     ### All test files for invalid/probelamtic/valid geometry checks
     for file_path in fixture_geojson_examples_all_normal_files:
         assert file_path.exists()
-        # print(file_path.name)
+        print(file_path.name)
         if file_path.name not in [
-            "invalid_incorrect_geometry_data_type.geojson",  # TODO
+            "invalid_incorrect_geometry_data_type.geojson",  # shapely issue
             "valid_featurecollection_empty_features.geojson",  # skipped
         ]:  # schema checks
             fc = read_geojson(file_path)
             results = main.validate_geometries(fc)
 
             assert results["count_geometry_types"] or results["skipped_validation"]
-
-
-# TODO: Delete
-# def test_validate_just_forthis():
-#     fp = "./tests/examples_geojson/problematic_geometries/3d_coordinates.geojson"
-#     fc = read_geojson(fp)
-#     result = main.validate_geometries(a)
-#     assert not result["invalid"]
-#     assert not result["problematic"]
 
 
 def test_validations_raise_bad_filepath():
