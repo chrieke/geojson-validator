@@ -256,12 +256,12 @@ class GeoJsonLint:
 
     def _validate_position_array(self, coords: Union[list, Any], path: str):
         """Validate that the array of multiple coordinate positions conforms to the requirements."""
-        if not isinstance(coords[0], list):
-            return self._validate_position(coords, path)
-
-        # Check if the current level array contains the expected nested arrays
-        for subarray in coords:  # TODO: Correct?
-            self._validate_position_array(subarray, f"{path}/0")
+        # If the first element is a list, recurse further
+        if len(coords) and isinstance(coords[0], list): # avoid empty list index error
+            for i, subarray in enumerate(coords):
+                self._validate_position_array(subarray, f"{path}/{i}")
+        else:
+            self._validate_position(coords, path)
 
     def _validate_bbox(self, bbox: Union[list, Any], path):
         if not isinstance(bbox, list):
