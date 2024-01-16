@@ -21,7 +21,7 @@ logger_format = "{time:YYYY-MM-DD_HH:mm:ss.SSS} | {message}"
 logger.add(sink=sys.stderr, format=logger_format, level="INFO")
 
 
-def validate_schema(
+def validate_structure(
     geojson_input: Union[dict, str, Path, Any], check_crs: bool = False
 ) -> Tuple[bool, Union[str, None]]:
     """
@@ -88,7 +88,7 @@ def fix_geometries(
         criteria_problematic=optional,
     )
     geojson_input = input_to_geojson(geojson_input)
-    validate_schema(geojson_input)
+    validate_structure(geojson_input)
     fc = any_geojson_to_featurecollection(geojson_input)
 
     if optional:

@@ -30,7 +30,7 @@ json_string = placeholder_text.text_area(text_instruction, height=250, help=text
 col1.write("")
 
 cl_ex, cl1, cl2, cl3, _ = col1.columns(5)
-button_schema = cl1.button("Validate Structure")
+button_structure = cl1.button("Validate Structure")
 button_geometries = cl2.button("Validate Geometries")
 button_fix = cl3.button("Fix Geometries")
 
@@ -61,16 +61,16 @@ if button_example:
     )
     button_geometries = True
 
-if button_schema:
+if button_structure:
     if not json_string:
         col2.error("Please input GeoJSON or URL")
         st.stop()
     json_json = dict(json.loads(json_string.replace("'", '"')))
-    errors = geojson_validator.validate_schema(json_json)
+    errors = geojson_validator.validate_structure(json_json)
     if not errors:
-        col2.success("Valid GeoJSON (schema)")
+        col2.success("Valid GeoJSON (structure)")
     if errors:
-        col2.error(f"Invalid GeoJSON (schema)")
+        col2.error("Invalid GeoJSON (structure)")
         col2.write(errors)
 
 if button_geometries:

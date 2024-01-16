@@ -14,7 +14,7 @@ from .context import main
 def test_validate_schema_conformity_valid():
     fp = "./tests/data/valid/valid_featurecollection.geojson"
     fc = read_geojson(fp)
-    errors = main.validate_schema(fc)
+    errors = main.validate_structure(fc)
     assert not errors
 
 
@@ -22,7 +22,7 @@ def test_validate_schema_conformity_invalid():
     fp = "./tests/data/valid/valid_featurecollection.geojson"
     fc = read_geojson(fp)
     fc["features"][0]["type"] = "Some_weird_Feature_name"
-    errors = main.validate_schema(fc)
+    errors = main.validate_structure(fc)
     assert errors
     assert errors == {
         "Invalid 'type' member, is 'Some_weird_Feature_name', must be one of ['Feature']": {
@@ -149,7 +149,7 @@ def test_validate_geometries_runs_all_normal_files(
 def test_validations_raise_bad_filepath():
     filepath = "abc.geojson"
     with pytest.raises(FileNotFoundError):
-        main.validate_schema(filepath)
+        main.validate_structure(filepath)
     with pytest.raises(FileNotFoundError):
         main.validate_geometries(filepath)
 
