@@ -96,7 +96,7 @@ class GeoJsonLint:
 
         if not self._is_invalid_property(
             feature_collection, "features", "array", f"{path}/features"
-        ):
+        ) and feature_collection["features"]: # allowed to be empty
             for idx, feature in enumerate(feature_collection["features"]):
                 self.feature_idx = idx
                 if not isinstance(feature, dict):
