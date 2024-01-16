@@ -40,8 +40,9 @@ class GeoJsonLint:
         self.errors = {}
 
     def lint(self, geojson_data: Union[dict, Any]):
+        root_path = ""
         if not isinstance(geojson_data, dict):
-            self._add_error("Root of GeoJSON must be an object/dictionary", 0)
+            self._add_error("Root of GeoJSON must be an object/dictionary", root_path)
             return self.errors
 
         formatted_geojson_string = json.dumps(
@@ -53,7 +54,13 @@ class GeoJsonLint:
 
         return self.errors
 
-    def _add_error(self, message: str, line: int):
+    def _get_line_number(self, path: str):
+        entry = self.line_map.get(path)
+        return entry.value_start.line + 1 if entry else None  # zero-indexed
+
+    def _add_error(self, message: str, path: str):
+        line = self._get_line_number(path)
+
         if message not in self.errors:
             self.errors[message] = {"line": [line]}
             if self.feature_idx is not None:
@@ -62,10 +69,6 @@ class GeoJsonLint:
             self.errors[message]["line"].append(line)
             if self.feature_idx is not None:
                 self.errors[message]["feature"].append(self.feature_idx)
-
-    def _get_line_number(self, path: str):
-        entry = self.line_map.get(path)
-        return entry.value_start.line + 1 if entry else None  # zero-indexed
 
     def _validate_geojson_root(self, obj: Union[dict, Any]):
         """Validate that the geojson object root directory conforms to the requirements."""
@@ -93,7 +96,7 @@ class GeoJsonLint:
             self._add_error(
                 "The newest GeoJSON specification defines GeoJSON as always latitude/longitude, remove "
                 "CRS (coordinate reference system) member",
-                self._get_line_number(f"{path}/crs"),
+                f"{path}/crs",
             )
 
         if (
@@ -107,7 +110,7 @@ class GeoJsonLint:
                 if not isinstance(feature, dict):
                     self._add_error(
                         "Every feature must be a dictionary/object.",
-                        self._get_line_number(f"{path}/features/{idx}"),
+                        f"{path}/features/{idx}",
                     )
                 else:
                     self._validate_feature(feature, f"{path}/features/{idx}")
@@ -122,7 +125,7 @@ class GeoJsonLint:
         if "id" in feature and not isinstance(feature["id"], (str, int)):
             self._add_error(
                 'Feature "id" member must be a string or int number',
-                self._get_line_number(f"{path}/id"),
+                f"{path}/id",
             )
         self._is_invalid_property(feature, "properties", "object", f"{path}/properties")
         self._is_invalid_property(feature, "geometry", "object", f"{path}/geometry")
@@ -153,6 +156,7 @@ class GeoJsonLint:
                 self._validate_position_array(
                     geometry["coordinates"], f"{path}/coordinates"
                 )
+                # validate_min/max positions #TODO
 
         bbox = geometry.get("bbox")
         if bbox:
@@ -173,14 +177,12 @@ class GeoJsonLint:
             return True
         obj_type = obj.get("type")
         if not obj_type:
-            self._add_error(
-                "Missing 'type' member", self._get_line_number(path.split("/type")[0])
-            )
+            self._add_error("Missing 'type' member", path.split("/type")[0])
             return True
         elif obj_type not in allowed_types:
             self._add_error(
                 f"Invalid 'type' member, is '{obj_type}', must be one of {allowed_types}",
-                self._get_line_number(path),
+                path,
             )
             return True
         return False
@@ -200,13 +202,13 @@ class GeoJsonLint:
         if name not in obj:
             self._add_error(
                 f'"{name}" member required',
-                self._get_line_number(path.split("/" + name)[0]),
+                path.split("/" + name)[0],
             )
             return True
         elif type_str == "array" and not isinstance(obj[name], list):
             self._add_error(
                 f'"{name}" member must be an array, but is a {type(obj[name]).__name__} instead',
-                self._get_line_number(path),
+                path,
             )
             return True
         elif type_str == "object" and not isinstance(obj[name], dict):
@@ -214,7 +216,7 @@ class GeoJsonLint:
                 return False
             self._add_error(
                 f'"{name}" member must be an object/dictionary, but is a {type(obj[name]).__name__} instead',
-                self._get_line_number(path),
+                path,
             )
             return True
         return False
@@ -234,7 +236,7 @@ class GeoJsonLint:
             self._add_error(
                 f"Array is {message} nested, expected depth {expected_depth} for type '{obj_type}', "
                 f"found depth {actual_depth}",
-                self._get_line_number(path),
+                path,
             )
             return True
         return False
@@ -244,23 +246,23 @@ class GeoJsonLint:
         if len(coords) < 2:
             self._add_error(
                 "Coordinate position must have at least 2 values (longitude, latitude)",
-                self._get_line_number(path),
+                path,
             )
         elif len(coords) > 3:
             self._add_error(
                 "Coordinate position should not have more than 3 values (longitude, latitude and optional elevation).",
-                self._get_line_number(path),
+                path,
             )
         if not all(isinstance(coord, (int, float)) for coord in coords):
             self._add_error(
                 "Each element in a coordinate position must be a number",
-                self._get_line_number(path),
+                path,
             )
 
     def _validate_position_array(self, coords: Union[list, Any], path: str):
         """Validate that the array of multiple coordinate positions conforms to the requirements."""
         # If the first element is a list, recurse further
-        if len(coords) and isinstance(coords[0], list): # avoid empty list index error
+        if len(coords) and isinstance(coords[0], list):  # avoid empty list index error
             for i, subarray in enumerate(coords):
                 self._validate_position_array(subarray, f"{path}/{i}")
         else:
@@ -270,18 +272,18 @@ class GeoJsonLint:
         if not isinstance(bbox, list):
             self._add_error(
                 "'bbox' member must be a one-dimensional array with bounding box coordinates",
-                self._get_line_number(path),
+                path,
             )
             return
-        if not all([isinstance(p, (int, float)) for p in bbox]):
+        if not all(isinstance(p, (int, float)) for p in bbox):
             self._add_error(
                 "'bbox' member array must contain only numbers",
-                self._get_line_number(path),
+                path,
             )
         if len(bbox) not in (4, 6):
             self._add_error(
                 "'bbox' member array must consist of 4 or 6 coordinates",
-                self._get_line_number(path),
+                path,
             )
         # TODO: Check order.
         # if 2*coord_dimensions != len(bbox):
