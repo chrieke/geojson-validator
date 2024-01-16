@@ -261,7 +261,7 @@ class GeoJsonLint:
 
         # Check if the current level array contains the expected nested arrays
         for subarray in coords:  # TODO: Correct?
-            self._validate_position_array(subarray, "{path}/0")
+            self._validate_position_array(subarray, f"{path}/0")
 
     def _validate_bbox(self, bbox: Union[list, Any], path):
         if not isinstance(bbox, list):
@@ -269,7 +269,17 @@ class GeoJsonLint:
                 "'bbox' member must be a one-dimensional array with bounding box coordinates",
                 self._get_line_number(path),
             )
+            return
+        if not all([isinstance(p, (int, float)) for p in bbox]):
+            self._add_error(
+                "'bbox' member array must contain only numbers",
+                self._get_line_number(path),
+            )
+        if len(bbox) not in (4, 6):
+            self._add_error(
+                "'bbox' member array must consist of 4 or 6 coordinates",
+                self._get_line_number(path),
+            )
         # TODO: Check order.
-
         # if 2*coord_dimensions != len(bbox):
         #     pass #TODO
