@@ -16,13 +16,16 @@ class GeoJsonLint:
     """
 
     GEOMETRY_TYPES_DEPTHS = {
-        "Point": 1,
-        "LineString": 2,
-        "MultiPoint": 2,
-        "Polygon": 3,
-        "MultiLineString": 3,
-        "MultiPolygon": 4,
-        "GeometryCollection": -1,
+        "Point": {"array_depth": 1, "min_max_positions": (1, 1)},
+        "LineString": {"array_depth": 2, "min_max_positions": (2, None)},
+        "MultiPoint": {
+            "array_depth": 2,
+            "min_max_positions": (1, None),
+        },  # should have 2 positions but is allowed 1
+        "Polygon": {"array_depth": 3, "min_max_positions": (4, None)},
+        "MultiLineString": {"array_depth": 3, "min_max_positions": (2, None)},
+        "MultiPolygon": {"array_depth": 4, "min_max_positions": (4, None)},
+        "GeometryCollection": {"array_depth": None, "min_max_positions": (None, None)},
     }
     GEOMETRY_TYPES = list(GEOMETRY_TYPES_DEPTHS.keys())
     GEOJSON_TYPES = [
@@ -223,7 +226,7 @@ class GeoJsonLint:
                 return current_depth
             return _determine_array_depth(array[0], current_depth + 1)
 
-        expected_depth = self.GEOMETRY_TYPES_DEPTHS[obj_type]
+        expected_depth = self.GEOMETRY_TYPES_DEPTHS[obj_type]["array_depth"]
         actual_depth = _determine_array_depth(coords)
 
         if actual_depth != expected_depth:
