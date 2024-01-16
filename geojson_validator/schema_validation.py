@@ -149,7 +149,10 @@ class GeoJsonLint:
         if obj_type == "GeometryCollection":
             if not self._is_invalid_property(geometry, "geometries", "array", path):
                 for idx, geom in enumerate(geometry["geometries"]):
-                    self._validate_geometry(geom, f"{path}/geometries/{idx}")
+                    if not self._is_invalid_datatype(
+                        geom, dict, path
+                    ):  # geometries: [false]
+                        self._validate_geometry(geom, f"{path}/geometries/{idx}")
         elif not self._is_invalid_property(geometry, "coordinates", "array", path):
             # All other geometry types
             if not self._is_incorrect_coordinates_depth(
@@ -169,7 +172,8 @@ class GeoJsonLint:
     ):
         if not isinstance(obj, required_data_type):
             self._add_error(
-                "Object must be a '{data_type}', instead is a f{type(obj)}", path
+                f"Object must be a '{required_data_type}', but is a {type(obj)} instead",
+                path,
             )
             return True
 
@@ -187,10 +191,10 @@ class GeoJsonLint:
         if not isinstance(obj, dict):
             return True
         obj_type = obj.get("type")
-        if not obj_type:
+        if obj_type is None:
             self._add_error("Missing 'type' member", path.split("/type")[0])
             return True
-        elif obj_type not in allowed_types:
+        if obj_type not in allowed_types:
             self._add_error(
                 f"Invalid 'type' member, is '{obj_type}', must be one of {allowed_types}",
                 path,
@@ -216,24 +220,23 @@ class GeoJsonLint:
                 path.split("/" + property_name)[0],
             )
             return True
-        elif required_type == "array" and not isinstance(obj[property_name], list):
+        property_value = obj[property_name]
+        property_type = type(property_value).__name__
+        if required_type == "array" and not isinstance(property_value, list):
             self._add_error(
-                f'"{property_name}" member must be an array, but is a {type(obj[property_name]).__name__} instead',
+                f'"{property_name}" member must be an array, but is a {property_type} instead',
                 path,
             )
             return True
-        elif required_type == "object" and not isinstance(obj[property_name], dict):
-            if (
-                property_name in ["geometry", "properties"]
-                and obj[property_name] is None
-            ):
+        if required_type == "object":
+            if property_name in ["geometry", "properties"] and property_value is None:
                 return False
-            self._add_error(
-                f'"{property_name}" member must be an object/dictionary, '
-                f"but is a {type(obj[property_name]).__name__} instead",
-                path,
-            )
-            return True
+            if not isinstance(property_value, dict):
+                self._add_error(
+                    f'"{property_name}" member must be an object/dictionary, but is a {property_type} instead',
+                    path,
+                )
+                return True
         return False
 
     def _is_incorrect_coordinates_depth(self, coords, obj_type, path):
@@ -301,5 +304,3 @@ class GeoJsonLint:
                 path,
             )
         # TODO: Check order.
-        # if 2*coord_dimensions != len(bbox):
-        #     pass #TODO

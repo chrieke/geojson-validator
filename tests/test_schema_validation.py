@@ -106,9 +106,8 @@ def test_schema_validation_all_invalid_schema_files(geojson_invalid_schema):
         print(file_path.name)
         if file_path.name not in [
             "invalid_featurecollection_crs_defined.geojson",
-            "invalid_geometry_geometrycollection_null_geometry.geojson",  # TODO
-            "invalid_geometry_geometrycollection_nested.geojson",  # TODO
-            "invalid_geometry_geometrycollection_single.geojson",  # TODO
+            "invalid_geometry_geometrycollection_nested.geojson",  # TODO, but is should not be
+            "invalid_geometry_geometrycollection_single.geojson",  # TODO, but is should
         ]:
             fc = read_geojson(file_path)
             errors = schema_validation.GeoJsonLint().lint(fc)
