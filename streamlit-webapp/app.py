@@ -14,18 +14,27 @@ st.set_page_config(
 col1, _, col2 = st.columns([1, 0.1, 1])
 col1.image("repo-images/header_img.jpeg")
 
-with col1.expander("**Validate GeoJSON and automatically fix invalid geometries**. Like *geojsonhint*, but with geometry checks & fixes!", expanded=True):
+with col1.expander(
+    "**Validate GeoJSON and automatically fix invalid geometries**. Like *geojsonhint*, "
+    "but with geometry checks & fixes!",
+    expanded=True,
+):
     st.markdown("- Checks 🧬 **structure** according to GeoJSON specification")
-    st.markdown("- 🔴 **Detects invalid geometries** & 🟢 **fixes them** : *Duplicate nodes, winding order etc.*")
-    st.markdown("- 🟨 **Problematic** geometries (for tools & APIs): *Self-intersection, anti-meridian etc.*")
-    st.markdown("⭐ [**Github/chrieke/geojson-validator**](https://github.com/chrieke/geojson-validator)")
+    st.markdown(
+        "- 🔴 **Detects invalid geometries** & 🟢 **fixes them** : *Duplicate nodes, winding order etc.*"
+    )
+    st.markdown(
+        "- 🟨 **Problematic** geometries (for tools & APIs): *Self-intersection, anti-meridian etc.*"
+    )
+    st.markdown(
+        "⭐ [**Github/chrieke/geojson-validator**](https://github.com/chrieke/geojson-validator)"
+    )
 
 col1.write("")
 
 text_instruction = "Paste GeoJSON - FeatureCollection, Feature or Geometry"
-text_help = "E.g. from https://geojson.io/"
 placeholder_text = col1.empty()
-json_string = placeholder_text.text_area(text_instruction, height=250, help=text_help)
+json_string = placeholder_text.text_area(text_instruction, height=250)
 
 col1.write("")
 
@@ -57,7 +66,7 @@ if button_example:
         ],
     }
     json_string = placeholder_text.text_area(
-        text_instruction, value=example, height=250, help=text_help
+        text_instruction, value=example, height=250
     )
     button_geometries = True
 
