@@ -2,8 +2,8 @@
 
 **Validate GeoJSON and automatically fix invalid geometries**. Like *geojsonhint*, but with geometry checks & fixes!
 
-- 🔴 **Detects invalid geometries** & 🟢 **fixes them** : *Duplicate nodes, wrong winding order, ...* 
-- 🟨 **Problematic** geometries (for many tools & APIs): *Self-intersection, crossing anti-meridian, ...*
+- 🔴 **Detects invalid geometries** & 🟢 **fixes them** : *Duplicate nodes, wrong winding order etc.* 
+- 🟨 **Problematic** geometries (for many tools & APIs): *Self-intersection, crossing anti-meridian etc.*
 - Checks 🧬 **structure** according to GeoJSON specification
 - Use **Website** or **Python package**
 

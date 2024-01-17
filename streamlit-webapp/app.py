@@ -14,11 +14,11 @@ st.set_page_config(
 col1, _, col2 = st.columns([1, 0.1, 1])
 col1.image("repo-images/header_img.jpeg")
 
-col1.markdown(
-    "**Validate and automatically fix** invalid GeoJSON"
-    "[![Star](https://img.shields.io/github/stars/chrieke/geojson-validator.svg?logo=github&style=social)]"
-    "(https://github.com/chrieke/geojson-validator)"
-)
+with col1.expander("**Validate GeoJSON and automatically fix invalid geometries**. Like *geojsonhint*, but with geometry checks & fixes!", expanded=True):
+    st.markdown("- Checks 🧬 **structure** according to GeoJSON specification")
+    st.markdown("- 🔴 **Detects invalid geometries** & 🟢 **fixes them** : *Duplicate nodes, winding order etc.*")
+    st.markdown("- 🟨 **Problematic** geometries (for tools & APIs): *Self-intersection, anti-meridian etc.*")
+    st.markdown("⭐ [**Github/chrieke/geojson-validator**](https://github.com/chrieke/geojson-validator)")
 
 col1.write("")
 
