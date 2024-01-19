@@ -13,7 +13,8 @@ FOLDERS = [
     "examples/invalid_geometries",
     "examples/problematic_geometries",
     "examples/valid",
-    "examples/invalid_schema",
+    "examples/invalid_structure",
+    "examples/problematic_structure",
 ]
 
 # GitHub API URL for contents
