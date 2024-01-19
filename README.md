@@ -2,7 +2,7 @@
 
 **Validate GeoJSON and automatically fix invalid geometries**. Like *geojsonhint*, but with geometry checks & fixes!
 
-- 🔴 **Detects invalid geometries** & 🟢 **fixes them** : *Duplicate nodes, wrong winding order etc.* 
+- 🔴 **Detects invalid geometries** & 🟢 **fixes them** : *Unclosed, wrong winding order etc.* 
 - 🟨 **Problematic** geometries (for many tools & APIs): *Self-intersection, crossing anti-meridian etc.*
 - Checks 🧬 **structure** according to GeoJSON specification
 - Use **Website** or **Python package**
@@ -75,7 +75,7 @@ sub-geometry of a MultiType geometry make it invalid e.g. `{2:[0, 5]}`.
 
 ```
 {"invalid": 
-      {"duplicate_nodes": [0, 3],
+      {"unclosed": [0, 3],
        "exterior_not_ccw":  [{2:[0, 5]}],  
  "problematic":
       {"crosses_antimeridian": [1]},

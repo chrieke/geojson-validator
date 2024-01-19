@@ -21,7 +21,7 @@ with col1.expander(
 ):
     st.markdown("- Checks 🧬 **structure** according to GeoJSON specification")
     st.markdown(
-        "- 🔴 **Detects invalid geometries** & 🟢 **fixes them** : *Duplicate nodes, winding order etc.*"
+        "- 🔴 **Detects invalid geometries** & 🟢 **fixes them** : *Unclosed, winding order etc.*"
     )
     st.markdown(
         "- 🟨 **Problematic** geometries (for tools & APIs): *Self-intersection, anti-meridian etc.*"
