@@ -60,13 +60,13 @@ invalid and problematic criteria. You can choose to validate only specific crite
 
 ```python
 # Invalid according to the GeoJSON specification
-criteria_invalid = ["unclosed", "duplicate_nodes", "less_three_unique_nodes", 
-                    "exterior_not_ccw", "interior_not_cw", "outside_lat_lon_boundaries",
-                    "inner_and_exterior_ring_intersect",]
+criteria_invalid = ["unclosed", "less_three_unique_nodes", "exterior_not_ccw",
+                    "interior_not_cw", "inner_and_exterior_ring_intersect"]
 
 # Problematic with some tools & APIs
-criteria_problematic = ["holes", "self_intersection", "excessive_coordinate_precision",
-                        "excessive_vertices", "3d_coordinates", "crosses_antimeridian"]
+criteria_problematic = ["holes", "self_intersection", "duplicate_nodes", 
+                        "excessive_coordinate_precision", "excessive_vertices", 
+                        "3d_coordinates", "outside_lat_lon_boundaries", "crosses_antimeridian"]
 
 geojson_validator.validate_geometries(geojson, criteria_invalid, criteria_problematic)
 ```
@@ -88,15 +88,16 @@ sub-geometry of a MultiType geometry make it invalid e.g. `{2:[0, 5]}`.
 
 ### 3. Fix GeoJSON geometries 🟩
 
-Automatically repairds some of the most common categories of invalid geometries. 
-Always fixes *["unclosed", "duplicate_nodes", "exterior_not_ccw", "interior_not_cw"]*.
+Automatically repairs some of the most common categories of invalid geometries. 
+Always fixes *["unclosed", "exterior_not_ccw", "interior_not_cw"]*.
 Select additional, non-essential fixes with the parameter `optional`.
 More fixes and helper-functions (for issues that require user descisions) **coming soon**!
 
 
 
 ```python
-geojson_validator.fix_geometries(geojson_input, optional=["excessive_coordinate_precision"])
+geojson_validator.fix_geometries(geojson_input, optional=["duplicate_nodes", 
+                                                          "excessive_coordinate_precision"])
 ```
 
 The result is a GeoJSON FeatureCollection with the fixed geometries.
