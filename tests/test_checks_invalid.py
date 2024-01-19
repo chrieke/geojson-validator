@@ -20,15 +20,6 @@ def test_check_unclosed(valid_geometry):
     assert not checks_invalid.check_unclosed(valid_geometry)
 
 
-def test_check_duplicate_nodes(valid_geometry):
-    geometry = read_geojson(
-        "./tests/data/invalid_geometries/invalid_duplicate_nodes.geojson",
-        geometries=True,
-    )
-    assert checks_invalid.check_duplicate_nodes(geometry)
-    assert not checks_invalid.check_duplicate_nodes(valid_geometry)
-
-
 def test_less_three_unique_nodes(valid_geometry):
     geometry = read_geojson(
         "./tests/data/invalid_geometries/invalid_less_three_unique_nodes.geojson",
@@ -68,12 +59,3 @@ def test_check_inner_and_exterior_ring_intersect(valid_geometry):
     assert not checks_invalid.check_inner_and_exterior_ring_intersect(
         shape(valid_geometry)
     )
-
-
-def test_check_outside_lat_lon_boundaries(valid_geometry):
-    geometry = read_geojson(
-        "./tests/data/invalid_geometries/invalid_outside_lat_lon_boundaries.geojson",
-        geometries=True,
-    )
-    assert checks_invalid.check_outside_lat_lon_boundaries(geometry)
-    assert not checks_invalid.check_outside_lat_lon_boundaries(valid_geometry)

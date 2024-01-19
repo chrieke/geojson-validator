@@ -1,6 +1,6 @@
 from shapely.geometry import shape
 
-from .context import fixes, checks_invalid
+from .context import fixes, checks_invalid, checks_problematic
 from .fixtures import read_geojson
 
 
@@ -17,13 +17,15 @@ def test_fix_unclosed():
 
 def test_fix_duplicate_nodes():
     geometry = read_geojson(
-        "./tests/data/invalid_geometries/invalid_duplicate_nodes.geojson",
+        "./tests/data/problematic_geometries/problematic_duplicate_nodes.geojson",
         geometries=True,
     )
     geom = shape(geometry)
-    assert checks_invalid.check_duplicate_nodes(geometry)
+    assert checks_problematic.check_duplicate_nodes(geometry)
     fixed_geometry = fixes.fix_duplicate_nodes(geom)
-    assert not checks_invalid.check_duplicate_nodes(fixed_geometry.__geo_interface__)
+    assert not checks_problematic.check_duplicate_nodes(
+        fixed_geometry.__geo_interface__
+    )
 
 
 def test_fix_exterior_not_ccw():

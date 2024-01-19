@@ -1,7 +1,14 @@
 from shapely.geometry import shape
+import pytest
 
 from .context import checks_problematic
 from .fixtures import read_geojson
+
+
+@pytest.fixture(scope="session")
+def valid_geometry():
+    geojson_fp = "./tests/data/valid/valid_featurecollection.geojson"
+    return read_geojson(geojson_fp, geometries=True)
 
 
 def test_check_holes():
@@ -22,6 +29,15 @@ def test_check_self_intersection():
     geom = shape(geometry)
     problematic = checks_problematic.check_self_intersection(geom)
     assert problematic
+
+
+def test_check_duplicate_nodes(valid_geometry):
+    geometry = read_geojson(
+        "./tests/data/problematic_geometries/problematic_duplicate_nodes.geojson",
+        geometries=True,
+    )
+    assert checks_problematic.check_duplicate_nodes(geometry)
+    assert not checks_problematic.check_duplicate_nodes(valid_geometry)
 
 
 def test_check_excessive_coordinate_precision():
@@ -56,6 +72,15 @@ def test_check_3d_coordinates():
         geometries=True,
     )
     assert checks_problematic.check_3d_coordinates(geometry)
+
+
+def test_check_outside_lat_lon_boundaries(valid_geometry):
+    geometry = read_geojson(
+        "./tests/data/problematic_geometries/problematic_outside_lat_lon_boundaries.geojson",
+        geometries=True,
+    )
+    assert checks_problematic.check_outside_lat_lon_boundaries(geometry)
+    assert not checks_problematic.check_outside_lat_lon_boundaries(valid_geometry)
 
 
 def test_check_crosses_antimeridian():

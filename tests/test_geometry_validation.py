@@ -15,7 +15,7 @@ def test_check_criteria_invalid():
 def test_check_criteria_valid():
     try:
         geometry_validation.check_criteria(
-            ["unclosed", "duplicate_nodes"],
+            ["unclosed", "less_three_unique_nodes"],
             geometry_validation.VALIDATION_CRITERIA["invalid"],
             "invalid",
         )

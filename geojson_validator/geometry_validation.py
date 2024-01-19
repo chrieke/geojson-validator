@@ -25,10 +25,6 @@ ALL_ACCEPTED_GEOMETRY_TYPES = POI, MPOI, LS, MLS, POL, MPOL, GC = [
 VALIDATION_CRITERIA = {
     "invalid": {
         "unclosed": {"relevant": [POL], "input": "json_geometry"},
-        "duplicate_nodes": {
-            "relevant": [LS, POL],
-            "input": "json_geometry",
-        },
         "less_three_unique_nodes": {
             "relevant": [POL],
             "input": "json_geometry",
@@ -45,10 +41,6 @@ VALIDATION_CRITERIA = {
             "relevant": [POL],
             "input": "shapely_geom",
         },
-        "outside_lat_lon_boundaries": {
-            "relevant": [POI, LS, POL],
-            "input": "json_geometry",
-        },
         # "zero-length": {"relevant": ["LineString"], "input": "json_geometry"},
     },
     "problematic": {
@@ -56,6 +48,10 @@ VALIDATION_CRITERIA = {
         "self_intersection": {
             "relevant": [POL],
             "input": "shapely_geom",
+        },
+        "duplicate_nodes": {
+            "relevant": [LS, POL],
+            "input": "json_geometry",
         },
         "excessive_coordinate_precision": {
             "relevant": [POI, LS, POL],
@@ -66,6 +62,10 @@ VALIDATION_CRITERIA = {
             "input": "json_geometry",
         },
         "3d_coordinates": {
+            "relevant": [POI, LS, POL],
+            "input": "json_geometry",
+        },
+        "outside_lat_lon_boundaries": {
             "relevant": [POI, LS, POL],
             "input": "json_geometry",
         },
