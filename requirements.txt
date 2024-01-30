@@ -1,3 +1,2 @@
 shapely
-json_source_map
 loguru

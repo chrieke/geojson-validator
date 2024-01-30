@@ -45,28 +45,18 @@ class GeoJsonLint:
             self._add_error("Root of GeoJSON must be an object/dictionary", root_path)
             return self.errors
 
-        formatted_geojson_string = json.dumps(
-            geojson_data, indent=2, separators=(",", ": ")
-        )
-        self.line_map = calculate(formatted_geojson_string)
-
         self._validate_geojson_root(geojson_data)
 
         return self.errors
 
-    def _get_line_number(self, path: str):
-        entry = self.line_map.get(path)
-        return entry.value_start.line + 1 if entry else None  # zero-indexed
-
     def _add_error(self, message: str, path: str):
-        line = self._get_line_number(path)
 
         if message not in self.errors:
-            self.errors[message] = {"line": [line]}
+            self.errors[message] = {"path": [path]}
             if self.feature_idx is not None:
                 self.errors[message]["feature"] = [self.feature_idx]
         else:
-            self.errors[message]["line"].append(line)
+            self.errors[message]["path"].append(path)
             if self.feature_idx is not None:
                 self.errors[message]["feature"].append(self.feature_idx)
 
