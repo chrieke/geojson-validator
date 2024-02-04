@@ -1,3 +1,5 @@
+# GeoJSON Validator
+
 <img src="./repo-images/header_img.jpeg">
 
 **Validate GeoJSON and automatically fix invalid geometries**. Like *geojsonhint*, but with geometry checks & fixes!
