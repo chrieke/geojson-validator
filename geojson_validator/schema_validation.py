@@ -1,6 +1,4 @@
 from typing import List, Any, Union
-import json
-from json_source_map import calculate
 
 
 class GeoJsonLint:
@@ -50,7 +48,6 @@ class GeoJsonLint:
         return self.errors
 
     def _add_error(self, message: str, path: str):
-
         if message not in self.errors:
             self.errors[message] = {"path": [path]}
             if self.feature_idx is not None:
