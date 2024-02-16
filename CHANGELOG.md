@@ -9,8 +9,14 @@ Update your installation to the latest version:
     pip install geojson-validator --upgrade
     ```
 
-## 0.4.0
-**January 14, 2024**
+
+## 0.5.1
+**February 16, 2024**
+
+- Fix breaking issue unused imports
+
+## 0.5.0
+**January 19, 2024**
 
 - Rename `main.validate_schema` to `main.validate_structure`.
 - Change .validate_structure result from list to dictionary. Now adds feature position. Line position now points to exact subelement.
@@ -19,6 +25,15 @@ Update your installation to the latest version:
 - Move crs check to .validate_sstructure, now optional.
 - Enable Geometrycollection as valid type.
 - Various improvements and fixes
+
+## 0.3.0
+**January 14, 2024**
+
+- Change .validate_schema result from list to dictionary of error messages, with line and feature position of each error.
+- Move crs check to .validate_schema, now optional.
+- Enable Geometrycollection as valid type.
+- Various improvements and fixes
+
 
 ## 0.3.0
 **January 04, 2024**
