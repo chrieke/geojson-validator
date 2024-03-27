@@ -10,6 +10,10 @@ Update your installation to the latest version:
     ```
 
 
+## 0.5.2
+**March 27, 2024**
+- Fix issue `fix_geometries` not applied to multigeometries
+
 ## 0.5.1
 **February 16, 2024**
 

@@ -6,7 +6,7 @@ parent_dir = Path(__file__).resolve().parent
 
 setup(
     name="geojson-validator",
-    version="0.5.1",
+    version="0.5.2",
     author="Christoph Rieke",
     author_email="christoph.k.rieke@gmail.com",
     description="Validates and fixes GeoJSON",
