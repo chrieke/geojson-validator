@@ -31,6 +31,7 @@ def validate_structure(
     """
     geojson_data = input_to_geojson(geojson_input)
     errors = GeoJsonLint(check_crs=check_crs).lint(geojson_data)
+    logger.info(f"Structure validation results: {errors}")
     return errors
 
 
@@ -72,7 +73,7 @@ def validate_geometries(
 def fix_geometries(
     geojson_input: Union[dict, str, Path, Any],
     optional=[
-        "excessive_coordinate_precision",
+        # "excessive_coordinate_precision", TODO
         "duplicate_nodes",
     ],
 ):
@@ -82,7 +83,7 @@ def fix_geometries(
         "interior_not_cw",
     ]
     allowed_optional = [
-        "excessive_coordinate_precision",
+        # "excessive_coordinate_precision", TODO
         "duplicate_nodes",
     ]
     check_criteria(optional, allowed_optional, name="optional")
@@ -99,4 +100,5 @@ def fix_geometries(
     if optional:
         criteria.extend(optional)
     fixed_fc = process_fix(fc, geometry_validation_results, criteria)
+    logger.info(f"Fixed geometries for criteria {criteria}")
     return fixed_fc
