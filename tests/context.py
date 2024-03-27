@@ -12,6 +12,7 @@ from geojson_validator import (
     checks_invalid,
     checks_problematic,
     fixes,
+    fixes_utils,
     geometry_validation,
     schema_validation,
 )
