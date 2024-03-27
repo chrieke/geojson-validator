@@ -15,19 +15,6 @@ def test_fix_unclosed():
     assert not checks_invalid.check_unclosed(fixed_geometry.__geo_interface__)
 
 
-def test_fix_duplicate_nodes():
-    geometry = read_geojson(
-        "./tests/data/problematic_geometries/problematic_duplicate_nodes.geojson",
-        geometries=True,
-    )
-    geom = shape(geometry)
-    assert checks_problematic.check_duplicate_nodes(geometry)
-    fixed_geometry = fixes.fix_duplicate_nodes(geom)
-    assert not checks_problematic.check_duplicate_nodes(
-        fixed_geometry.__geo_interface__
-    )
-
-
 def test_fix_exterior_not_ccw():
     geometry = read_geojson(
         "./tests/data/invalid_geometries/invalid_exterior_not_ccw.geojson",
@@ -48,3 +35,27 @@ def test_fix_interior_not_cw():
     assert checks_invalid.check_interior_not_cw(geom)
     fixed_geom = fixes.fix_interior_not_cw(geom)
     assert not checks_invalid.check_interior_not_cw(fixed_geom)
+
+
+def test_fix_duplicate_nodes():
+    geometry = read_geojson(
+        "./tests/data/problematic_geometries/problematic_duplicate_nodes.geojson",
+        geometries=True,
+    )
+    geom = shape(geometry)
+    assert checks_problematic.check_duplicate_nodes(geometry)
+    fixed_geometry = fixes.fix_duplicate_nodes(geom)
+    assert not checks_problematic.check_duplicate_nodes(
+        fixed_geometry.__geo_interface__
+    )
+
+
+# def test_fix_excessive_coordinate_precision():
+#     geometry = read_geojson(
+#         "./tests/data/problematic_geometries/problematic_excessive_coordinate_precision.geojson",
+#         geometries=True,
+#     )
+#     geom = shape(geometry)
+#     assert checks_problematic.check_excessive_coordinate_precision(geom)
+#     fixed_geom = fixes.fix_excessive_coordinate_precision(geom)
+#     assert not checks_problematic.check_excessive_coordinate_precision(fixed_geom)
