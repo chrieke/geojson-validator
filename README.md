@@ -98,8 +98,14 @@ More fixes and helper-functions (for issues that require user descisions) **comi
 
 
 ```python
-geojson_validator.fix_geometries(geojson_input, optional=["duplicate_nodes", 
-                                                          "excessive_coordinate_precision"])
+geojson_validator.fix_geometries(geojson_input, optional=["duplicate_nodes"])
 ```
 
 The result is a GeoJSON FeatureCollection with the fixed geometries.
+
+
+
+### FAQ:
+- Why not use geojson-pydantic for the schema validation?
+pydantic error messages a bit convulted (if one coordinate is  issing error 4 times), very schema like, not custom, not easy to understand for no nprogrammers.
+often would need to be translated.  

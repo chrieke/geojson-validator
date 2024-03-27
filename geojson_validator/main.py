@@ -73,7 +73,7 @@ def validate_geometries(
 def fix_geometries(
     geojson_input: Union[dict, str, Path, Any],
     optional=[
-        # "excessive_coordinate_precision", TODO
+        # "excessive_coordinate_precision",
         "duplicate_nodes",
     ],
 ):
@@ -83,7 +83,7 @@ def fix_geometries(
         "interior_not_cw",
     ]
     allowed_optional = [
-        # "excessive_coordinate_precision", TODO
+        # "excessive_coordinate_precision",
         "duplicate_nodes",
     ]
     check_criteria(optional, allowed_optional, name="optional")

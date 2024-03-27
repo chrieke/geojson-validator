@@ -13,11 +13,6 @@ def fix_unclosed(geom: Polygon):
     return closed_polygon
 
 
-def fix_duplicate_nodes(geom: Polygon):
-    """Remove duplicate nodes from the geometry."""
-    return geom.simplify(0)
-
-
 def fix_exterior_not_ccw(geom: Polygon):
     """Reorder exterior ring to be counter-clockwise."""
     if not geom.exterior.is_ccw:
@@ -35,3 +30,13 @@ def fix_interior_not_cw(geom: Polygon):
         else:
             interiors.append(LinearRing(interior))
     return Polygon(exterior, interiors)
+
+
+def fix_duplicate_nodes(geom: Polygon):
+    """Remove duplicate nodes from the geometry."""
+    return geom.simplify(0)
+
+
+# def fix_excessive_coordinate_precision(geom: Polygon):
+#     # TODO: Could also be applied to non polygon
+#     pass
