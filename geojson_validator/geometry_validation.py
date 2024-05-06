@@ -7,9 +7,7 @@ from loguru import logger
 from . import checks_invalid, checks_problematic
 from .geometry_utils import prepare_geometries_for_checks, extract_single_geometries
 
-logger.remove()
-logger_format = "{time:YYYY-MM-DD_HH:mm:ss.SSS} | {message}"
-logger.add(sink=sys.stderr, format=logger_format, level="INFO")
+logger.disable("geojson_validator")
 
 
 ALL_ACCEPTED_GEOMETRY_TYPES = POI, MPOI, LS, MLS, POL, MPOL, GC = [
