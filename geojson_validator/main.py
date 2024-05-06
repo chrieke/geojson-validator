@@ -16,10 +16,7 @@ from .geometry_validation import (
 )
 from .fixes_utils import process_fix
 
-logger.remove()
-logger_format = "{time:YYYY-MM-DD_HH:mm:ss.SSS} | {message}"
-logger.add(sink=sys.stderr, format=logger_format, level="INFO")
-
+logger.disable("geojson_validator")
 
 def validate_structure(
     geojson_input: Union[dict, str, Path, Any], check_crs: bool = False
