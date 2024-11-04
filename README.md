@@ -107,5 +107,5 @@ The result is a GeoJSON FeatureCollection with the fixed geometries.
 
 ### FAQ:
 - Why not use geojson-pydantic for the schema validation?
-pydantic error messages a bit convulted (if one coordinate is  issing error 4 times), very schema like, not custom, not easy to understand for no nprogrammers.
+pydantic error messages a bit convulted (if one coordinate is missing error 4 times), very schema like, not custom, not easy to understand for no nprogrammers.
 often would need to be translated.  
