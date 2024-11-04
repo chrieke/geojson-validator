@@ -8,10 +8,7 @@ from loguru import logger
 
 from . import fixes
 
-logger.remove()
-logger_format = "{time:YYYY-MM-DD_HH:mm:ss.SSS} | {message}"
-logger.add(sink=sys.stderr, format=logger_format, level="INFO")
-
+logger.disable("geojson_validator")
 
 def apply_fix(criterium: str, shapely_geom):
     """Applies the correct check for the criteria"""
