@@ -5,13 +5,19 @@ Update your installation to the latest version:
 === "pip"
 
     ```bash
-    # pip show geojson-validator # check currently installed version
+    # pip show geojson-validator  # check currently installed version
     pip install geojson-validator --upgrade
     ```
 
+## 0.6.0
+**November 29, 2024**
+
+- Add `configure_logging` function to configure logging behavior
+- `pyproject.toml` replaces setup.py & requirements.txt files
 
 ## 0.5.2
 **March 27, 2024**
+
 - Fix issue `fix_geometries` not applied to multigeometries
 
 ## 0.5.1
