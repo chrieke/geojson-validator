@@ -102,3 +102,19 @@ def fix_geometries(
     fixed_fc = process_fix(fc, geometry_validation_results, criteria)
     logger.info(f"Fixed geometries for criteria {criteria}")
     return fixed_fc
+
+def configure_logging(enabled=True, level="INFO"):
+    """
+    Configures the library logging behavior.
+
+    Args:
+        enabled (bool): If False, disables all logging.
+        level (str): Logging level, e.g., 'INFO', 'DEBUG', 'WARNING', 'ERROR'.
+
+    Returns:
+        logger: The configured loguru logger instance.
+    """
+    logger.remove()  # Clear all existing loggers
+    if enabled:
+        logger.add(sys.stderr, format="{time:YYYY-MM-DD_HH:mm:ss.SSS} | {message}", level=level)
+    return logger
