@@ -1,4 +1,0 @@
-requests==2.31.0
-shapely==2.0.4
-loguru==0.7.2
-

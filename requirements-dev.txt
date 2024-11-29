@@ -1,9 +1,0 @@
-requests
-black
-pytest
-pylint
-pytest-pylint
-pytest-sugar
-mypy
-grip
-twine

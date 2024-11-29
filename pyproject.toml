@@ -1,0 +1,43 @@
+[project]
+name = "geojson-validator"
+version = "0.5.2"
+description = "Validates and fixes GeoJSON"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [{ name = "Christoph Rieke", email = "christoph.k.rieke@gmail.com" }]
+keywords = ["geojson", "validation", "GIS"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers"
+]
+dependencies = [
+    "loguru>=0.7.2",
+    "requests>=2.32.3",
+    "shapely>=2.0.6",
+]
+
+[dependency-groups]
+dev = [
+    "requests",
+    "black",
+    "pytest",
+    "pylint",
+    "pytest-pylint",
+    "pytest-sugar",
+    "mypy",
+    "grip",
+    "twine",
+]
+
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project.urls]
+Homepage = "https://github.com/chrieke/geojson-validator"
+Changelog = "https://github.com/chrieke/geojson-validator/changelog"
