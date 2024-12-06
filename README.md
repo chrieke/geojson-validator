@@ -19,6 +19,9 @@
 
 <br>
 
+Also see the 
+[geojson-invalid-geometry](https://github.com/chrieke/geojson-invalid-geometry) list for detailed explanations of all possible GeoJSON issues.
+
 ### Quickstart Python
 
 ```bash
