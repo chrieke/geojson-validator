@@ -102,5 +102,5 @@ if button_fix:
         st.stop()
     json_json = dict(json.loads(json_string.replace("'", '"')))
     fixed_fc = geojson_validator.fix_geometries(json_json)
-    col2.success("Fixed geoemtries")
+    col2.success("Fixed geometries")
     col2.write(fixed_fc)
