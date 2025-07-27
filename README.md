@@ -112,4 +112,4 @@ The result is a GeoJSON FeatureCollection with the fixed geometries.
 - Why not use geojson-pydantic for the schema validation?
 pydantic error messages a bit convulted (if one coordinate is missing error 4 times), very schema like, not custom, not easy to understand for no nprogrammers.
 often would need to be translated.
-- Too many logging messages, can I disable them? You can disable or configure the logging behavior via `geojson_validator.configure_logger(enabled=True, level="DEBUG")` which also returns the logger instance.
+- Too many logging messages, can I disable them? You can disable or configure the logging behavior via `geojson_validator.configure_logging(enabled=True, level="DEBUG")` which also returns the logger instance.
