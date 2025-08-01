@@ -1,7 +1,7 @@
 from typing import List, Any, Union
 
 
-class GeoJsonSchemaValidator:
+class GeojsonStructureValidator:
     """
     Validates if the GeoJSON conforms to the geojson json schema rules 2020-12
     (https://json-schema.org/draft/2020-12/release-notes)
@@ -13,7 +13,7 @@ class GeoJsonSchemaValidator:
     Focuses on structural GEOJSON schema validation, not GeoJSON specification geometry rules.
     """
 
-    GEOMETRY_TYPES_DEPTHS = {
+    geometry_types_depths = {
         "Point": {"array_depth": 1, "min_max_positions": (1, 1)},
         "LineString": {"array_depth": 2, "min_max_positions": (2, None)},
         "MultiPoint": {
@@ -25,11 +25,11 @@ class GeoJsonSchemaValidator:
         "MultiPolygon": {"array_depth": 4, "min_max_positions": (4, None)},
         "GeometryCollection": {"array_depth": None, "min_max_positions": (None, None)},
     }
-    GEOMETRY_TYPES = list(GEOMETRY_TYPES_DEPTHS.keys())
-    GEOJSON_TYPES = [
+    geometry_types = list(geometry_types_depths.keys())
+    geojson_types = [
         "FeatureCollection",
         "Feature",
-    ] + GEOMETRY_TYPES
+    ] + geometry_types
 
     def __init__(self, check_crs: bool = False):
         self.check_crs = check_crs
@@ -37,39 +37,31 @@ class GeoJsonSchemaValidator:
         self.line_map = None
         self.errors = {}
 
-    def lint(self, geojson_data: Union[dict, Any]):
+    def run(self, geojson_data: Union[dict, Any]):
         root_path = ""
         if not isinstance(geojson_data, dict):
             self._add_error("Root of GeoJSON must be an object/dictionary", root_path)
             return self.errors
 
-        self._validate_geojson_root(geojson_data)
+        if self._is_invalid_type_property(geojson_data, self.geojson_types, root_path):
+            return
+
+        obj_type = geojson_data.get("type")
+        if obj_type == "FeatureCollection":
+            self._validate_feature_collection(geojson_data, root_path)
+        elif obj_type == "Feature":
+            self._validate_feature(geojson_data, root_path)
+        elif obj_type in self.geometry_types:
+            self._validate_geometry(geojson_data, root_path)
 
         return self.errors
 
     def _add_error(self, message: str, path: str):
-        if message not in self.errors:
-            self.errors[message] = {"path": [path]}
-            if self.feature_idx is not None:
-                self.errors[message]["feature"] = [self.feature_idx]
-        else:
-            self.errors[message]["path"].append(path)
-            if self.feature_idx is not None:
-                self.errors[message]["feature"].append(self.feature_idx)
-
-    def _validate_geojson_root(self, obj: Union[dict, Any]):
-        """Validate that the geojson object root directory conforms to the requirements."""
-        root_path = ""
-        if self._is_invalid_type_property(obj, self.GEOJSON_TYPES, root_path):
-            return
-
-        obj_type = obj.get("type")
-        if obj_type == "FeatureCollection":
-            self._validate_feature_collection(obj, root_path)
-        elif obj_type == "Feature":
-            self._validate_feature(obj, root_path)
-        elif obj_type in self.GEOMETRY_TYPES:
-            self._validate_geometry(obj, root_path)
+        error_entry = self.errors.setdefault(message, {"path": []})
+        error_entry["path"].append(path)
+        if self.feature_idx is not None:
+            feature_list = error_entry.setdefault("feature", [])
+            feature_list.append(self.feature_idx)
 
     def _validate_feature_collection(
         self, feature_collection: Union[dict, Any], path: str
@@ -128,7 +120,7 @@ class GeoJsonSchemaValidator:
     def _validate_geometry(self, geometry: dict, path: str):
         """Validate that the geometry object conforms to the requirements."""
         if self._is_invalid_type_property(
-            geometry, self.GEOMETRY_TYPES, f"{path}/type"
+            geometry, self.geometry_types, f"{path}/type"
         ):
             return
 
@@ -233,7 +225,7 @@ class GeoJsonSchemaValidator:
                 return current_depth
             return _determine_array_depth(array[0], current_depth + 1)
 
-        expected_depth = self.GEOMETRY_TYPES_DEPTHS[obj_type]["array_depth"]
+        expected_depth = self.geometry_types_depths[obj_type]["array_depth"]
         actual_depth = _determine_array_depth(coords)
 
         if actual_depth != expected_depth:

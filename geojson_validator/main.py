@@ -4,7 +4,7 @@ from pathlib import Path
 
 from loguru import logger
 
-from .schema_validation import GeoJsonSchemaValidator
+from .schema_validation import GeojsonStructureValidator
 from .geometry_utils import (
     input_to_geojson,
     any_geojson_to_featurecollection,
@@ -22,11 +22,7 @@ logger.add(sink=sys.stderr, format=logger_format, level="INFO")
 
 
 class GeoJSONStructureError(Exception):
-    """Custom exception for GeoJSON structural validation errors."""
-
-    def __init__(self, errors: dict):
-        super().__init__("GeoJSON structure validation failed.")
-        self.errors = errors
+    pass
 
 
 def validate_structure(
@@ -36,7 +32,7 @@ def validate_structure(
 
     Args:
         geojson_input: A GeoJSON FeatureCollection/Feature/Geometry, filepath to (Geo)JSON/file,
-        or any object with a __geo_interface__.
+        a shapely geometry, or any object with a __geo_interface__.
         check_crs: If True, checks if the CRS is valid.
 
     Returns:
@@ -47,10 +43,11 @@ def validate_structure(
         Enhances error messages by specifying which elements failed validation.
     """
     geojson_data = input_to_geojson(geojson_input)
-    errors = GeoJsonSchemaValidator(check_crs=check_crs).lint(geojson_data)
-    logger.info(f"Structure validation results: {errors}")
+    errors = GeojsonStructureValidator(check_crs=check_crs).run(geojson_data)
     if errors:
-        raise GeoJSONStructureError(errors)
+        raise GeoJSONStructureError(
+            f"GeoJSON structure validation failed with errors: {errors}"
+        )
     return geojson_data
 
 
