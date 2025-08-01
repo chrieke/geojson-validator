@@ -31,8 +31,7 @@ class GeojsonStructureValidator:
         "Feature",
     ] + geometry_types
 
-    def __init__(self, check_crs: bool = False):
-        self.check_crs = check_crs
+    def __init__(self):
         self.feature_idx = None
         self.line_map = None
         self.errors = {}
@@ -70,13 +69,6 @@ class GeojsonStructureValidator:
         self._is_invalid_type_property(
             feature_collection, ["FeatureCollection"], f"{path}/type"
         )
-
-        if self.check_crs and "crs" in feature_collection:
-            self._add_error(
-                "The newest GeoJSON specification defines GeoJSON as always latitude/longitude, remove "
-                "CRS (coordinate reference system) member",
-                f"{path}/crs",
-            )
 
         if (
             not self._is_invalid_property(

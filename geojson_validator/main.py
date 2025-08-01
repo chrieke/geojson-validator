@@ -25,9 +25,7 @@ class GeoJSONStructureError(Exception):
     pass
 
 
-def validate_structure(
-    geojson_input: Union[dict, str, Path, Any], check_crs: bool = False
-) -> dict:
+def validate_structure(geojson_input: Union[dict, str, Path, Any]) -> dict:
     """Validates the structure of the geojson input
 
     Args:
@@ -43,7 +41,7 @@ def validate_structure(
         Enhances error messages by specifying which elements failed validation.
     """
     geojson_data = input_to_geojson(geojson_input)
-    errors = GeojsonStructureValidator(check_crs=check_crs).run(geojson_data)
+    errors = GeojsonStructureValidator().run(geojson_data)
     if errors:
         raise GeoJSONStructureError(
             f"GeoJSON structure validation failed with errors: {errors}"
