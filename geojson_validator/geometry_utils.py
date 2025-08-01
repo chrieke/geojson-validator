@@ -5,24 +5,33 @@ import json
 
 from shapely.geometry import shape
 import requests
+from requests.exceptions import RequestException
 
 
 def read_geojson_file_or_url(fp_or_url: Union[str, Path]):
     """Reads a geojson source from a filepath or url"""
-    if Path(fp_or_url).suffix not in [
-        ".json",
-        ".JSON",
-        ".geojson",
-        ".GEOJSON",
-    ]:
-        raise ValueError("Filepath or URL must be a geojson or json file")
-    if urlparse(str(fp_or_url)).scheme in ("http", "https", "ftp", "ftps"):
-        response = requests.get(str(fp_or_url), timeout=5)
-        if response.status_code == 200:  # Check if the request was successful
-            return response.json()
+    path_obj = Path(fp_or_url)
 
-    with Path(fp_or_url).open(encoding="UTF-8") as f:
-        return json.load(f)
+    if path_obj.suffix.lower() not in {".json", ".geojson"}:
+        raise ValueError("Filepath or URL must be a geojson or json file")
+
+    if urlparse(str(fp_or_url)).scheme in ("http", "https", "ftp", "ftps"):
+        try:
+            response = requests.get(str(fp_or_url), timeout=5)
+            response.raise_for_status()  # Raise an HTTPError for bad responses (4xx or 5xx)
+            return response.json()
+        except RequestException as e:
+            raise ValueError(f"Error reading GeoJSON from URL {fp_or_url}: {e}") from e
+        except json.decoder.JSONDecodeError as e:
+            raise ValueError(f"Error decoding JSON from URL {fp_or_url}: {e}") from e
+
+    try:
+        with path_obj.open(encoding="UTF-8") as f:
+            return json.load(f)
+    except FileNotFoundError as e:
+        raise FileNotFoundError(f"File not found at {fp_or_url}: {e}") from e
+    except json.decoder.JSONDecodeError as e:
+        raise ValueError(f"Error decoding JSON from file {fp_or_url}: {e}") from e
 
 
 def input_to_geojson(geojson_input: Union[str, Path, dict, Any]) -> dict:
@@ -42,7 +51,7 @@ def input_to_geojson(geojson_input: Union[str, Path, dict, Any]) -> dict:
 
 
 def any_geojson_to_featurecollection(
-    geojson_input: Union[str, Path, dict, Any]
+    geojson_input: Union[str, Path, dict, Any],
 ) -> dict:
     """Take a geojson of various types (Feature, Geometry, Fc) and transform it to a featurecollection"""
     supported_geojson_types = [
