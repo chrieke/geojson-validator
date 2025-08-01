@@ -11,8 +11,8 @@ from .geometry_utils import (
 )
 from .geometry_validation import (
     VALIDATION_CRITERIA,
-    check_criteria,
-    process_validation,
+    check_selected_criteria_are_allowed,
+    process_validate_geometries,
 )
 from .fixes_utils import process_fix
 
@@ -31,7 +31,6 @@ def validate_structure(geojson_input: Union[dict, str, Path, Any]) -> dict:
     Args:
         geojson_input: A GeoJSON FeatureCollection/Feature/Geometry, filepath to (Geo)JSON/file,
         a shapely geometry, or any object with a __geo_interface__.
-        check_crs: If True, checks if the CRS is valid.
 
     Returns:
         The geojson_data if the input geojson conforms to the geojson json schema v7.
@@ -69,16 +68,20 @@ def validate_geometries(
         raise ValueError(
             "Select at least one criteria in `criteria_invalid` or `criteria_problematic`"
         )
-    check_criteria(criteria_invalid, VALIDATION_CRITERIA["invalid"], name="invalid")
-    check_criteria(
-        criteria_problematic, VALIDATION_CRITERIA["problematic"], name="problematic"
+    check_selected_criteria_are_allowed(
+        criteria_invalid, VALIDATION_CRITERIA["invalid"], "invalid"
+    )
+    check_selected_criteria_are_allowed(
+        criteria_problematic, VALIDATION_CRITERIA["problematic"], "problematic"
     )
 
     geojson_input = input_to_geojson(geojson_input)
     fc = any_geojson_to_featurecollection(geojson_input)
-
     geometries = [feature["geometry"] for feature in fc["features"]]
-    results = process_validation(geometries, criteria_invalid, criteria_problematic)
+
+    results = process_validate_geometries(
+        geometries, criteria_invalid, criteria_problematic
+    )
 
     logger.info(f"Validation results: {results}")
     return results
