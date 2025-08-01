@@ -1,10 +1,10 @@
-from typing import Dict, Union, List, Tuple, Any
+from typing import Dict, Union, List, Any
 import sys
 from pathlib import Path
 
 from loguru import logger
 
-from .schema_validation import GeoJsonLint
+from .schema_validation import GeoJsonSchemaValidator
 from .geometry_utils import (
     input_to_geojson,
     any_geojson_to_featurecollection,
@@ -21,18 +21,37 @@ logger_format = "{time:YYYY-MM-DD_HH:mm:ss.SSS} | {message}"
 logger.add(sink=sys.stderr, format=logger_format, level="INFO")
 
 
+class GeoJSONStructureError(Exception):
+    """Custom exception for GeoJSON structural validation errors."""
+
+    def __init__(self, errors: dict):
+        super().__init__("GeoJSON structure validation failed.")
+        self.errors = errors
+
+
 def validate_structure(
     geojson_input: Union[dict, str, Path, Any], check_crs: bool = False
-) -> Tuple[bool, Union[str, None]]:
-    """
-    Returns (True, None) if the input geojson conforms to the geojson json schema v7,
-    and (False, "reason") if not.
-    Enhances error messages by specifying which elements failed validation.
+) -> dict:
+    """Validates the structure of the geojson input
+
+    Args:
+        geojson_input: A GeoJSON FeatureCollection/Feature/Geometry, filepath to (Geo)JSON/file,
+        or any object with a __geo_interface__.
+        check_crs: If True, checks if the CRS is valid.
+
+    Returns:
+        The geojson_data if the input geojson conforms to the geojson json schema v7.
+
+    Raises:
+        GeoJSONStructureError: If the input geojson does not conform to the geojson json schema v7.
+        Enhances error messages by specifying which elements failed validation.
     """
     geojson_data = input_to_geojson(geojson_input)
-    errors = GeoJsonLint(check_crs=check_crs).lint(geojson_data)
+    errors = GeoJsonSchemaValidator(check_crs=check_crs).lint(geojson_data)
     logger.info(f"Structure validation results: {errors}")
-    return errors
+    if errors:
+        raise GeoJSONStructureError(errors)
+    return geojson_data
 
 
 def validate_geometries(
@@ -103,6 +122,7 @@ def fix_geometries(
     logger.info(f"Fixed geometries for criteria {criteria}")
     return fixed_fc
 
+
 def configure_logging(enabled=True, level="INFO"):
     """
     Configures the library logging behavior.
@@ -116,5 +136,7 @@ def configure_logging(enabled=True, level="INFO"):
     """
     logger.remove()  # Clear all existing loggers
     if enabled:
-        logger.add(sys.stderr, format="{time:YYYY-MM-DD_HH:mm:ss.SSS} | {message}", level=level)
+        logger.add(
+            sys.stderr, format="{time:YYYY-MM-DD_HH:mm:ss.SSS} | {message}", level=level
+        )
     return logger

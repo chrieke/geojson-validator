@@ -1,7 +1,7 @@
 from typing import List, Any, Union
 
 
-class GeoJsonLint:
+class GeoJsonSchemaValidator:
     """
     Validates if the GeoJSON conforms to the geojson json schema rules 2020-12
     (https://json-schema.org/draft/2020-12/release-notes)

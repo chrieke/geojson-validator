@@ -37,17 +37,15 @@ def read_geojson_file_or_url(fp_or_url: Union[str, Path]):
 def input_to_geojson(geojson_input: Union[str, Path, dict, Any]) -> dict:
     """Take the input which can be various types and reads/transforms it to Geojson"""
     if isinstance(geojson_input, (str, Path)):
-        geojson_input = read_geojson_file_or_url(geojson_input)
-    elif hasattr(
-        geojson_input, "__geo_interface__"
-    ):  # e.g. shapely geometry object, geojson library objects
-        geojson_input = geojson_input.__geo_interface__
-    elif not isinstance(geojson_input, (dict)) or "type" not in geojson_input:
-        raise ValueError(
-            f"Unsupported input '{type(geojson_input)}'. Input must be a GeoJSON, filepath/url to GeoJSON, "
-            f"shapely geometry or any object with a __geo_interface__"
-        )
-    return geojson_input
+        return read_geojson_file_or_url(geojson_input)
+    if hasattr(geojson_input, "__geo_interface__"):
+        return geojson_input.__geo_interface__
+    if isinstance(geojson_input, dict) and "type" in geojson_input:
+        return geojson_input
+    raise ValueError(
+        f"Unsupported input '{type(geojson_input)}'. Input must be a GeoJSON, filepath/url to GeoJSON, "
+        "shapely geometry or any object with a __geo_interface__"
+    )
 
 
 def any_geojson_to_featurecollection(
