@@ -58,6 +58,17 @@ def test_check_excessive_coordinate_precision_no_after_comma_succeds():
     )
 
 
+def test_check_excessive_coordinate_precision_on_later_vertex():
+    # Excessive precision only on the 3rd vertex; must still be detected (not just first 2).
+    geometry = {
+        "type": "Polygon",
+        "coordinates": [
+            [[0.0, 0.0], [1.0, 0.0], [1.1234567, 1.0], [0.0, 1.0], [0.0, 0.0]]
+        ],
+    }
+    assert checks_problematic.check_excessive_coordinate_precision(geometry)
+
+
 def test_check_excessive_vertices():
     geometry = read_geojson(
         "./tests/data/problematic_geometries/problematic_excessive_vertices.geojson",
@@ -71,6 +82,15 @@ def test_check_3d_coordinates():
         "./tests/data/problematic_geometries/problematic_3d_coordinates.geojson",
         geometries=True,
     )
+    assert checks_problematic.check_3d_coordinates(geometry)
+
+
+def test_check_3d_coordinates_on_later_vertex():
+    # 3D coordinate only on the 3rd vertex; must still be detected (not just first 2).
+    geometry = {
+        "type": "Polygon",
+        "coordinates": [[[0, 0], [1, 0], [1, 1, 5], [0, 1], [0, 0]]],
+    }
     assert checks_problematic.check_3d_coordinates(geometry)
 
 

@@ -18,8 +18,8 @@ def read_geojson_file_or_url(fp_or_url: Union[str, Path]):
         raise ValueError("Filepath or URL must be a geojson or json file")
     if urlparse(str(fp_or_url)).scheme in ("http", "https", "ftp", "ftps"):
         response = requests.get(str(fp_or_url), timeout=5)
-        if response.status_code == 200:  # Check if the request was successful
-            return response.json()
+        response.raise_for_status()  # raise a clear HTTP error instead of falling through to a file open
+        return response.json()
 
     with Path(fp_or_url).open(encoding="UTF-8") as f:
         return json.load(f)
@@ -90,10 +90,11 @@ def prepare_geometries_for_checks(geometry):
     # Initiating the shapely type in each check function specifically is time intensive.
     try:
         shapely_geom = shape(geometry)
-    except TypeError as e:
-        raise TypeError(
-            f"Could not convert geometry to shapely object, likely wrong type: {geometry}"
-        ) from e
+    except (TypeError, ValueError):
+        # e.g. mixed 2D/3D coordinates make shapely raise. Return None so the raw-JSON
+        # based checks (3d_coordinates, precision, etc.) can still run; shapely-based
+        # checks are skipped for this geometry.
+        shapely_geom = None
     # To avoid adjusting the checks code for each geometry type, they are brought to the same
     # list depth (not ideal but okay).
     geometry_type = geometry.get("type", None)

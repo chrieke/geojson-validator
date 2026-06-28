@@ -2,6 +2,37 @@ from .context import fixes_utils
 from .fixtures import read_geojson
 
 
+def test_process_fix_skips_unparseable_geometry():
+    # Mixed 2D/3D coordinates cannot be parsed by shapely; process_fix must skip the
+    # geometry instead of crashing (matches validate_geometries' tolerance).
+    fc = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                        [[0, 0], [0, 0], [1, 0], [1, 1, 5], [0, 1], [0, 0]]
+                    ],
+                },
+            }
+        ],
+    }
+    geometry_validation_results = {
+        "invalid": {},
+        "problematic": {"duplicate_nodes": [0]},
+        "count_geometry_types": {"Polygon": 1},
+        "skipped_validation": [],
+    }
+    fixed_fc = fixes_utils.process_fix(
+        fc, geometry_validation_results, ["duplicate_nodes"]
+    )
+    # Unchanged (skipped), but no crash.
+    assert fixed_fc == fc
+
+
 def test_process_fix():
     fc = read_geojson(
         "./tests/data/invalid_geometries/invalid_exterior_not_ccw.geojson",

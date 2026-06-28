@@ -50,6 +50,18 @@ def test_fix_duplicate_nodes():
     )
 
 
+def test_fix_duplicate_nodes_preserves_collinear_vertices():
+    # A collinear vertex (0.5, 0) is a meaningful node, not a duplicate; it must be kept.
+    geom = shape(
+        {
+            "type": "Polygon",
+            "coordinates": [[[0, 0], [0.5, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
+        }
+    )
+    fixed = fixes.fix_duplicate_nodes(geom)
+    assert (0.5, 0.0) in list(fixed.exterior.coords)
+
+
 # def test_fix_excessive_coordinate_precision():
 #     geometry = read_geojson(
 #         "./tests/data/problematic_geometries/problematic_excessive_coordinate_precision.geojson",
