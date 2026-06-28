@@ -30,13 +30,9 @@ def check_duplicate_nodes(geometry: dict) -> bool:
     return has_duplicates and not only_closed_ring_duplicate
 
 
-def check_excessive_coordinate_precision(
-    geometry: dict, precision=6, n_first_coords=2
-) -> bool:
-    """Return True if coordinates have more than 6 decimal places in the longitude."""
-    # For speedup, by default only checks the x&y coordinates of the n_first_coords=2 coordinate pairs.
-    coords = geometry["coordinates"][0][:n_first_coords]
-    for coord_xy in coords:
+def check_excessive_coordinate_precision(geometry: dict, precision=6) -> bool:
+    """Return True if any coordinate has more than `precision` decimal places."""
+    for coord_xy in geometry["coordinates"][0]:
         for coord in coord_xy:
             splits = str(coord).split(".")
             if (
@@ -53,10 +49,9 @@ def check_excessive_vertices(
     return len(geometry["coordinates"][0]) > 999
 
 
-def check_3d_coordinates(geometry: dict, n_first_coords=2) -> bool:
-    """Return True if any coordinates are more than 2D."""
-    # TODO: should all coordinates be checked?
-    for coords in geometry["coordinates"][0][:n_first_coords]:
+def check_3d_coordinates(geometry: dict) -> bool:
+    """Return True if any coordinate is more than 2D."""
+    for coords in geometry["coordinates"][0]:
         if len(coords) > 2:
             return True
     return False

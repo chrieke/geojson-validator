@@ -1,16 +1,11 @@
 from typing import List
 import copy
-import sys
 
 from shapely.geometry import shape
 from loguru import logger
 
 
 from . import fixes
-
-logger.remove()
-logger_format = "{time:YYYY-MM-DD_HH:mm:ss.SSS} | {message}"
-logger.add(sink=sys.stderr, format=logger_format, level="INFO")
 
 
 def apply_fix(criterium: str, shapely_geom):
@@ -34,7 +29,13 @@ def process_fix(fc, geometry_validation_results: dict, criteria: List[str]):
                 if geometry["type"] != "Polygon":
                     logger.info("Currently only fixing polygons, skipping")
                     continue
-                geom = shape(geometry)
+                try:
+                    geom = shape(geometry)
+                except (TypeError, ValueError):
+                    logger.info(
+                        "Geometry could not be parsed by shapely, skipping fix."
+                    )
+                    continue
                 geom_fixed = apply_fix(criterium, geom)
                 fc_copy["features"][idx]["geometry"] = geom_fixed.__geo_interface__
             elif isinstance(idx, dict):  # multitype geometry e.g. idx is {0: [1, 2]}

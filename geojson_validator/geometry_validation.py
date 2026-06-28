@@ -1,16 +1,10 @@
 from typing import List
-import sys
 from collections import Counter
 
 from loguru import logger
 
 from . import checks_invalid, checks_problematic
 from .geometry_utils import prepare_geometries_for_checks, extract_single_geometries
-
-logger.remove()
-logger_format = "{time:YYYY-MM-DD_HH:mm:ss.SSS} | {message}"
-logger.add(sink=sys.stderr, format=logger_format, level="INFO")
-
 
 ALL_ACCEPTED_GEOMETRY_TYPES = POI, MPOI, LS, MLS, POL, MPOL, GC = [
     "Point",
@@ -100,11 +94,16 @@ def apply_check(
     }
     relevant_geometry_type = VALIDATION_CRITERIA[criteria_type][criterium]["relevant"]
     if geometry_type in relevant_geometry_type:
+        required_input_type = VALIDATION_CRITERIA[criteria_type][criterium]["input"]
+        if required_input_type == "shapely_geom" and shapely_geom is None:
+            logger.info(
+                f"Skipping check '{criterium}', geometry could not be parsed by shapely."
+            )
+            return None
         check_module = (
             checks_invalid if criteria_type == "invalid" else checks_problematic
         )
         check_func = getattr(check_module, f"check_{criterium}")
-        required_input_type = VALIDATION_CRITERIA[criteria_type][criterium]["input"]
         return check_func(geometry_input_options[required_input_type])
 
 

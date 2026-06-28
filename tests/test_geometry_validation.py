@@ -115,6 +115,19 @@ def test_process_validation_multipolygon_in_geometrycollection():
     assert results["count_geometry_types"] == {"GeometryCollection": 1}
 
 
+def test_process_validation_mixed_dimension_does_not_crash():
+    # Mixed 2D/3D coordinates make shapely raise on construction; the raw-JSON checks
+    # (e.g. 3d_coordinates) must still run instead of crashing the whole validation.
+    geometries = [
+        {
+            "type": "Polygon",
+            "coordinates": [[[0, 0], [1, 0], [1, 1, 5], [0, 1], [0, 0]]],
+        }
+    ]
+    results = geometry_validation.process_validation(geometries, [], ["3d_coordinates"])
+    assert "3d_coordinates" in results["problematic"]
+
+
 def test_process_validation_multiple_types():
     # Second geometry in Multipolygon and third geometry is unclosed
     geometries = [

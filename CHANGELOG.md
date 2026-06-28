@@ -9,6 +9,16 @@ Update your installation to the latest version:
     pip install geojson-validator --upgrade
     ```
 
+## Unreleased
+
+- Fix `fix_geometries` `duplicate_nodes` removing meaningful collinear vertices (use `shapely.remove_repeated_points` instead of `simplify(0)`)
+- Fix `3d_coordinates` and `excessive_coordinate_precision` checks missing issues on vertices after the first two (now scan all coordinates)
+- `validate_geometries` no longer crashes on geometries shapely cannot parse (e.g. mixed 2D/3D coordinates); raw-JSON checks still run, shapely-based checks are skipped
+- Winding-order fixes now use `shapely.geometry.polygon.orient`
+- `read_geojson_file_or_url` raises a clear HTTP error instead of silently falling through to a file open on non-200 responses
+- Logging is configured in a single module instead of three (no longer wipes the global loguru logger multiple times on import)
+- Require Python >= 3.9
+
 ## 0.6.0
 **November 29, 2024**
 
