@@ -15,8 +15,6 @@
     🎈 <a href="https://geojson-validator.streamlit.app/">geojson-validator.streamlit.app in the Browser 🎈 </a>
 </h3>
 
-<img src="./repo-images/gif.gif">
-
 <br>
 
 Also see the 
@@ -103,7 +101,7 @@ violated criterium.
 Automatically repairs some of the most common categories of invalid geometries. 
 Always fixes *["unclosed", "exterior_not_ccw", "interior_not_cw"]*.
 Select additional, non-essential fixes with the parameter `optional`.
-More fixes and helper-functions (for issues that require user descisions) **coming soon**!
+Currently only Polygon geometries are fixed, other geometry types are left unchanged.
 
 
 
@@ -116,8 +114,10 @@ The result is a GeoJSON FeatureCollection with the fixed geometries.
 
 
 ### FAQ:
-- Why not use geojson-pydantic for the schema validation?
-pydantic error messages a bit convulted (if one coordinate is missing error 4 times), very schema like, not custom, not easy to understand for no nprogrammers.
-often would need to be translated.
+- Why not use geojson-pydantic for the structure validation? Its error messages are
+  schema-shaped and hard to act on: a single missing coordinate is reported four times, and
+  the wording usually has to be translated before it can be shown to a non-programmer.
+  This library reports each problem once, in plain language, with the JSON path and feature
+  index.
 - Too many logging messages, can I disable them? You can disable or configure the logging behavior via `geojson_validator.configure_logging(enabled=True, level="DEBUG")` which also returns the logger instance.
 - Does it ship type hints? Yes, the package is [PEP 561](https://peps.python.org/pep-0561/) typed, so mypy/pyright pick up the annotations without extra stubs.

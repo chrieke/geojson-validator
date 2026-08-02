@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      # setup-uv no longer publishes floating major tags, so pin the full version.
+      - uses: astral-sh/setup-uv@v9.0.0
+        with:
+          # The lowest version the package supports, so syntax that needs a newer
+          # Python does not slip in.
+          python-version: "3.10"
+          enable-cache: true
+
+      - run: uv sync
+
+      - name: black
+        run: uv run black --check .
+
+      - name: pylint
+        run: uv run pylint --rcfile=pylintrc geojson_validator tests
+
+      - name: mypy
+        run: uv run mypy
+
+      - name: pytest
+        run: uv run pytest -m "not network"
