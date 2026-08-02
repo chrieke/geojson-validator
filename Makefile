@@ -1,18 +1,12 @@
-SRC := .
+.PHONY: check redownload-testfiles
 
-test: typecheck
-	@echo "Formatting with black ..."
-	black .
-	@echo "Linting with pylint ..."
-	python -m pylint --rcfile=pylintrc geojson_validator tests
-	@echo "Running tests with pytest"
-	python -m pytest
-
-typecheck:
-	@echo "Type checking with mypy ..."
-	python -m mypy
+# Same checks as CI, but black reformats instead of only reporting.
+check:
+	uv run black .
+	uv run pylint --rcfile=pylintrc geojson_validator tests
+	uv run mypy
+	uv run pytest -m "not network"
 
 redownload-testfiles:
 	@echo "Redownloading test files from https://github.com/chrieke/geojson-invalid-geometry"
-	python tests/scripts/redownload_testfiles.py
-
+	uv run python tests/scripts/redownload_testfiles.py
