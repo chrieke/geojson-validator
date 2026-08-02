@@ -167,6 +167,12 @@ def _validate(
             logger.info("Null geometry found in GeoJSON Feature, skipping.")
             skipped_validation.append(i)
             continue
+        if not isinstance(geometry, dict):
+            logger.info(
+                f"Geometry must be an object, but is a {type(geometry).__name__}, skipping."
+            )
+            skipped_validation.append(i)
+            continue
         geometry_type = geometry.get("type", None)
         geometry_types.append(geometry_type)
         if geometry_type not in ALL_ACCEPTED_GEOMETRY_TYPES:
@@ -176,44 +182,60 @@ def _validate(
             skipped_validation.append(i)  # TODO: Improve skipped_validation result
             continue
 
-        # Handle Multi-Geometries & Geometrycollections:
-        # Extract the single geometries in the multi-geometry/collection, run a separate validation on each.
-        # Output results in this style: {3: [1,2]} (fourth geometry, the multigeometry is invalid,
-        # because the second and third sub-geometries in it are invalid).
-        if "Multi" in geometry_type or geometry_type == "GeometryCollection":
-            single_geometries = extract_single_geometries(geometry, geometry_type)
-            results_multi = _validate(
-                single_geometries,
-                selected_invalid,
-                selected_problematic,
-                types_needing_shapely,
-            )
-            # Take all invalid criteria from the e.g. Polygons inside the Multipolygon and indicate them
-            # as the positional index of the MultiPolygon.
-            for criterium in results_multi["invalid"]:
-                results_invalid.setdefault(criterium, []).append(
-                    {i: results_multi["invalid"][criterium]}
+        # The value appended per flagged criterium: the geometry's own index, or
+        # {index: [sub-indices]} for a multi-geometry.
+        flagged_invalid: Dict[str, Any]
+        flagged_problematic: Dict[str, Any]
+        try:
+            if "Multi" in geometry_type or geometry_type == "GeometryCollection":
+                # Validate each single geometry inside the multi-geometry/collection
+                # separately, and report the results under the index of the
+                # multi-geometry: {3: [1, 2]} is "the fourth geometry is invalid,
+                # because its second and third sub-geometries are".
+                results_multi = _validate(
+                    extract_single_geometries(geometry, geometry_type),
+                    selected_invalid,
+                    selected_problematic,
+                    types_needing_shapely,
                 )
-            for criterium in results_multi["problematic"]:
-                results_problematic.setdefault(criterium, []).append(
-                    {i: results_multi["problematic"][criterium]}
+                flagged_invalid = {
+                    criterium: {i: indices}
+                    for criterium, indices in results_multi["invalid"].items()
+                }
+                flagged_problematic = {
+                    criterium: {i: indices}
+                    for criterium, indices in results_multi["problematic"].items()
+                }
+            else:
+                shapely_geom = (
+                    to_shapely_or_none(geometry)
+                    if geometry_type in types_needing_shapely
+                    else None
                 )
+                flagged_invalid = {
+                    criterium: i
+                    for criterium in _apply_checks(
+                        selected_invalid, geometry, shapely_geom, geometry_type
+                    )
+                }
+                flagged_problematic = {
+                    criterium: i
+                    for criterium in _apply_checks(
+                        selected_problematic, geometry, shapely_geom, geometry_type
+                    )
+                }
+        except (TypeError, IndexError, KeyError) as error:
+            # A structurally broken geometry, e.g. a position with a single or a
+            # non-numeric value, or missing coordinates. validate_structure reports what
+            # is actually wrong; here it is only skipped instead of raising.
+            logger.info(f"Geometry could not be validated ({error!r}), skipping.")
+            skipped_validation.append(i)
             continue
 
-        # Handle Single-Geometries
-        shapely_geom = (
-            to_shapely_or_none(geometry)
-            if geometry_type in types_needing_shapely
-            else None
-        )
-        for criterium in _apply_checks(
-            selected_invalid, geometry, shapely_geom, geometry_type
-        ):
-            results_invalid.setdefault(criterium, []).append(i)
-        for criterium in _apply_checks(
-            selected_problematic, geometry, shapely_geom, geometry_type
-        ):
-            results_problematic.setdefault(criterium, []).append(i)
+        for criterium, flagged in flagged_invalid.items():
+            results_invalid.setdefault(criterium, []).append(flagged)
+        for criterium, flagged in flagged_problematic.items():
+            results_problematic.setdefault(criterium, []).append(flagged)
 
     # TODO: Results format better: feature1: flaws, feature4: flaws, feature9: flaws?
     results = {

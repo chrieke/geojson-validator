@@ -35,6 +35,47 @@ def test_check_criteria_single_string_raises():
         )
 
 
+@pytest.mark.parametrize(
+    "geometry",
+    [
+        {"type": "Point", "coordinates": [1]},  # position with a single value
+        {"type": "Point", "coordinates": ["1", "2"]},  # non-numeric coordinate
+        {"type": "LineString", "coordinates": [[1, 2], [3, None]]},  # null coordinate
+        {"type": "Polygon", "coordinates": [[1, 2]]},  # not nested deep enough
+        {"type": "Polygon"},  # missing coordinates
+        {"type": "MultiPolygon"},  # missing coordinates, multi-geometry path
+        "a string, not an object",
+        True,
+    ],
+)
+def test_process_validation_skips_structurally_broken_geometry(geometry):
+    # These are reported properly by validate_structure; validate_geometries must skip
+    # them rather than raising IndexError/TypeError/KeyError/AttributeError.
+    results = geometry_validation.process_validation(
+        [geometry],
+        geometry_validation.INVALID_CRITERIA,
+        geometry_validation.PROBLEMATIC_CRITERIA,
+    )
+    assert results["skipped_validation"] == [0]
+    assert not results["invalid"]
+    assert not results["problematic"]
+
+
+def test_process_validation_skips_only_the_broken_geometry():
+    geometries = [
+        {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 0]]]},
+        {"type": "Point", "coordinates": [1]},  # broken
+        {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1]]]},
+    ]
+    results = geometry_validation.process_validation(
+        geometries,
+        geometry_validation.INVALID_CRITERIA,
+        geometry_validation.PROBLEMATIC_CRITERIA,
+    )
+    assert results["skipped_validation"] == [1]
+    assert results["invalid"]["unclosed"] == [2]  # the third geometry is still checked
+
+
 def test_process_validation_valid_polygon_without_criteria():
     geometries = [
         {"type": "Polygon", "coordinates": [[[0, 0], [1, 1], [1, 0], [0, 0]]]}

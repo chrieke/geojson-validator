@@ -57,6 +57,10 @@ Update your installation to the latest version:
 - When more than one fix applies to the same geometry, a `duplicate_nodes` removal is no longer
   partly undone by the next fix re-adding a closing coordinate. Only reachable when calling
   `process_fix` directly; `fix_geometries` was unaffected
+- `validate_geometries` no longer raises on structurally broken geometries (a position with a single
+  or non-numeric value, missing `coordinates`, a geometry that is not an object). The affected
+  feature index is reported in `skipped_validation` instead; use `validate_structure` to see what is
+  wrong. A missing `geometry` member is now treated like an explicit `"geometry": null`
 
 ## 0.6.0
 **November 29, 2024**

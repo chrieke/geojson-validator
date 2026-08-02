@@ -73,7 +73,9 @@ def validate_geometries(
     geojson_input = input_to_geojson(geojson_input)
     fc = any_geojson_to_featurecollection(geojson_input)
 
-    geometries = [feature["geometry"] for feature in fc["features"]]
+    # A missing geometry member is treated like an explicit null geometry, which
+    # process_validation already reports as skipped.
+    geometries = [feature.get("geometry") for feature in fc["features"]]
     results = process_validation(geometries, criteria_invalid, criteria_problematic)
 
     logger.info(f"Validation results: {results}")
