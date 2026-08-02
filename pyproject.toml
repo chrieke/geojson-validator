@@ -26,7 +26,6 @@ dev = [
     "black",
     "pytest",
     "pylint",
-    "pytest-pylint",
     "pytest-sugar",
     "mypy",
     "types-requests",
