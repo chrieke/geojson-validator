@@ -13,6 +13,15 @@ Update your installation to the latest version:
 
 - Fix `fix_geometries` not applying fixes to the sub-geometries of MultiPolygons/GeometryCollections
   (results were written to a wrong key, leaving the coordinates unchanged)
+- Fix `validate_geometries` mutating the input GeoJSON (Point/LineString coordinates were rewritten in place)
+- Checks now cover all Polygon rings instead of only the exterior ring
+  (`unclosed`, `less_three_unique_nodes`, `duplicate_nodes`, `excessive_coordinate_precision`,
+  `3d_coordinates`, `outside_lat_lon_boundaries`, `crosses_antimeridian`)
+- `excessive_vertices` now counts the vertices of all rings, not only the exterior ring
+- `inner_and_exterior_ring_intersect` moved from the `invalid` to the `problematic` criteria
+  (valid GeoJSON, but invalid by the OGC Simple Features standard), and no longer flags rings
+  touching at a single point, matching [geojson-invalid-geometry](https://github.com/chrieke/geojson-invalid-geometry)
+- `excessive_coordinate_precision` now also detects coordinates in exponent notation (e.g. `1e-07`)
 - `fix_geometries` returns plain lists instead of tuples in the fixed coordinates
 - Fix `fix_geometries` `duplicate_nodes` removing meaningful collinear vertices (use `shapely.remove_repeated_points` instead of `simplify(0)`)
 - Fix `3d_coordinates` and `excessive_coordinate_precision` checks missing issues on vertices after the first two (now scan all coordinates)

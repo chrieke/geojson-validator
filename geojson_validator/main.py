@@ -1,4 +1,4 @@
-from typing import Dict, Union, List, Tuple, Any
+from typing import Dict, Union, List, Any
 import sys
 from pathlib import Path
 
@@ -23,11 +23,18 @@ logger.add(sink=sys.stderr, format=logger_format, level="INFO")
 
 def validate_structure(
     geojson_input: Union[dict, str, Path, Any], check_crs: bool = False
-) -> Tuple[bool, Union[str, None]]:
+) -> Dict:
     """
-    Returns (True, None) if the input geojson conforms to the geojson json schema v7,
-    and (False, "reason") if not.
-    Enhances error messages by specifying which elements failed validation.
+    Validate that the input conforms to the GeoJSON json schema.
+
+    Args:
+        geojson_input: Input GeoJSON FeatureCollection, Feature, Geometry or filepath/url to (Geo)JSON.
+        check_crs: Also flag a crs member, which the GeoJSON specification disallows.
+
+    Returns:
+        A dictionary of error messages with the affected json paths and feature indices, e.g.
+        {"Missing 'type' member": {"path": ["/features/0"], "feature": [0]}}.
+        Empty if the structure is valid.
     """
     geojson_data = input_to_geojson(geojson_input)
     errors = GeoJsonLint(check_crs=check_crs).lint(geojson_data)
@@ -101,12 +108,12 @@ def fix_geometries(
     optional = list(optional or [])
     check_criteria(optional, allowed_optional, name="optional")
 
+    geojson_input = input_to_geojson(geojson_input)
     geometry_validation_results = validate_geometries(
         geojson_input,
         criteria_invalid=criteria,
         criteria_problematic=optional,
     )
-    geojson_input = input_to_geojson(geojson_input)
     fc = any_geojson_to_featurecollection(geojson_input)
 
     criteria.extend(optional)

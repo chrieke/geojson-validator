@@ -84,22 +84,27 @@ def extract_single_geometries(geometry, geometry_type):
         return geometry["geometries"]
 
 
-def prepare_geometries_for_checks(geometry):
-    """Prepares the Geometries for the validation checks"""
+def coordinate_arrays(geometry: dict) -> list:
+    """
+    The position arrays of a single geometry, without modifying it:
+    all rings for a Polygon, one array for a LineString or Point.
+    """
+    geometry_type = geometry.get("type", None)
+    if geometry_type == "Point":
+        return [[geometry["coordinates"]]]
+    if geometry_type == "LineString":
+        return [geometry["coordinates"]]
+    return geometry["coordinates"]
+
+
+def to_shapely_or_none(geometry: dict):
+    """Parses the geometry dict to shapely for the validation checks that require it."""
     # Some criteria require the original json geometry dict as shapely etc. autofixes (e.g. closes) geometries.
     # Initiating the shapely type in each check function specifically is time intensive.
     try:
-        shapely_geom = shape(geometry)
+        return shape(geometry)
     except (TypeError, ValueError):
         # e.g. mixed 2D/3D coordinates make shapely raise. Return None so the raw-JSON
         # based checks (3d_coordinates, precision, etc.) can still run; shapely-based
         # checks are skipped for this geometry.
-        shapely_geom = None
-    # To avoid adjusting the checks code for each geometry type, they are brought to the same
-    # list depth (not ideal but okay).
-    geometry_type = geometry.get("type", None)
-    if geometry_type == "Point":
-        geometry["coordinates"] = [[geometry["coordinates"]]]
-    if geometry_type == "LineString":
-        geometry["coordinates"] = [geometry["coordinates"]]
-    return geometry, shapely_geom
+        return None

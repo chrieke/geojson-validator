@@ -34,7 +34,6 @@ class GeoJsonLint:
     def __init__(self, check_crs: bool = False):
         self.check_crs = check_crs
         self.feature_idx = None
-        self.line_map = None
         self.errors = {}
 
     def lint(self, geojson_data: Union[dict, Any]):
