@@ -40,6 +40,9 @@ Update your installation to the latest version:
 - Require Python >= 3.10 (Python 3.9 is end-of-life; the current `requests` and `shapely` releases
   no longer support it), and bump the dependency floors to `loguru>=0.7.3`, `requests>=2.34.2`,
   `shapely>=2.1.2`
+- Fix `validate_structure` reporting a FeatureCollection-level `bbox` error under the index of the
+  last feature instead of no feature
+- Fix a reused `GeoJsonLint` instance reporting the errors of previous `lint()` calls
 
 ## 0.6.0
 **November 29, 2024**

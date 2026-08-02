@@ -37,6 +37,10 @@ class GeoJsonLint:
         self.errors: Dict[str, Dict[str, List[Any]]] = {}
 
     def lint(self, geojson_data: Union[dict, Any]) -> Dict[str, Dict[str, List[Any]]]:
+        # Reset, so a reused instance does not report the previous call's errors.
+        self.errors = {}
+        self.feature_idx = None
+
         root_path = ""
         if not isinstance(geojson_data, dict):
             self._add_error("Root of GeoJSON must be an object/dictionary", root_path)
@@ -100,6 +104,8 @@ class GeoJsonLint:
                     )
                 else:
                     self._validate_feature(feature, f"{path}/features/{idx}")
+            # The bbox below belongs to the FeatureCollection, not to the last feature.
+            self.feature_idx = None
 
         bbox = feature_collection.get("bbox")
         if bbox:

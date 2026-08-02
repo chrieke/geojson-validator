@@ -58,6 +58,42 @@ def test_schema_validation_crs_member_optional_check():
     assert errors[list(errors.keys())[0]]["path"] == ["/crs"]
 
 
+def test_schema_validation_featurecollection_bbox_not_attributed_to_a_feature():
+    geojson_data = {
+        "type": "FeatureCollection",
+        "bbox": [1, 2],  # invalid length, and belongs to the FeatureCollection
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {"type": "Point", "coordinates": [1, 2]},
+            },
+            {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {"type": "Point", "coordinates": [3, 4]},
+            },
+        ],
+    }
+    errors = schema_validation.GeoJsonLint().lint(geojson_data)
+    assert errors == {
+        "'bbox' member array must consist of 4 or 6 coordinates": {"path": ["/bbox"]}
+    }
+
+
+def test_schema_validation_reused_instance_does_not_keep_previous_errors():
+    linter = schema_validation.GeoJsonLint()
+    invalid = {"type": "Feature", "properties": {}}  # missing geometry
+    valid = {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {"type": "Point", "coordinates": [1, 2]},
+    }
+    assert linter.lint(invalid)
+    assert not linter.lint(valid)
+    assert linter.lint(invalid) == {'"geometry" member required': {"path": [""]}}
+
+
 def test_schema_validation_quotes_around_geometry():
     geojson_data = {
         "type": "FeatureCollection",
