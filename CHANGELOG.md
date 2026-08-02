@@ -9,62 +9,20 @@ Update your installation to the latest version:
     pip install geojson-validator --upgrade
     ```
 
-## Unreleased
+## 0.7.0
+**August 02, 2026**
 
-- Ship a `py.typed` marker (PEP 561), so type checkers use the annotations instead of treating the
-  package as untyped
-- Fix incorrect type hints: `criteria_invalid`/`criteria_problematic` were annotated `List[str]` but
-  defaulted to a dict (now the `INVALID_CRITERIA`/`PROBLEMATIC_CRITERIA` tuples of criteria names),
-  `validate_geometries` documented the wrong return value, and `fix_geometries` and
-  `configure_logging` were unannotated. The package now type checks cleanly (`make typecheck`)
-- Passing a single criteria string instead of a list raises a clear error instead of validating
-  against the individual characters
-- Fix `fix_geometries` not applying fixes to the sub-geometries of MultiPolygons/GeometryCollections
-  (results were written to a wrong key, leaving the coordinates unchanged)
-- Fix `validate_geometries` mutating the input GeoJSON (Point/LineString coordinates were rewritten in place)
-- Checks now cover all Polygon rings instead of only the exterior ring
-  (`unclosed`, `less_three_unique_nodes`, `duplicate_nodes`, `excessive_coordinate_precision`,
-  `3d_coordinates`, `outside_lat_lon_boundaries`, `crosses_antimeridian`)
-- `excessive_vertices` now counts the vertices of all rings, not only the exterior ring
-- `inner_and_exterior_ring_intersect` moved from the `invalid` to the `problematic` criteria
-  (valid GeoJSON, but invalid by the OGC Simple Features standard), and no longer flags rings
-  touching at a single point, matching [geojson-invalid-geometry](https://github.com/chrieke/geojson-invalid-geometry)
-- `excessive_coordinate_precision` now also detects coordinates in exponent notation (e.g. `1e-07`)
-- `fix_geometries` returns plain lists instead of tuples in the fixed coordinates
-- Fix `fix_geometries` `duplicate_nodes` removing meaningful collinear vertices (use `shapely.remove_repeated_points` instead of `simplify(0)`)
-- Fix `3d_coordinates` and `excessive_coordinate_precision` checks missing issues on vertices after the first two (now scan all coordinates)
-- `validate_geometries` no longer crashes on geometries shapely cannot parse (e.g. mixed 2D/3D coordinates); raw-JSON checks still run, shapely-based checks are skipped
-- Winding-order fixes now use `shapely.geometry.polygon.orient`
-- `read_geojson_file_or_url` raises a clear HTTP error instead of silently falling through to a file open on non-200 responses
-- Logging is configured in a single module instead of three (no longer wipes the global loguru logger multiple times on import)
-- Require Python >= 3.10 (Python 3.9 is end-of-life; the current `requests` and `shapely` releases
-  no longer support it), and bump the dependency floors to `loguru>=0.7.3`, `requests>=2.34.2`,
-  `shapely>=2.1.2`
-- Fix `validate_structure` reporting a FeatureCollection-level `bbox` error under the index of the
-  last feature instead of no feature
-- Fix a reused `GeoJsonLint` instance reporting the errors of previous `lint()` calls
-- Fix `read_geojson_file_or_url` rejecting URLs with a query string (e.g. presigned URLs), because
-  the query was read as part of the file suffix; the suffix check is now also case-insensitive
-- Fix `fix_geometries(optional=["duplicate_nodes"])` crashing on a fully degenerate ring
-  (`shapely` raises `GEOSException`, which is not a `ValueError`)
-- `validate_geometries` is faster on non-Polygon input, as shapely geometries are now only built for
-  the geometry types a selected check actually needs them for: measured over 10k features, Points
-  4.3x and LineStrings 2.3x
-- `check_inner_and_exterior_ring_intersect` skips building the exterior shell for polygons without
-  holes (1.4x faster on hole-free polygons)
-- `fix_geometries` no longer re-parses and re-serialises a geometry once per criterium, so its cost
-  no longer grows with the number of criteria applied (2 fixes 1.9x faster, 3 fixes 2.8x)
-- When more than one fix applies to the same geometry, a `duplicate_nodes` removal is no longer
-  partly undone by the next fix re-adding a closing coordinate. Only reachable when calling
-  `process_fix` directly; `fix_geometries` was unaffected
-- `validate_geometries` no longer raises on structurally broken geometries (a position with a single
-  or non-numeric value, missing `coordinates`, a geometry that is not an object). The affected
-  feature index is reported in `skipped_validation` instead; use `validate_structure` to see what is
-  wrong. A missing `geometry` member is now treated like an explicit `"geometry": null`
-- Fix a MultiType geometry or GeometryCollection with a sub-geometry that could not be checked being
-  reported as fully valid. The sub-geometry's skip was dropped, so `skipped_validation` stayed empty;
-  the index of the multi-geometry is now listed there
-- Add a GitHub Actions CI workflow running black, pylint, mypy and pytest
+- Requires Python >= 3.10
+- Move `inner_and_exterior_ring_intersect` from the `invalid` to the `problematic` criteria, it no longer flags rings that touch in a single point
+- All checks now cover every Polygon ring, before only the exterior ring was checked
+- `excessive_coordinate_precision` also detects exponent notation (e.g. `1e-07`), it and `3d_coordinates` no longer miss issues after the first two coordinates
+- `validate_geometries` no longer raises on geometries that shapely cannot parse or that are structurally broken, the feature index is reported in `skipped_validation` instead
+- Fix `validate_geometries` modifying the input GeoJSON
+- Fix `fix_geometries` not applying the fixes to the sub-geometries of MultiPolygons & GeometryCollections
+- Fix the `duplicate_nodes` fix removing meaningful collinear vertices
+- Fix `validate_structure` reporting a FeatureCollection-level `bbox` error under the last feature, and a reused `GeoJsonLint` instance repeating the errors of previous calls
+- Fixed & completed type hints
+- Speed improvements.
 
 ## 0.6.0
 **November 29, 2024**
