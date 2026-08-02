@@ -47,6 +47,9 @@ Update your installation to the latest version:
   the query was read as part of the file suffix; the suffix check is now also case-insensitive
 - Fix `fix_geometries(optional=["duplicate_nodes"])` crashing on a fully degenerate ring
   (`shapely` raises `GEOSException`, which is not a `ValueError`)
+- `validate_geometries` is faster on non-Polygon input, as shapely geometries are now only built for
+  the geometry types a selected check actually needs them for: measured over 10k features, Points
+  4.3x and LineStrings 2.3x
 
 ## 0.6.0
 **November 29, 2024**

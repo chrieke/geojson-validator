@@ -8,6 +8,24 @@ from shapely.geometry.base import BaseGeometry
 from shapely.errors import ShapelyError
 import requests
 
+ALL_ACCEPTED_GEOMETRY_TYPES = [
+    POINT,
+    MULTIPOINT,
+    LINESTRING,
+    MULTILINESTRING,
+    POLYGON,
+    MULTIPOLYGON,
+    GEOMETRYCOLLECTION,
+] = [
+    "Point",
+    "MultiPoint",
+    "LineString",
+    "MultiLineString",
+    "Polygon",
+    "MultiPolygon",
+    "GeometryCollection",
+]
+
 
 def read_geojson_file_or_url(fp_or_url: Union[str, Path]) -> dict:
     """Reads a geojson source from a filepath or url"""
@@ -44,15 +62,6 @@ def input_to_geojson(geojson_input: Any) -> dict:
 
 def any_geojson_to_featurecollection(geojson_input: dict) -> dict:
     """Take a geojson of various types (Feature, Geometry, Fc) and transform it to a featurecollection"""
-    supported_geojson_types = [
-        "Point",
-        "MultiPoint",
-        "LineString",
-        "MultiLineString",
-        "Polygon",
-        "MultiPolygon",
-        "GeometryCollection",
-    ]
     type_ = geojson_input.get("type", None)  # FeatureCollection, Feature, Geometry
     if type_ is None:
         raise ValueError("No 'type' field found in GeoJSON")
@@ -60,14 +69,14 @@ def any_geojson_to_featurecollection(geojson_input: dict) -> dict:
         fc = geojson_input
     elif type_ == "Feature":
         fc = {"type": "FeatureCollection", "features": [geojson_input]}
-    elif type_ in supported_geojson_types:
+    elif type_ in ALL_ACCEPTED_GEOMETRY_TYPES:
         fc = {
             "type": "FeatureCollection",
             "features": [{"type": "Feature", "geometry": geojson_input}],
         }
     else:
         raise ValueError(
-            f"Unsupported GeoJSON type {type_}. Supported are {supported_geojson_types}"
+            f"Unsupported GeoJSON type {type_}. Supported are {ALL_ACCEPTED_GEOMETRY_TYPES}"
         )
 
     return fc

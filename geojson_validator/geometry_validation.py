@@ -1,81 +1,87 @@
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, FrozenSet, List, Optional, Sequence, Tuple
 from collections import Counter
+from dataclasses import dataclass, field
 
 from loguru import logger
 from shapely.geometry.base import BaseGeometry
 
 from . import checks_invalid, checks_problematic
-from .geometry_utils import to_shapely_or_none, extract_single_geometries
+from .geometry_utils import (
+    ALL_ACCEPTED_GEOMETRY_TYPES,
+    POINT,
+    LINESTRING,
+    POLYGON,
+    to_shapely_or_none,
+    extract_single_geometries,
+)
 
-ALL_ACCEPTED_GEOMETRY_TYPES = POI, MPOI, LS, MLS, POL, MPOL, GC = [
-    "Point",
-    "MultiPoint",
-    "LineString",
-    "MultiLineString",
-    "Polygon",
-    "MultiPolygon",
-    "GeometryCollection",
-]
 
-VALIDATION_CRITERIA: Dict[str, Dict[str, Dict[str, Any]]] = {
+@dataclass(frozen=True)
+class Check:
+    """A validation criterium: what to run it on, and what input form it needs."""
+
+    func: Callable[[Any], bool]
+    relevant: FrozenSet[str]
+    # Checks that take a shapely geometry rather than the raw json geometry dict. The raw
+    # dict is needed by the others because shapely silently repairs (e.g. closes) rings.
+    needs_shapely: bool = field(default=False)
+
+
+VALIDATION_CRITERIA: Dict[str, Dict[str, Check]] = {
     "invalid": {
-        "unclosed": {"relevant": [POL], "input": "json_geometry"},
-        "less_three_unique_nodes": {
-            "relevant": [POL],
-            "input": "json_geometry",
-        },
-        "exterior_not_ccw": {
-            "relevant": [POL],
-            "input": "shapely_geom",
-        },
-        "interior_not_cw": {
-            "relevant": [POL],
-            "input": "shapely_geom",
-        },
-        # "zero-length": {"relevant": ["LineString"], "input": "json_geometry"},
+        "unclosed": Check(checks_invalid.check_unclosed, frozenset({POLYGON})),
+        "less_three_unique_nodes": Check(
+            checks_invalid.check_less_three_unique_nodes, frozenset({POLYGON})
+        ),
+        "exterior_not_ccw": Check(
+            checks_invalid.check_exterior_not_ccw, frozenset({POLYGON}), True
+        ),
+        "interior_not_cw": Check(
+            checks_invalid.check_interior_not_cw, frozenset({POLYGON}), True
+        ),
     },
     "problematic": {
-        "holes": {"relevant": [POL], "input": "shapely_geom"},
+        "holes": Check(checks_problematic.check_holes, frozenset({POLYGON}), True),
         # Valid by the GeoJSON specification, but invalid by the OGC Simple Features standard
         # which many tools follow.
-        "inner_and_exterior_ring_intersect": {
-            "relevant": [POL],
-            "input": "shapely_geom",
-        },
-        "self_intersection": {
-            "relevant": [POL],
-            "input": "shapely_geom",
-        },
-        "duplicate_nodes": {
-            "relevant": [LS, POL],
-            "input": "json_geometry",
-        },
-        "excessive_coordinate_precision": {
-            "relevant": [POI, LS, POL],
-            "input": "json_geometry",
-        },
-        "excessive_vertices": {
-            "relevant": [LS, POL],
-            "input": "json_geometry",
-        },
-        "3d_coordinates": {
-            "relevant": [POI, LS, POL],
-            "input": "json_geometry",
-        },
-        "outside_lat_lon_boundaries": {
-            "relevant": [POI, LS, POL],
-            "input": "json_geometry",
-        },
-        "crosses_antimeridian": {
-            "relevant": [LS, POL],
-            "input": "json_geometry",
-        },
-        # "wrong_bbox_order: {}"
+        "inner_and_exterior_ring_intersect": Check(
+            checks_problematic.check_inner_and_exterior_ring_intersect,
+            frozenset({POLYGON}),
+            True,
+        ),
+        "self_intersection": Check(
+            checks_problematic.check_self_intersection, frozenset({POLYGON}), True
+        ),
+        "duplicate_nodes": Check(
+            checks_problematic.check_duplicate_nodes, frozenset({LINESTRING, POLYGON})
+        ),
+        "excessive_coordinate_precision": Check(
+            checks_problematic.check_excessive_coordinate_precision,
+            frozenset({POINT, LINESTRING, POLYGON}),
+        ),
+        "excessive_vertices": Check(
+            checks_problematic.check_excessive_vertices,
+            frozenset({LINESTRING, POLYGON}),
+        ),
+        "3d_coordinates": Check(
+            checks_problematic.check_3d_coordinates,
+            frozenset({POINT, LINESTRING, POLYGON}),
+        ),
+        "outside_lat_lon_boundaries": Check(
+            checks_problematic.check_outside_lat_lon_boundaries,
+            frozenset({POINT, LINESTRING, POLYGON}),
+        ),
+        "crosses_antimeridian": Check(
+            checks_problematic.check_crosses_antimeridian,
+            frozenset({LINESTRING, POLYGON}),
+        ),
     },
 }
 
 INVALID_CRITERIA: Tuple[str, ...] = tuple(VALIDATION_CRITERIA["invalid"])
 PROBLEMATIC_CRITERIA: Tuple[str, ...] = tuple(VALIDATION_CRITERIA["problematic"])
+
+SelectedChecks = List[Tuple[str, Check]]
 
 
 def check_criteria(
@@ -94,38 +100,62 @@ def check_criteria(
         logger.info(f"Criteria '{name}': {selected_criteria}")
 
 
-def apply_check(
-    criterium: str,
-    single_geometry: dict,
+def _select(criteria_type: str, selected_criteria: Sequence[str]) -> SelectedChecks:
+    """Resolves criteria names to their checks once, keeping the caller's order."""
+    return [
+        (name, VALIDATION_CRITERIA[criteria_type][name]) for name in selected_criteria
+    ]
+
+
+def _apply_checks(
+    selected: SelectedChecks,
+    geometry: dict,
     shapely_geom: Optional[BaseGeometry],
     geometry_type: str,
-    criteria_type: str = "invalid",
-) -> Optional[bool]:
-    """Applies the correct check for the criteria. Only accepts single geometries."""
-    geometry_input_options = {
-        "json_geometry": single_geometry,
-        "shapely_geom": shapely_geom,
-    }
-    relevant_geometry_type = VALIDATION_CRITERIA[criteria_type][criterium]["relevant"]
-    if geometry_type in relevant_geometry_type:
-        required_input_type = VALIDATION_CRITERIA[criteria_type][criterium]["input"]
-        if required_input_type == "shapely_geom" and shapely_geom is None:
-            logger.info(
-                f"Skipping check '{criterium}', geometry could not be parsed by shapely."
-            )
-            return None
-        check_module = (
-            checks_invalid if criteria_type == "invalid" else checks_problematic
-        )
-        check_func = getattr(check_module, f"check_{criterium}")
-        return check_func(geometry_input_options[required_input_type])
-    return None
+) -> List[str]:
+    """The names of the criteria that flag this single geometry."""
+    flagged = []
+    for name, check in selected:
+        if geometry_type not in check.relevant:
+            continue
+        if check.needs_shapely:
+            if shapely_geom is None:
+                logger.info(
+                    f"Skipping check '{name}', geometry could not be parsed by shapely."
+                )
+                continue
+            if check.func(shapely_geom):
+                flagged.append(name)
+        elif check.func(geometry):
+            flagged.append(name)
+    return flagged
 
 
 def process_validation(
     geometries: Sequence[Optional[dict]],
     criteria_invalid: Sequence[str],
     criteria_problematic: Sequence[str],
+) -> Dict[str, Any]:
+    selected_invalid = _select("invalid", criteria_invalid)
+    selected_problematic = _select("problematic", criteria_problematic)
+    # Only build the shapely geometry for types that a selected check actually needs it
+    # for, so e.g. validating a FeatureCollection of Points does not parse every feature.
+    types_needing_shapely = frozenset(
+        geometry_type
+        for _, check in selected_invalid + selected_problematic
+        if check.needs_shapely
+        for geometry_type in check.relevant
+    )
+    return _validate(
+        geometries, selected_invalid, selected_problematic, types_needing_shapely
+    )
+
+
+def _validate(
+    geometries: Sequence[Optional[dict]],
+    selected_invalid: SelectedChecks,
+    selected_problematic: SelectedChecks,
+    types_needing_shapely: FrozenSet[str],
 ) -> Dict[str, Any]:
     results_invalid: Dict[str, List[Any]] = {}
     results_problematic: Dict[str, List[Any]] = {}
@@ -152,8 +182,11 @@ def process_validation(
         # because the second and third sub-geometries in it are invalid).
         if "Multi" in geometry_type or geometry_type == "GeometryCollection":
             single_geometries = extract_single_geometries(geometry, geometry_type)
-            results_multi = process_validation(
-                single_geometries, criteria_invalid, criteria_problematic
+            results_multi = _validate(
+                single_geometries,
+                selected_invalid,
+                selected_problematic,
+                types_needing_shapely,
             )
             # Take all invalid criteria from the e.g. Polygons inside the Multipolygon and indicate them
             # as the positional index of the MultiPolygon.
@@ -168,19 +201,19 @@ def process_validation(
             continue
 
         # Handle Single-Geometries
-        shapely_geom = to_shapely_or_none(geometry)
-        if criteria_invalid:
-            for criterium in criteria_invalid:
-                if apply_check(
-                    criterium, geometry, shapely_geom, geometry_type, "invalid"
-                ):
-                    results_invalid.setdefault(criterium, []).append(i)
-        if criteria_problematic:
-            for criterium in criteria_problematic:
-                if apply_check(
-                    criterium, geometry, shapely_geom, geometry_type, "problematic"
-                ):
-                    results_problematic.setdefault(criterium, []).append(i)
+        shapely_geom = (
+            to_shapely_or_none(geometry)
+            if geometry_type in types_needing_shapely
+            else None
+        )
+        for criterium in _apply_checks(
+            selected_invalid, geometry, shapely_geom, geometry_type
+        ):
+            results_invalid.setdefault(criterium, []).append(i)
+        for criterium in _apply_checks(
+            selected_problematic, geometry, shapely_geom, geometry_type
+        ):
+            results_problematic.setdefault(criterium, []).append(i)
 
     # TODO: Results format better: feature1: flaws, feature4: flaws, feature9: flaws?
     results = {
