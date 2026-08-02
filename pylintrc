@@ -8,7 +8,6 @@ disable=
     too-few-public-methods,
     missing-final-newline,
     too-many-boolean-expressions,
-    bad-continuation,
     invalid-name,
     super-init-not-called,
     inconsistent-return-statements,

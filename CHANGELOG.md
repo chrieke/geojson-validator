@@ -37,7 +37,9 @@ Update your installation to the latest version:
 - Winding-order fixes now use `shapely.geometry.polygon.orient`
 - `read_geojson_file_or_url` raises a clear HTTP error instead of silently falling through to a file open on non-200 responses
 - Logging is configured in a single module instead of three (no longer wipes the global loguru logger multiple times on import)
-- Require Python >= 3.9
+- Require Python >= 3.10 (Python 3.9 is end-of-life; the current `requests` and `shapely` releases
+  no longer support it), and bump the dependency floors to `loguru>=0.7.3`, `requests>=2.34.2`,
+  `shapely>=2.1.2`
 
 ## 0.6.0
 **November 29, 2024**

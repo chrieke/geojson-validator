@@ -3,7 +3,7 @@ name = "geojson-validator"
 version = "0.6.0"
 description = "Validates and fixes GeoJSON"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "Christoph Rieke", email = "christoph.k.rieke@gmail.com" }]
 keywords = ["geojson", "validation", "GIS"]
@@ -15,9 +15,9 @@ classifiers = [
     "Intended Audience :: Developers"
 ]
 dependencies = [
-    "loguru>=0.7.2",
-    "requests>=2.32.3",
-    "shapely>=2.0.6",
+    "loguru>=0.7.3",
+    "requests>=2.34.2",
+    "shapely>=2.1.2",
 ]
 
 [dependency-groups]
@@ -26,7 +26,6 @@ dev = [
     "black",
     "pytest",
     "pylint",
-    "pytest-pylint",
     "pytest-sugar",
     "mypy",
     "types-requests",

@@ -3,8 +3,10 @@ SRC := .
 test: typecheck
 	@echo "Formatting with black ..."
 	black .
+	@echo "Linting with pylint ..."
+	python -m pylint --rcfile=pylintrc geojson_validator tests
 	@echo "Running tests with pytest"
-	python -m pytest --pylint --pylint-rcfile=../pylintrc
+	python -m pytest
 
 typecheck:
 	@echo "Type checking with mypy ..."
