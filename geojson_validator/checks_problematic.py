@@ -20,6 +20,8 @@ def check_self_intersection(geom: Polygon) -> bool:
 
 def check_inner_and_exterior_ring_intersect(geom: Polygon) -> bool:
     """Return True if any interior ring intersects the exterior ring in more than a single touching point."""
+    if not geom.interiors:
+        return False
     # Rings touching at a single point are allowed, line overlaps and crossings are not.
     shell = Polygon(geom.exterior)
     for interior in geom.interiors:

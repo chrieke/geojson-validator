@@ -50,6 +50,8 @@ Update your installation to the latest version:
 - `validate_geometries` is faster on non-Polygon input, as shapely geometries are now only built for
   the geometry types a selected check actually needs them for: measured over 10k features, Points
   4.3x and LineStrings 2.3x
+- `check_inner_and_exterior_ring_intersect` skips building the exterior shell for polygons without
+  holes (1.4x faster on hole-free polygons)
 
 ## 0.6.0
 **November 29, 2024**
