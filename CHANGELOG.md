@@ -11,6 +11,9 @@ Update your installation to the latest version:
 
 ## Unreleased
 
+- Fix `fix_geometries` not applying fixes to the sub-geometries of MultiPolygons/GeometryCollections
+  (results were written to a wrong key, leaving the coordinates unchanged)
+- `fix_geometries` returns plain lists instead of tuples in the fixed coordinates
 - Fix `fix_geometries` `duplicate_nodes` removing meaningful collinear vertices (use `shapely.remove_repeated_points` instead of `simplify(0)`)
 - Fix `3d_coordinates` and `excessive_coordinate_precision` checks missing issues on vertices after the first two (now scan all coordinates)
 - `validate_geometries` no longer crashes on geometries shapely cannot parse (e.g. mixed 2D/3D coordinates); raw-JSON checks still run, shapely-based checks are skipped
