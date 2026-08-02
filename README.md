@@ -113,3 +113,4 @@ The result is a GeoJSON FeatureCollection with the fixed geometries.
 pydantic error messages a bit convulted (if one coordinate is missing error 4 times), very schema like, not custom, not easy to understand for no nprogrammers.
 often would need to be translated.
 - Too many logging messages, can I disable them? You can disable or configure the logging behavior via `geojson_validator.configure_logging(enabled=True, level="DEBUG")` which also returns the logger instance.
+- Does it ship type hints? Yes, the package is [PEP 561](https://peps.python.org/pep-0561/) typed, so mypy/pyright pick up the annotations without extra stubs.

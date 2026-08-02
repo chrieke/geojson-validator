@@ -7,7 +7,7 @@ def test_check_criteria_invalid():
     with pytest.raises(ValueError):
         geometry_validation.check_criteria(
             ["non_existent_criteria"],
-            geometry_validation.VALIDATION_CRITERIA["invalid"],
+            geometry_validation.INVALID_CRITERIA,
             "invalid",
         )
 
@@ -16,16 +16,23 @@ def test_check_criteria_valid():
     try:
         geometry_validation.check_criteria(
             ["unclosed", "less_three_unique_nodes"],
-            geometry_validation.VALIDATION_CRITERIA["invalid"],
+            geometry_validation.INVALID_CRITERIA,
             "invalid",
         )
         geometry_validation.check_criteria(
             ["holes"],
-            geometry_validation.VALIDATION_CRITERIA["problematic"],
+            geometry_validation.PROBLEMATIC_CRITERIA,
             "problematic",
         )
     except ValueError:
         pytest.fail("Unexpected ValueError for valid criteria")
+
+
+def test_check_criteria_single_string_raises():
+    with pytest.raises(ValueError, match="must be a list of criteria names"):
+        geometry_validation.check_criteria(
+            "unclosed", geometry_validation.INVALID_CRITERIA, "invalid"
+        )
 
 
 def test_process_validation_valid_polygon_without_criteria():

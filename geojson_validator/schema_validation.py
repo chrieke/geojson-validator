@@ -1,4 +1,4 @@
-from typing import List, Any, Union
+from typing import Any, Dict, List, Optional, Union
 
 
 class GeoJsonLint:
@@ -13,7 +13,7 @@ class GeoJsonLint:
     Focuses on structural GEOJSON schema validation, not GeoJSON specification geometry rules.
     """
 
-    GEOMETRY_TYPES_DEPTHS = {
+    GEOMETRY_TYPES_DEPTHS: Dict[str, Dict[str, Any]] = {
         "Point": {"array_depth": 1, "min_max_positions": (1, 1)},
         "LineString": {"array_depth": 2, "min_max_positions": (2, None)},
         "MultiPoint": {
@@ -33,10 +33,10 @@ class GeoJsonLint:
 
     def __init__(self, check_crs: bool = False):
         self.check_crs = check_crs
-        self.feature_idx = None
-        self.errors = {}
+        self.feature_idx: Optional[int] = None
+        self.errors: Dict[str, Dict[str, List[Any]]] = {}
 
-    def lint(self, geojson_data: Union[dict, Any]):
+    def lint(self, geojson_data: Union[dict, Any]) -> Dict[str, Dict[str, List[Any]]]:
         root_path = ""
         if not isinstance(geojson_data, dict):
             self._add_error("Root of GeoJSON must be an object/dictionary", root_path)
@@ -46,7 +46,7 @@ class GeoJsonLint:
 
         return self.errors
 
-    def _add_error(self, message: str, path: str):
+    def _add_error(self, message: str, path: str) -> None:
         if message not in self.errors:
             self.errors[message] = {"path": [path]}
             if self.feature_idx is not None:
@@ -56,7 +56,7 @@ class GeoJsonLint:
             if self.feature_idx is not None:
                 self.errors[message]["feature"].append(self.feature_idx)
 
-    def _validate_geojson_root(self, obj: Union[dict, Any]):
+    def _validate_geojson_root(self, obj: Union[dict, Any]) -> None:
         """Validate that the geojson object root directory conforms to the requirements."""
         root_path = ""
         if self._is_invalid_type_property(obj, self.GEOJSON_TYPES, root_path):
@@ -72,7 +72,7 @@ class GeoJsonLint:
 
     def _validate_feature_collection(
         self, feature_collection: Union[dict, Any], path: str
-    ):
+    ) -> None:
         """Validate that the featurecollection object conforms to the requirements."""
         self._is_invalid_type_property(
             feature_collection, ["FeatureCollection"], f"{path}/type"
@@ -105,7 +105,7 @@ class GeoJsonLint:
         if bbox:
             self._validate_bbox(bbox, f"{path}/bbox")
 
-    def _validate_feature(self, feature: Union[dict, Any], path: str):
+    def _validate_feature(self, feature: Union[dict, Any], path: str) -> None:
         """Validate that the feature object conforms to the requirements."""
         self._is_invalid_type_property(feature, ["Feature"], f"{path}/type")
         if "id" in feature and not isinstance(feature["id"], (str, int)):
@@ -124,14 +124,14 @@ class GeoJsonLint:
         if bbox:
             self._validate_bbox(bbox, f"{path}/bbox")
 
-    def _validate_geometry(self, geometry: dict, path: str):
+    def _validate_geometry(self, geometry: dict, path: str) -> None:
         """Validate that the geometry object conforms to the requirements."""
         if self._is_invalid_type_property(
             geometry, self.GEOMETRY_TYPES, f"{path}/type"
         ):
             return
 
-        obj_type = geometry.get("type")
+        obj_type = geometry["type"]
         if obj_type == "GeometryCollection":
             if not self._is_invalid_property(geometry, "geometries", "array", path):
                 for idx, geom in enumerate(geometry["geometries"]):
@@ -154,18 +154,19 @@ class GeoJsonLint:
             self._validate_bbox(bbox, f"{path}/bbox")
 
     def _is_invalid_datatype(
-        self, obj: Union[dict, list, Any], required_data_type, path
-    ):
+        self, obj: Union[dict, list, Any], required_data_type: type, path: str
+    ) -> bool:
         if not isinstance(obj, required_data_type):
             self._add_error(
                 f"Object must be a '{required_data_type}', but is a {type(obj)} instead",
                 path,
             )
             return True
+        return False
 
     def _is_invalid_type_property(
         self, obj: Union[dict, Any], allowed_types: List[str], path: str
-    ):
+    ) -> bool:
         """
         Checks if an object type member conforms to the requirements.
 
@@ -190,7 +191,7 @@ class GeoJsonLint:
 
     def _is_invalid_property(
         self, obj: Union[dict, Any], property_name: str, required_type: str, path: str
-    ):
+    ) -> bool:
         """
         Checks if an object property conforms to the requirements.
 
@@ -225,8 +226,10 @@ class GeoJsonLint:
                 return True
         return False
 
-    def _is_incorrect_coordinates_depth(self, coords, obj_type, path):
-        def _determine_array_depth(array, current_depth=0):
+    def _is_incorrect_coordinates_depth(
+        self, coords: Union[list, Any], obj_type: str, path: str
+    ) -> bool:
+        def _determine_array_depth(array: Any, current_depth: int = 0) -> int:
             """Recursively determine the depth of an array."""
             if not isinstance(array, list) or not array:
                 return current_depth
@@ -245,7 +248,7 @@ class GeoJsonLint:
             return True
         return False
 
-    def _validate_position(self, coords: Union[list, Any], path: str):
+    def _validate_position(self, coords: Union[list, Any], path: str) -> None:
         """Validate that the single coordinate position conforms to the requirements."""
         if len(coords) < 2:
             self._add_error(
@@ -263,7 +266,7 @@ class GeoJsonLint:
                 path,
             )
 
-    def _validate_position_array(self, coords: Union[list, Any], path: str):
+    def _validate_position_array(self, coords: Union[list, Any], path: str) -> None:
         """Validate that the array of multiple coordinate positions conforms to the requirements."""
         # If the first element is a list, recurse further
         if len(coords) and isinstance(coords[0], list):  # avoid empty list index error
@@ -272,7 +275,7 @@ class GeoJsonLint:
         else:
             self._validate_position(coords, path)
 
-    def _validate_bbox(self, bbox: Union[list, Any], path):
+    def _validate_bbox(self, bbox: Union[list, Any], path: str) -> None:
         if not isinstance(bbox, list):
             self._add_error(
                 "'bbox' member must be a one-dimensional array with bounding box coordinates",

@@ -1,4 +1,5 @@
 import copy
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -10,6 +11,10 @@ from .fixtures import (
     fixture_geojson_examples_all_normal_files,
 )
 from .context import main
+
+
+def test_py_typed_marker_shipped_with_package():
+    assert (Path(main.__file__).parent / "py.typed").is_file()
 
 
 def test_validate_schema_conformity_valid():
@@ -197,3 +202,9 @@ def test_fix_geometries_optional_argument_types(optional):
     fc = read_geojson("./tests/data/invalid_geometries/invalid_unclosed.geojson")
     fixed_fc = main.fix_geometries(fc, optional=optional)
     assert fixed_fc["type"] == "FeatureCollection"
+
+
+def test_fix_geometries_optional_single_string_raises():
+    fc = read_geojson("./tests/data/invalid_geometries/invalid_unclosed.geojson")
+    with pytest.raises(ValueError, match="must be a list of criteria names"):
+        main.fix_geometries(fc, optional="duplicate_nodes")

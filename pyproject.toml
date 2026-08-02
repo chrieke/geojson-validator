@@ -29,6 +29,7 @@ dev = [
     "pytest-pylint",
     "pytest-sugar",
     "mypy",
+    "types-requests",
     "grip",
     "twine",
 ]
@@ -37,6 +38,16 @@ dev = [
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["geojson_validator"]
+
+[tool.setuptools.package-data]
+geojson_validator = ["py.typed"]
+
+[tool.mypy]
+files = ["geojson_validator"]
+ignore_missing_imports = true
 
 [project.urls]
 Homepage = "https://github.com/chrieke/geojson-validator"

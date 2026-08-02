@@ -1,13 +1,14 @@
-from typing import Union, Any
+from typing import Any, List, Optional, Union
 from urllib.parse import urlparse
 from pathlib import Path
 import json
 
 from shapely.geometry import shape
+from shapely.geometry.base import BaseGeometry
 import requests
 
 
-def read_geojson_file_or_url(fp_or_url: Union[str, Path]):
+def read_geojson_file_or_url(fp_or_url: Union[str, Path]) -> dict:
     """Reads a geojson source from a filepath or url"""
     if Path(fp_or_url).suffix not in [
         ".json",
@@ -25,15 +26,15 @@ def read_geojson_file_or_url(fp_or_url: Union[str, Path]):
         return json.load(f)
 
 
-def input_to_geojson(geojson_input: Union[str, Path, dict, Any]) -> dict:
+def input_to_geojson(geojson_input: Any) -> dict:
     """Take the input which can be various types and reads/transforms it to Geojson"""
     if isinstance(geojson_input, (str, Path)):
-        geojson_input = read_geojson_file_or_url(geojson_input)
-    elif hasattr(
+        return read_geojson_file_or_url(geojson_input)
+    if hasattr(
         geojson_input, "__geo_interface__"
     ):  # e.g. shapely geometry object, geojson library objects
-        geojson_input = geojson_input.__geo_interface__
-    elif not isinstance(geojson_input, (dict)) or "type" not in geojson_input:
+        return geojson_input.__geo_interface__
+    if not isinstance(geojson_input, dict) or "type" not in geojson_input:
         raise ValueError(
             f"Unsupported input '{type(geojson_input)}'. Input must be a GeoJSON, filepath/url to GeoJSON, "
             f"shapely geometry or any object with a __geo_interface__"
@@ -41,9 +42,7 @@ def input_to_geojson(geojson_input: Union[str, Path, dict, Any]) -> dict:
     return geojson_input
 
 
-def any_geojson_to_featurecollection(
-    geojson_input: Union[str, Path, dict, Any]
-) -> dict:
+def any_geojson_to_featurecollection(geojson_input: dict) -> dict:
     """Take a geojson of various types (Feature, Geometry, Fc) and transform it to a featurecollection"""
     supported_geojson_types = [
         "Point",
@@ -74,14 +73,15 @@ def any_geojson_to_featurecollection(
     return fc
 
 
-def extract_single_geometries(geometry, geometry_type):
+def extract_single_geometries(geometry: dict, geometry_type: str) -> List[dict]:
     if "Multi" in geometry_type:
         single_type = geometry_type.split("Multi")[1]
         return [
             {"type": single_type, "coordinates": g} for g in geometry["coordinates"]
         ]
-    elif geometry_type == "GeometryCollection":
+    if geometry_type == "GeometryCollection":
         return geometry["geometries"]
+    return []
 
 
 def coordinate_arrays(geometry: dict) -> list:
@@ -97,7 +97,7 @@ def coordinate_arrays(geometry: dict) -> list:
     return geometry["coordinates"]
 
 
-def to_shapely_or_none(geometry: dict):
+def to_shapely_or_none(geometry: dict) -> Optional[BaseGeometry]:
     """Parses the geometry dict to shapely for the validation checks that require it."""
     # Some criteria require the original json geometry dict as shapely etc. autofixes (e.g. closes) geometries.
     # Initiating the shapely type in each check function specifically is time intensive.

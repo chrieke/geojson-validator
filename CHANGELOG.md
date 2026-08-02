@@ -11,6 +11,14 @@ Update your installation to the latest version:
 
 ## Unreleased
 
+- Ship a `py.typed` marker (PEP 561), so type checkers use the annotations instead of treating the
+  package as untyped
+- Fix incorrect type hints: `criteria_invalid`/`criteria_problematic` were annotated `List[str]` but
+  defaulted to a dict (now the `INVALID_CRITERIA`/`PROBLEMATIC_CRITERIA` tuples of criteria names),
+  `validate_geometries` documented the wrong return value, and `fix_geometries` and
+  `configure_logging` were unannotated. The package now type checks cleanly (`make typecheck`)
+- Passing a single criteria string instead of a list raises a clear error instead of validating
+  against the individual characters
 - Fix `fix_geometries` not applying fixes to the sub-geometries of MultiPolygons/GeometryCollections
   (results were written to a wrong key, leaving the coordinates unchanged)
 - Fix `validate_geometries` mutating the input GeoJSON (Point/LineString coordinates were rewritten in place)

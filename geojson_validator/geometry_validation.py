@@ -1,7 +1,8 @@
-from typing import List
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 from collections import Counter
 
 from loguru import logger
+from shapely.geometry.base import BaseGeometry
 
 from . import checks_invalid, checks_problematic
 from .geometry_utils import to_shapely_or_none, extract_single_geometries
@@ -16,7 +17,7 @@ ALL_ACCEPTED_GEOMETRY_TYPES = POI, MPOI, LS, MLS, POL, MPOL, GC = [
     "GeometryCollection",
 ]
 
-VALIDATION_CRITERIA = {
+VALIDATION_CRITERIA: Dict[str, Dict[str, Dict[str, Any]]] = {
     "invalid": {
         "unclosed": {"relevant": [POL], "input": "json_geometry"},
         "less_three_unique_nodes": {
@@ -73,10 +74,17 @@ VALIDATION_CRITERIA = {
     },
 }
 
+INVALID_CRITERIA: Tuple[str, ...] = tuple(VALIDATION_CRITERIA["invalid"])
+PROBLEMATIC_CRITERIA: Tuple[str, ...] = tuple(VALIDATION_CRITERIA["problematic"])
+
 
 def check_criteria(
-    selected_criteria: List[str], allowed_criteria: List[str], name: str
-):
+    selected_criteria: Sequence[str], allowed_criteria: Sequence[str], name: str
+) -> None:
+    if isinstance(selected_criteria, str):
+        raise ValueError(
+            f"`{name}` must be a list of criteria names, not the single string '{selected_criteria}'"
+        )
     if selected_criteria:
         for criterium in selected_criteria:
             if criterium not in allowed_criteria:
@@ -87,8 +95,12 @@ def check_criteria(
 
 
 def apply_check(
-    criterium, single_geometry, shapely_geom, geometry_type, criteria_type="invalid"
-):
+    criterium: str,
+    single_geometry: dict,
+    shapely_geom: Optional[BaseGeometry],
+    geometry_type: str,
+    criteria_type: str = "invalid",
+) -> Optional[bool]:
     """Applies the correct check for the criteria. Only accepts single geometries."""
     geometry_input_options = {
         "json_geometry": single_geometry,
@@ -107,12 +119,18 @@ def apply_check(
         )
         check_func = getattr(check_module, f"check_{criterium}")
         return check_func(geometry_input_options[required_input_type])
+    return None
 
 
-def process_validation(geometries, criteria_invalid, criteria_problematic):
-    results_invalid, results_problematic = {}, {}
-    skipped_validation = []
-    geometry_types = []
+def process_validation(
+    geometries: Sequence[Optional[dict]],
+    criteria_invalid: Sequence[str],
+    criteria_problematic: Sequence[str],
+) -> Dict[str, Any]:
+    results_invalid: Dict[str, List[Any]] = {}
+    results_problematic: Dict[str, List[Any]] = {}
+    skipped_validation: List[int] = []
+    geometry_types: List[Optional[str]] = []
 
     for i, geometry in enumerate(geometries):
         if geometry is None:

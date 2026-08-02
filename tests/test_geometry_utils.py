@@ -60,7 +60,9 @@ def test_coordinate_arrays():
     assert point_geojson["coordinates"] == [10, 20]
 
     linestring_geojson = {"type": "LineString", "coordinates": [[10, 20], [30, 40]]}
-    assert geometry_utils.coordinate_arrays(linestring_geojson) == [[[10, 20], [30, 40]]]
+    assert geometry_utils.coordinate_arrays(linestring_geojson) == [
+        [[10, 20], [30, 40]]
+    ]
 
     polygon_coordinates = [
         [[0, 0], [10, 0], [10, 10], [0, 0]],
