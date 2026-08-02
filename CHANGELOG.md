@@ -47,6 +47,16 @@ Update your installation to the latest version:
   the query was read as part of the file suffix; the suffix check is now also case-insensitive
 - Fix `fix_geometries(optional=["duplicate_nodes"])` crashing on a fully degenerate ring
   (`shapely` raises `GEOSException`, which is not a `ValueError`)
+- `validate_geometries` is faster on non-Polygon input, as shapely geometries are now only built for
+  the geometry types a selected check actually needs them for: measured over 10k features, Points
+  4.3x and LineStrings 2.3x
+- `check_inner_and_exterior_ring_intersect` skips building the exterior shell for polygons without
+  holes (1.4x faster on hole-free polygons)
+- `fix_geometries` no longer re-parses and re-serialises a geometry once per criterium, so its cost
+  no longer grows with the number of criteria applied (2 fixes 1.9x faster, 3 fixes 2.8x)
+- When more than one fix applies to the same geometry, a `duplicate_nodes` removal is no longer
+  partly undone by the next fix re-adding a closing coordinate. Only reachable when calling
+  `process_fix` directly; `fix_geometries` was unaffected
 
 ## 0.6.0
 **November 29, 2024**
