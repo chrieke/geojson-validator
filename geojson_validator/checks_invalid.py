@@ -11,9 +11,7 @@ def check_unclosed(geometry: dict) -> bool:
 
 def check_less_three_unique_nodes(geometry: dict) -> bool:
     """Return True if any ring has fewer than three unique nodes."""
-    return any(
-        len(set(map(tuple, ring))) < 3 for ring in coordinate_arrays(geometry)
-    )
+    return any(len(set(map(tuple, ring))) < 3 for ring in coordinate_arrays(geometry))
 
 
 def check_exterior_not_ccw(geom: Polygon) -> bool:

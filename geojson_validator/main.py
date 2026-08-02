@@ -1,4 +1,4 @@
-from typing import Dict, Union, List, Any
+from typing import Any, Dict, Sequence, Union, TYPE_CHECKING
 import sys
 from pathlib import Path
 
@@ -10,11 +10,15 @@ from .geometry_utils import (
     any_geojson_to_featurecollection,
 )
 from .geometry_validation import (
-    VALIDATION_CRITERIA,
+    INVALID_CRITERIA,
+    PROBLEMATIC_CRITERIA,
     check_criteria,
     process_validation,
 )
 from .fixes_utils import process_fix
+
+if TYPE_CHECKING:
+    from loguru import Logger
 
 logger.remove()
 logger_format = "{time:YYYY-MM-DD_HH:mm:ss.SSS} | {message}"
@@ -23,7 +27,7 @@ logger.add(sink=sys.stderr, format=logger_format, level="INFO")
 
 def validate_structure(
     geojson_input: Union[dict, str, Path, Any], check_crs: bool = False
-) -> Dict:
+) -> Dict[str, Any]:
     """
     Validate that the input conforms to the GeoJSON json schema.
 
@@ -43,29 +47,28 @@ def validate_structure(
 
 
 def validate_geometries(
-    geojson_input: Union[dict, str, Path],
-    criteria_invalid: List[str] = VALIDATION_CRITERIA["invalid"],
-    criteria_problematic: List[str] = VALIDATION_CRITERIA["problematic"],
-) -> Dict:
+    geojson_input: Union[dict, str, Path, Any],
+    criteria_invalid: Sequence[str] = INVALID_CRITERIA,
+    criteria_problematic: Sequence[str] = PROBLEMATIC_CRITERIA,
+) -> Dict[str, Any]:
     """
     Validate that a GeoJSON conforms to the geojson specs.
 
     Args:
-        geojson: Input GeoJSON FeatureCollection, Feature, Geometry or filepath to (Geo)JSON/file.
+        geojson_input: Input GeoJSON FeatureCollection, Feature, Geometry or filepath/url to (Geo)JSON.
         criteria_invalid: A list of validation criteria that are invalid according the GeoJSON specification.
         criteria_problematic: A list of validation criteria that are valid, but problematic with some tools.
 
     Returns:
-        The validated & fixed GeoJSON feature collection.
+        A dictionary with the violated criteria and the affected feature indices, e.g.
+        {"invalid": {"unclosed": [0]}, "problematic": {}, ...}.
     """
     if not criteria_invalid and not criteria_problematic:
         raise ValueError(
             "Select at least one criteria in `criteria_invalid` or `criteria_problematic`"
         )
-    check_criteria(criteria_invalid, VALIDATION_CRITERIA["invalid"], name="invalid")
-    check_criteria(
-        criteria_problematic, VALIDATION_CRITERIA["problematic"], name="problematic"
-    )
+    check_criteria(criteria_invalid, INVALID_CRITERIA, name="invalid")
+    check_criteria(criteria_problematic, PROBLEMATIC_CRITERIA, name="problematic")
 
     geojson_input = input_to_geojson(geojson_input)
     fc = any_geojson_to_featurecollection(geojson_input)
@@ -79,11 +82,11 @@ def validate_geometries(
 
 def fix_geometries(
     geojson_input: Union[dict, str, Path, Any],
-    optional=(
+    optional: Sequence[str] = (
         # "excessive_coordinate_precision",
         "duplicate_nodes",
     ),
-):
+) -> Dict[str, Any]:
     """
     Fix invalid geometries in the GeoJSON.
 
@@ -105,8 +108,8 @@ def fix_geometries(
         # "excessive_coordinate_precision",
         "duplicate_nodes",
     ]
-    optional = list(optional or [])
     check_criteria(optional, allowed_optional, name="optional")
+    optional = list(optional or [])
 
     geojson_input = input_to_geojson(geojson_input)
     geometry_validation_results = validate_geometries(
@@ -121,18 +124,19 @@ def fix_geometries(
     logger.info(f"Fixed geometries for criteria {criteria}")
     return fixed_fc
 
-def configure_logging(enabled=True, level="INFO"):
+
+def configure_logging(enabled: bool = True, level: str = "INFO") -> "Logger":
     """
     Configures the library logging behavior.
 
     Args:
-        enabled (bool): If False, disables all logging.
-        level (str): Logging level, e.g., 'INFO', 'DEBUG', 'WARNING', 'ERROR'.
+        enabled: If False, disables all logging.
+        level: Logging level, e.g., 'INFO', 'DEBUG', 'WARNING', 'ERROR'.
 
     Returns:
-        logger: The configured loguru logger instance.
+        The configured loguru logger instance.
     """
     logger.remove()  # Clear all existing loggers
     if enabled:
-        logger.add(sys.stderr, format="{time:YYYY-MM-DD_HH:mm:ss.SSS} | {message}", level=level)
+        logger.add(sink=sys.stderr, format=logger_format, level=level)
     return logger

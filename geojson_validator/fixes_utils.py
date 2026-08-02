@@ -1,20 +1,21 @@
-from typing import List, Union
+from typing import Any, Dict, Sequence, Union
 import copy
 
 from shapely.geometry import shape
+from shapely.geometry.base import BaseGeometry
 from loguru import logger
 
 
 from . import fixes
 
 
-def apply_fix(criterium: str, shapely_geom):
+def apply_fix(criterium: str, shapely_geom: BaseGeometry) -> BaseGeometry:
     """Applies the correct fix for the criteria"""
     fix_func = getattr(fixes, f"fix_{criterium}")
     return fix_func(shapely_geom)
 
 
-def deep_list(obj):
+def deep_list(obj: Any) -> Any:
     """Converts nested coordinate tuples (e.g. from __geo_interface__) to plain JSON-style lists."""
     if isinstance(obj, dict):
         return {key: deep_list(value) for key, value in obj.items()}
@@ -36,7 +37,9 @@ def fix_single_geometry(geometry: dict, criterium: str) -> Union[dict, None]:
     return deep_list(apply_fix(criterium, geom).__geo_interface__)
 
 
-def process_fix(fc, geometry_validation_results: dict, criteria: List[str]):
+def process_fix(
+    fc: dict, geometry_validation_results: Dict[str, Any], criteria: Sequence[str]
+) -> Dict[str, Any]:
     fc_copy = copy.deepcopy(fc)
     for criterium in criteria:
         if criterium in geometry_validation_results["invalid"]:

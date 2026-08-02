@@ -48,7 +48,7 @@ def check_duplicate_nodes(geometry: dict) -> bool:
     return False
 
 
-def check_excessive_coordinate_precision(geometry: dict, precision=6) -> bool:
+def check_excessive_coordinate_precision(geometry: dict, precision: int = 6) -> bool:
     """Return True if any coordinate has more than `precision` decimal places."""
     return any(
         round(value, precision) != value
