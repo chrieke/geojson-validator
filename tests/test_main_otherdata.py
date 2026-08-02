@@ -1,13 +1,13 @@
 import pytest
 
-from .fixtures import read_geojson
 
-from .context import main
+from geojson_validator import main
+from .helpers import DATA, read_geojson
 
 
 @pytest.mark.skip(reason="1mb file")
 def test_validate_countries_dataset():
-    fc = read_geojson("./tests/data/countries.geojson")
+    fc = read_geojson(DATA / "countries.geojson")
     result = main.validate_geometries(fc)
     assert len(result["invalid"]) == 0
     assert len(result["problematic"]["self_intersection"]) == 1
@@ -24,7 +24,7 @@ def test_validate_countries_dataset():
 
 @pytest.mark.skip(reason="Takes 10sec, 20mb file")
 def test_validate_buildings_dataset():
-    fc = read_geojson("./tests/data/buildings.json")
+    fc = read_geojson(DATA / "buildings.json")
     result = main.validate_geometries(fc)
     assert len(result["problematic"]["excessive_coordinate_precision"]) == 66510
     assert result["count_geometry_types"]["Polygon"] == 66510

@@ -3,16 +3,17 @@ from pathlib import Path
 import pytest
 from shapely.geometry import shape, Point
 
-from .context import geometry_utils
-from .fixtures import read_geojson
+from geojson_validator import geometry_utils
+from .helpers import DATA, read_geojson
 
 
 def test_read_geojson_file_or_url_filepath():
-    filepath = "./tests/data/valid/valid_featurecollection.geojson"
+    filepath = DATA / "valid/valid_featurecollection.geojson"
     fc = geometry_utils.read_geojson_file_or_url(filepath)
     assert isinstance(fc, dict)
 
 
+@pytest.mark.network
 def test_read_geojson_file_or_url_url():
     filepath = (
         "https://raw.githubusercontent.com/isellsoap/deutschlandGeoJSON/main/"
@@ -24,7 +25,7 @@ def test_read_geojson_file_or_url_url():
 
 
 def test_input_to_geojson_file():
-    fp = "./tests/data/valid/valid_featurecollection.geojson"
+    fp = DATA / "valid/valid_featurecollection.geojson"
     for f in [fp, Path(fp), shape(read_geojson(fp, geometries=True))]:
         geojson_data = geometry_utils.input_to_geojson(f)
         assert geojson_data["type"]
@@ -37,7 +38,7 @@ def test_input_to_geojson_invalid_input_type():
 
 
 def test_any_geojson_to_featurecollection_various_geojson_types():
-    fp_geojson = "./tests/data/valid/valid_featurecollection.geojson"
+    fp_geojson = DATA / "valid/valid_featurecollection.geojson"
     fc_in = read_geojson(fp_geojson)
     for geojson_element in [
         fc_in,

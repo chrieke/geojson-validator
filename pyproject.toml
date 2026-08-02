@@ -48,6 +48,10 @@ geojson_validator = ["py.typed"]
 files = ["geojson_validator"]
 ignore_missing_imports = true
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["network: requires internet access, deselect with -m 'not network'"]
+
 [project.urls]
 Homepage = "https://github.com/chrieke/geojson-validator"
 Changelog = "https://github.com/chrieke/geojson-validator/changelog"

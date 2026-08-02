@@ -1,19 +1,12 @@
 from shapely.geometry import shape
-import pytest
 
-from .context import checks_problematic
-from .fixtures import read_geojson
-
-
-@pytest.fixture(scope="session")
-def valid_geometry():
-    geojson_fp = "./tests/data/valid/valid_featurecollection.geojson"
-    return read_geojson(geojson_fp, geometries=True)
+from geojson_validator import checks_problematic
+from .helpers import DATA, read_geojson
 
 
 def test_check_holes():
     geometry = read_geojson(
-        "./tests/data/problematic_geometries/problematic_holes.geojson",
+        DATA / "problematic_geometries/problematic_holes.geojson",
         geometries=True,
     )
     geom = shape(geometry)
@@ -23,7 +16,7 @@ def test_check_holes():
 
 def test_check_self_intersection():
     geometry = read_geojson(
-        "./tests/data/problematic_geometries/problematic_self_intersection_small.geojson",
+        DATA / "problematic_geometries/problematic_self_intersection_small.geojson",
         geometries=True,
     )
     geom = shape(geometry)
@@ -33,7 +26,7 @@ def test_check_self_intersection():
 
 def test_check_inner_and_exterior_ring_intersect(valid_geometry):
     geometry = read_geojson(
-        "./tests/data/invalid_geometries/invalid_inner_and_exterior_ring_intersect.geojson",
+        DATA / "invalid_geometries/invalid_inner_and_exterior_ring_intersect.geojson",
         geometries=True,
     )
     assert checks_problematic.check_inner_and_exterior_ring_intersect(shape(geometry))
@@ -68,7 +61,7 @@ def test_check_inner_ring_outside_exterior_touching_at_single_point():
 
 def test_check_duplicate_nodes(valid_geometry):
     geometry = read_geojson(
-        "./tests/data/problematic_geometries/problematic_duplicate_nodes.geojson",
+        DATA / "problematic_geometries/problematic_duplicate_nodes.geojson",
         geometries=True,
     )
     assert checks_problematic.check_duplicate_nodes(geometry)
@@ -85,7 +78,8 @@ def test_check_duplicate_nodes_empty_ring():
 
 def test_check_excessive_coordinate_precision():
     geometry = read_geojson(
-        "./tests/data/problematic_geometries/problematic_excessive_coordinate_precision.geojson",
+        DATA
+        / "problematic_geometries/problematic_excessive_coordinate_precision.geojson",
         geometries=True,
     )
     assert checks_problematic.check_excessive_coordinate_precision(geometry)
@@ -130,7 +124,7 @@ def test_check_excessive_coordinate_precision_interior_ring_and_exponent():
 
 def test_check_excessive_vertices():
     geometry = read_geojson(
-        "./tests/data/problematic_geometries/problematic_excessive_vertices.geojson",
+        DATA / "problematic_geometries/problematic_excessive_vertices.geojson",
         geometries=True,
     )
     assert checks_problematic.check_excessive_vertices(geometry)
@@ -138,7 +132,7 @@ def test_check_excessive_vertices():
 
 def test_check_3d_coordinates():
     geometry = read_geojson(
-        "./tests/data/problematic_geometries/problematic_3d_coordinates.geojson",
+        DATA / "problematic_geometries/problematic_3d_coordinates.geojson",
         geometries=True,
     )
     assert checks_problematic.check_3d_coordinates(geometry)
@@ -155,7 +149,7 @@ def test_check_3d_coordinates_on_later_vertex():
 
 def test_check_outside_lat_lon_boundaries(valid_geometry):
     geometry = read_geojson(
-        "./tests/data/problematic_geometries/problematic_outside_lat_lon_boundaries.geojson",
+        DATA / "problematic_geometries/problematic_outside_lat_lon_boundaries.geojson",
         geometries=True,
     )
     assert checks_problematic.check_outside_lat_lon_boundaries(geometry)
@@ -164,7 +158,7 @@ def test_check_outside_lat_lon_boundaries(valid_geometry):
 
 def test_check_crosses_antimeridian():
     geometry = read_geojson(
-        "./tests/data/problematic_geometries/problematic_crosses_antimeridian.geojson",
+        DATA / "problematic_geometries/problematic_crosses_antimeridian.geojson",
         geometries=True,
     )
     assert checks_problematic.check_crosses_antimeridian(geometry)

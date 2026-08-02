@@ -1,6 +1,6 @@
 import pytest
 
-from .context import geometry_validation
+from geojson_validator import geometry_validation
 
 
 def test_check_criteria_invalid():
