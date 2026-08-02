@@ -1,3 +1,4 @@
+import copy
 from unittest.mock import patch
 
 import pytest
@@ -84,6 +85,27 @@ def test_validate_geometries_invalid_no_invalid_or_problematic_checks():
     result = main.validate_geometries(fc, criteria_invalid=[])
     assert not result["invalid"]
     assert not result["problematic"]
+
+
+def test_validate_geometries_does_not_mutate_input():
+    fc = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {"type": "Point", "coordinates": [1.0, 2.0]},
+            },
+            {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {"type": "LineString", "coordinates": [[0, 0], [1, 1]]},
+            },
+        ],
+    }
+    fc_before = copy.deepcopy(fc)
+    main.validate_geometries(fc)
+    assert fc == fc_before
 
 
 def test_validate__geometries_valid():

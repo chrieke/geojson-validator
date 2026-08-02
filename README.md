@@ -53,8 +53,8 @@ geojson_validator.validate_structure(geojson_input, check_crs=False)
 ```
 
 Returns the reasons why the input does not conform to the GeoJSON specification.
-Also gives the line location and feature index to more quickly localize the issues. 
-Example: `{"Missing 'type' member": {"line": [4], "feature": [0]}`.
+Also gives the JSON path and feature index to more quickly localize the issues. 
+Example: `{"Missing 'type' member": {"path": ["/features/0"], "feature": [0]}}`.
 
 
 ### 2. Validate geometries 🟥
@@ -66,11 +66,11 @@ invalid and problematic criteria. You can choose to validate only specific crite
 ```python
 # Invalid according to the GeoJSON specification
 criteria_invalid = ["unclosed", "less_three_unique_nodes", "exterior_not_ccw",
-                    "interior_not_cw", "inner_and_exterior_ring_intersect"]
+                    "interior_not_cw"]
 
 # Problematic with some tools & APIs
-criteria_problematic = ["holes", "self_intersection", "duplicate_nodes", 
-                        "excessive_coordinate_precision", "excessive_vertices", 
+criteria_problematic = ["holes", "inner_and_exterior_ring_intersect", "self_intersection",
+                        "duplicate_nodes", "excessive_coordinate_precision", "excessive_vertices",
                         "3d_coordinates", "outside_lat_lon_boundaries", "crosses_antimeridian"]
 
 geojson_validator.validate_geometries(geojson, criteria_invalid, criteria_problematic)

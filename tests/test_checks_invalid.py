@@ -20,6 +20,25 @@ def test_check_unclosed(valid_geometry):
     assert not checks_invalid.check_unclosed(valid_geometry)
 
 
+def test_check_unclosed_interior_ring():
+    geometry = {
+        "type": "Polygon",
+        "coordinates": [
+            [[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]],
+            [[1, 1], [2, 1], [2, 2], [1, 2]],  # unclosed hole
+        ],
+    }
+    assert checks_invalid.check_unclosed(geometry)
+
+
+def test_check_unclosed_empty_ring():
+    geometry = {
+        "type": "Polygon",
+        "coordinates": [[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]], []],
+    }
+    assert not checks_invalid.check_unclosed(geometry)
+
+
 def test_less_three_unique_nodes(valid_geometry):
     geometry = read_geojson(
         "./tests/data/invalid_geometries/invalid_less_three_unique_nodes.geojson",
@@ -47,15 +66,3 @@ def test_check_interior_not_cw(valid_geometry):
     geom = shape(geometry)
     assert checks_invalid.check_interior_not_cw(geom)
     assert not checks_invalid.check_interior_not_cw(shape(valid_geometry))
-
-
-def test_check_inner_and_exterior_ring_intersect(valid_geometry):
-    geometry = read_geojson(
-        "./tests/data/invalid_geometries/invalid_inner_and_exterior_ring_intersect.geojson",
-        geometries=True,
-    )
-    geom = shape(geometry)
-    assert checks_invalid.check_inner_and_exterior_ring_intersect(geom)
-    assert not checks_invalid.check_inner_and_exterior_ring_intersect(
-        shape(valid_geometry)
-    )

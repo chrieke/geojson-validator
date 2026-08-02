@@ -4,7 +4,7 @@ from collections import Counter
 from loguru import logger
 
 from . import checks_invalid, checks_problematic
-from .geometry_utils import prepare_geometries_for_checks, extract_single_geometries
+from .geometry_utils import to_shapely_or_none, extract_single_geometries
 
 ALL_ACCEPTED_GEOMETRY_TYPES = POI, MPOI, LS, MLS, POL, MPOL, GC = [
     "Point",
@@ -31,14 +31,16 @@ VALIDATION_CRITERIA = {
             "relevant": [POL],
             "input": "shapely_geom",
         },
-        "inner_and_exterior_ring_intersect": {
-            "relevant": [POL],
-            "input": "shapely_geom",
-        },
         # "zero-length": {"relevant": ["LineString"], "input": "json_geometry"},
     },
     "problematic": {
         "holes": {"relevant": [POL], "input": "shapely_geom"},
+        # Valid by the GeoJSON specification, but invalid by the OGC Simple Features standard
+        # which many tools follow.
+        "inner_and_exterior_ring_intersect": {
+            "relevant": [POL],
+            "input": "shapely_geom",
+        },
         "self_intersection": {
             "relevant": [POL],
             "input": "shapely_geom",
@@ -148,7 +150,7 @@ def process_validation(geometries, criteria_invalid, criteria_problematic):
             continue
 
         # Handle Single-Geometries
-        geometry, shapely_geom = prepare_geometries_for_checks(geometry)
+        shapely_geom = to_shapely_or_none(geometry)
         if criteria_invalid:
             for criterium in criteria_invalid:
                 if apply_check(
