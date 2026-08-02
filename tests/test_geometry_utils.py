@@ -31,6 +31,44 @@ def test_input_to_geojson_file():
         assert geojson_data["type"]
 
 
+def test_read_geojson_file_or_url_rejects_non_geojson_suffix():
+    with pytest.raises(ValueError, match="must be a geojson or json file"):
+        geometry_utils.read_geojson_file_or_url("some/file.txt")
+
+
+def test_read_geojson_file_or_url_suffix_accepts_query_string_and_any_case(monkeypatch):
+    # A query string is part of Path(...).suffix, so it must be taken from the url path.
+    requested = []
+
+    class FakeResponse:
+        @staticmethod
+        def raise_for_status():
+            pass
+
+        @staticmethod
+        def json():
+            return {"type": "FeatureCollection", "features": []}
+
+    def fake_get(url, timeout):  # pylint: disable=unused-argument
+        requested.append(url)
+        return FakeResponse()
+
+    monkeypatch.setattr(geometry_utils.requests, "get", fake_get)
+    for url in [
+        "https://example.com/a.geojson?token=abc&x=1",
+        "https://example.com/a.GeoJSON",
+        "https://example.com/a.JSON?sig=xyz",
+    ]:
+        assert (
+            geometry_utils.read_geojson_file_or_url(url)["type"] == "FeatureCollection"
+        )
+    assert requested == [
+        "https://example.com/a.geojson?token=abc&x=1",
+        "https://example.com/a.GeoJSON",
+        "https://example.com/a.JSON?sig=xyz",
+    ]
+
+
 def test_input_to_geojson_invalid_input_type():
     for x in [[], set(), TypeError]:  # random other objects
         with pytest.raises(ValueError):

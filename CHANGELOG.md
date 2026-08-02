@@ -43,6 +43,10 @@ Update your installation to the latest version:
 - Fix `validate_structure` reporting a FeatureCollection-level `bbox` error under the index of the
   last feature instead of no feature
 - Fix a reused `GeoJsonLint` instance reporting the errors of previous `lint()` calls
+- Fix `read_geojson_file_or_url` rejecting URLs with a query string (e.g. presigned URLs), because
+  the query was read as part of the file suffix; the suffix check is now also case-insensitive
+- Fix `fix_geometries(optional=["duplicate_nodes"])` crashing on a fully degenerate ring
+  (`shapely` raises `GEOSException`, which is not a `ValueError`)
 
 ## 0.6.0
 **November 29, 2024**

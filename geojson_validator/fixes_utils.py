@@ -3,6 +3,7 @@ import copy
 
 from shapely.geometry import shape
 from shapely.geometry.base import BaseGeometry
+from shapely.errors import ShapelyError
 from loguru import logger
 
 
@@ -31,10 +32,13 @@ def fix_single_geometry(geometry: dict, criterium: str) -> Union[dict, None]:
         return None
     try:
         geom = shape(geometry)
-    except (TypeError, ValueError):
-        logger.info("Geometry could not be parsed by shapely, skipping fix.")
+        fixed = apply_fix(criterium, geom)
+    except (TypeError, ValueError, ShapelyError):
+        # Parsing fails on e.g. mixed 2D/3D coordinates, and a fix can fail on its own:
+        # remove_repeated_points raises GEOSException on a fully degenerate ring.
+        logger.info("Geometry could not be parsed or fixed by shapely, skipping fix.")
         return None
-    return deep_list(apply_fix(criterium, geom).__geo_interface__)
+    return deep_list(fixed.__geo_interface__)
 
 
 def process_fix(
