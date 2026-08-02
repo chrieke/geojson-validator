@@ -60,14 +60,3 @@ def test_fix_duplicate_nodes_preserves_collinear_vertices():
     )
     fixed = fixes.fix_duplicate_nodes(geom)
     assert (0.5, 0.0) in list(fixed.exterior.coords)
-
-
-# def test_fix_excessive_coordinate_precision():
-#     geometry = read_geojson(
-#         DATA / "problematic_geometries/problematic_excessive_coordinate_precision.geojson",
-#         geometries=True,
-#     )
-#     geom = shape(geometry)
-#     assert checks_problematic.check_excessive_coordinate_precision(geom)
-#     fixed_geom = fixes.fix_excessive_coordinate_precision(geom)
-#     assert not checks_problematic.check_excessive_coordinate_precision(fixed_geom)

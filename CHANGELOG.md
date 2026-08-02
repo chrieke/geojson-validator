@@ -64,6 +64,7 @@ Update your installation to the latest version:
 - Fix a MultiType geometry or GeometryCollection with a sub-geometry that could not be checked being
   reported as fully valid. The sub-geometry's skip was dropped, so `skipped_validation` stayed empty;
   the index of the multi-geometry is now listed there
+- Add a GitHub Actions CI workflow running black, pylint, mypy and pytest
 
 ## 0.6.0
 **November 29, 2024**

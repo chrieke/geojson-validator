@@ -27,8 +27,3 @@ def fix_duplicate_nodes(geom: Polygon) -> Polygon:
     # shapely.remove_repeated_points only drops repeated points; unlike simplify(0) it does
     # not collapse collinear vertices.
     return remove_repeated_points(geom, 0)
-
-
-# def fix_excessive_coordinate_precision(geom: Polygon):
-#     # TODO: Could also be applied to non polygon
-#     pass

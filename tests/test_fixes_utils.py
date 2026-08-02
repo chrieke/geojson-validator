@@ -150,7 +150,6 @@ def test_process_fix():
         "exterior_not_ccw",
         "interior_not_cw",
         "duplicate_nodes",
-        # "excessive_coordinate_precision",
     ]
     fixed_fc = fixes_utils.process_fix(fc, geometry_validation_results, criteria)
     assert fixed_fc != fc
@@ -239,7 +238,6 @@ def test_process_fix_multigeom():
         "exterior_not_ccw",
         "interior_not_cw",
         "duplicate_nodes",
-        # "excessive_coordinate_precision",
     ]
     fixed_fc = fixes_utils.process_fix(fc, geometry_validation_results, criteria)
     assert fixed_fc != fc

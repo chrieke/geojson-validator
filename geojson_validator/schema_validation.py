@@ -13,19 +13,17 @@ class GeoJsonLint:
     Focuses on structural GEOJSON schema validation, not GeoJSON specification geometry rules.
     """
 
-    GEOMETRY_TYPES_DEPTHS: Dict[str, Dict[str, Any]] = {
-        "Point": {"array_depth": 1, "min_max_positions": (1, 1)},
-        "LineString": {"array_depth": 2, "min_max_positions": (2, None)},
-        "MultiPoint": {
-            "array_depth": 2,
-            "min_max_positions": (1, None),
-        },  # should have 2 positions but is allowed 1
-        "Polygon": {"array_depth": 3, "min_max_positions": (4, None)},
-        "MultiLineString": {"array_depth": 3, "min_max_positions": (2, None)},
-        "MultiPolygon": {"array_depth": 4, "min_max_positions": (4, None)},
-        "GeometryCollection": {"array_depth": None, "min_max_positions": (None, None)},
+    # The expected nesting depth of a geometry's "coordinates" array. A
+    # GeometryCollection has no coordinates of its own, so it is not listed here.
+    COORDINATES_DEPTHS: Dict[str, int] = {
+        "Point": 1,
+        "LineString": 2,
+        "MultiPoint": 2,
+        "Polygon": 3,
+        "MultiLineString": 3,
+        "MultiPolygon": 4,
     }
-    GEOMETRY_TYPES = list(GEOMETRY_TYPES_DEPTHS.keys())
+    GEOMETRY_TYPES = list(COORDINATES_DEPTHS) + ["GeometryCollection"]
     GEOJSON_TYPES = [
         "FeatureCollection",
         "Feature",
@@ -153,7 +151,6 @@ class GeoJsonLint:
                 self._validate_position_array(
                     geometry["coordinates"], f"{path}/coordinates"
                 )
-                # validate_min/max positions #TODO
 
         bbox = geometry.get("bbox")
         if bbox:
@@ -241,7 +238,7 @@ class GeoJsonLint:
                 return current_depth
             return _determine_array_depth(array[0], current_depth + 1)
 
-        expected_depth = self.GEOMETRY_TYPES_DEPTHS[obj_type]["array_depth"]
+        expected_depth = self.COORDINATES_DEPTHS[obj_type]
         actual_depth = _determine_array_depth(coords)
 
         if actual_depth != expected_depth:

@@ -39,8 +39,6 @@ max-args=6
 ignored-argument-names=_.*|self
 
 [SIMILARITIES]
-# Minimum lines number of a similarity.
-min-similarity-lines=20   # TODO: Reset lower when pylint bug fixed #214.
 ignore-comments=yes
 ignore-docstrings=yes
 ignore-imports=no

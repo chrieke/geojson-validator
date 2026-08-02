@@ -84,10 +84,7 @@ def validate_geometries(
 
 def fix_geometries(
     geojson_input: Union[dict, str, Path, Any],
-    optional: Sequence[str] = (
-        # "excessive_coordinate_precision",
-        "duplicate_nodes",
-    ),
+    optional: Sequence[str] = ("duplicate_nodes",),
 ) -> Dict[str, Any]:
     """
     Fix invalid geometries in the GeoJSON.
@@ -106,10 +103,7 @@ def fix_geometries(
         "exterior_not_ccw",
         "interior_not_cw",
     ]
-    allowed_optional = [
-        # "excessive_coordinate_precision",
-        "duplicate_nodes",
-    ]
+    allowed_optional = ["duplicate_nodes"]
     check_criteria(optional, allowed_optional, name="optional")
     optional = list(optional or [])
 
@@ -121,9 +115,10 @@ def fix_geometries(
     )
     fc = any_geojson_to_featurecollection(geojson_input)
 
-    criteria.extend(optional)
-    fixed_fc = process_fix(fc, geometry_validation_results, criteria)
-    logger.info(f"Fixed geometries for criteria {criteria}")
+    # The optional criteria go last: they are the ones that can remove nodes.
+    all_criteria = [*criteria, *optional]
+    fixed_fc = process_fix(fc, geometry_validation_results, all_criteria)
+    logger.info(f"Fixed geometries for criteria {all_criteria}")
     return fixed_fc
 
 
