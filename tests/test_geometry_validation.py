@@ -76,6 +76,49 @@ def test_process_validation_skips_only_the_broken_geometry():
     assert results["invalid"]["unclosed"] == [2]  # the third geometry is still checked
 
 
+@pytest.mark.parametrize(
+    "geometry",
+    [
+        # Rings one level too shallow, so the sub-polygon itself is not checkable.
+        {"type": "MultiPolygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 0]]]},
+        {"type": "MultiPoint", "coordinates": [[1]]},  # position with a single value
+        {"type": "GeometryCollection", "geometries": [False]},  # not an object
+        {"type": "GeometryCollection", "geometries": [None]},  # null sub-geometry
+    ],
+)
+def test_process_validation_skips_multi_geometry_with_broken_subgeometry(geometry):
+    # The skip of a sub-geometry must reach the result, otherwise a broken
+    # multi-geometry is indistinguishable from a valid one.
+    results = geometry_validation.process_validation(
+        [geometry],
+        geometry_validation.INVALID_CRITERIA,
+        geometry_validation.PROBLEMATIC_CRITERIA,
+    )
+    assert results["skipped_validation"] == [0]
+    assert not results["invalid"]
+    assert not results["problematic"]
+
+
+def test_process_validation_partly_broken_multi_geometry_is_skipped_and_flagged():
+    # A multi-geometry can be both: partly checked and flagged, partly not checkable.
+    geometries = [
+        {
+            "type": "MultiPolygon",
+            "coordinates": [
+                [[0, 0], [1, 0], [1, 1], [0, 0]],  # broken, rings too shallow
+                [[[0, 0], [1, 0], [1, 1], [0, 1]]],  # checkable, and unclosed
+            ],
+        }
+    ]
+    results = geometry_validation.process_validation(
+        geometries,
+        geometry_validation.INVALID_CRITERIA,
+        geometry_validation.PROBLEMATIC_CRITERIA,
+    )
+    assert results["skipped_validation"] == [0]
+    assert results["invalid"]["unclosed"] == [{0: [1]}]
+
+
 def test_process_validation_valid_polygon_without_criteria():
     geometries = [
         {"type": "Polygon", "coordinates": [[[0, 0], [1, 1], [1, 0], [0, 0]]]}

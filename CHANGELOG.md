@@ -61,6 +61,9 @@ Update your installation to the latest version:
   or non-numeric value, missing `coordinates`, a geometry that is not an object). The affected
   feature index is reported in `skipped_validation` instead; use `validate_structure` to see what is
   wrong. A missing `geometry` member is now treated like an explicit `"geometry": null`
+- Fix a MultiType geometry or GeometryCollection with a sub-geometry that could not be checked being
+  reported as fully valid. The sub-geometry's skip was dropped, so `skipped_validation` stayed empty;
+  the index of the multi-geometry is now listed there
 
 ## 0.6.0
 **November 29, 2024**

@@ -92,7 +92,9 @@ sub-geometry of a MultiType geometry make it invalid e.g. `{2:[0, 5]}`.
 
 `skipped_validation` lists the indices of features that could not be checked, e.g. a null
 geometry, an unsupported geometry type, or a geometry whose structure is broken. Use
-`validate_structure` to find out what is wrong with those.
+`validate_structure` to find out what is wrong with those. A MultiType geometry is listed
+if any of its sub-geometries could not be checked, so it can appear both here and under a
+violated criterium.
 
 
 

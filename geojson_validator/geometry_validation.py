@@ -198,6 +198,10 @@ def _validate(
                     selected_problematic,
                     types_needing_shapely,
                 )
+                # A sub-geometry that could not be checked must not pass silently, or a
+                # broken multi-geometry is indistinguishable from a valid one.
+                if results_multi["skipped_validation"]:
+                    skipped_validation.append(i)
                 flagged_invalid = {
                     criterium: {i: indices}
                     for criterium, indices in results_multi["invalid"].items()
