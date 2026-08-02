@@ -4,13 +4,9 @@ from unittest.mock import patch
 
 import pytest
 
-from .fixtures import read_geojson
 
-# pylint: disable=unused-import
-from .fixtures import (
-    fixture_geojson_examples_all_normal_files,
-)
-from .context import main
+from geojson_validator import main
+from .helpers import DATA, read_geojson
 
 
 def test_py_typed_marker_shipped_with_package():
@@ -18,14 +14,14 @@ def test_py_typed_marker_shipped_with_package():
 
 
 def test_validate_schema_conformity_valid():
-    fp = "./tests/data/valid/valid_featurecollection.geojson"
+    fp = DATA / "valid/valid_featurecollection.geojson"
     fc = read_geojson(fp)
     errors = main.validate_structure(fc)
     assert not errors
 
 
 def test_validate_schema_conformity_invalid():
-    fp = "./tests/data/valid/valid_featurecollection.geojson"
+    fp = DATA / "valid/valid_featurecollection.geojson"
     fc = read_geojson(fp)
     fc["features"][0]["type"] = "Some_weird_Feature_name"
     errors = main.validate_structure(fc)
@@ -71,19 +67,19 @@ def test_validate_geometries_calls(
 
 
 def test_validate__geometries_invalid():
-    fc = read_geojson("./tests/data/invalid_geometries/invalid_unclosed.geojson")
+    fc = read_geojson(DATA / "invalid_geometries/invalid_unclosed.geojson")
     result = main.validate_geometries(fc)
     assert "unclosed" in result["invalid"]
 
 
 def test_validate_geometries_invalid_no_checks():
-    fc = read_geojson("./tests/data/invalid_geometries/invalid_unclosed.geojson")
+    fc = read_geojson(DATA / "invalid_geometries/invalid_unclosed.geojson")
     with pytest.raises(ValueError):
         main.validate_geometries(fc, criteria_invalid=None, criteria_problematic=[])
 
 
 def test_validate_geometries_invalid_no_invalid_or_problematic_checks():
-    fc = read_geojson("./tests/data/invalid_geometries/invalid_unclosed.geojson")
+    fc = read_geojson(DATA / "invalid_geometries/invalid_unclosed.geojson")
     result = main.validate_geometries(fc, criteria_problematic=[])
     assert "unclosed" in result["invalid"]
 
@@ -114,7 +110,7 @@ def test_validate_geometries_does_not_mutate_input():
 
 
 def test_validate__geometries_valid():
-    fp = "./tests/data/valid/valid_featurecollection.geojson"
+    fp = DATA / "valid/valid_featurecollection.geojson"
     fc = read_geojson(fp)
     for input_ in [fc, fp]:
         result = main.validate_geometries(input_)
@@ -130,18 +126,18 @@ def test_validate_geometries_url():
 
 
 geojson_geometry_type_examples = [
-    ("Point", "./tests/data/valid/valid_geometry_point.geojson"),
-    ("MultiPoint", "./tests/data/valid/valid_geometry_multipoint.geojson"),
-    ("LineString", "./tests/data/valid/valid_geometry_linestring.geojson"),
+    ("Point", DATA / "valid/valid_geometry_point.geojson"),
+    ("MultiPoint", DATA / "valid/valid_geometry_multipoint.geojson"),
+    ("LineString", DATA / "valid/valid_geometry_linestring.geojson"),
     (
         "MultiLineString",
-        "./tests/data/valid/valid_geometry_multilinestring.geojson",
+        DATA / "valid/valid_geometry_multilinestring.geojson",
     ),
-    ("Polygon", "./tests/data/valid/valid_geometry_polygon.geojson"),
-    ("MultiPolygon", "./tests/data/valid/valid_geometry_multipolygon.geojson"),
+    ("Polygon", DATA / "valid/valid_geometry_polygon.geojson"),
+    ("MultiPolygon", DATA / "valid/valid_geometry_multipolygon.geojson"),
     (
         "GeometryCollection",
-        "./tests/data/valid/valid_geometry_geometrycollection.geojson",
+        DATA / "valid/valid_geometry_geometrycollection.geojson",
     ),
 ]
 
@@ -157,10 +153,10 @@ def test_validate_geometries_valid_all_geometry_types(geometry_type, file_path):
 
 
 def test_validate_geometries_runs_all_normal_files(
-    fixture_geojson_examples_all_normal_files,
+    all_normal_geojson_files,
 ):
     ### All test files for invalid/probelamtic/valid geometry checks
-    for file_path in fixture_geojson_examples_all_normal_files:
+    for file_path in all_normal_geojson_files:
         assert file_path.exists()
         print(file_path.name)
         if file_path.name not in [
@@ -182,7 +178,7 @@ def test_validations_raise_bad_filepath():
 
 
 def test_fix_valid():
-    fp = "./tests/data/valid/valid_featurecollection.geojson"
+    fp = DATA / "valid/valid_featurecollection.geojson"
     fc = read_geojson(fp)
     fixed_fc = main.fix_geometries(fc)
     assert fixed_fc["type"] == "FeatureCollection"
@@ -190,7 +186,7 @@ def test_fix_valid():
 
 
 def test_fix_invalid():
-    fp = "./tests/data/invalid_geometries/invalid_unclosed.geojson"
+    fp = DATA / "invalid_geometries/invalid_unclosed.geojson"
     fc = read_geojson(fp)
     fixed_fc = main.fix_geometries(fc)
     assert fixed_fc["type"] == "FeatureCollection"
@@ -199,12 +195,12 @@ def test_fix_invalid():
 
 @pytest.mark.parametrize("optional", [None, [], ("duplicate_nodes",)])
 def test_fix_geometries_optional_argument_types(optional):
-    fc = read_geojson("./tests/data/invalid_geometries/invalid_unclosed.geojson")
+    fc = read_geojson(DATA / "invalid_geometries/invalid_unclosed.geojson")
     fixed_fc = main.fix_geometries(fc, optional=optional)
     assert fixed_fc["type"] == "FeatureCollection"
 
 
 def test_fix_geometries_optional_single_string_raises():
-    fc = read_geojson("./tests/data/invalid_geometries/invalid_unclosed.geojson")
+    fc = read_geojson(DATA / "invalid_geometries/invalid_unclosed.geojson")
     with pytest.raises(ValueError, match="must be a list of criteria names"):
         main.fix_geometries(fc, optional="duplicate_nodes")

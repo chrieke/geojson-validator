@@ -5,19 +5,19 @@ import json
 
 from shapely.geometry import shape
 from shapely.geometry.base import BaseGeometry
+from shapely.errors import ShapelyError
 import requests
 
 
 def read_geojson_file_or_url(fp_or_url: Union[str, Path]) -> dict:
     """Reads a geojson source from a filepath or url"""
-    if Path(fp_or_url).suffix not in [
-        ".json",
-        ".JSON",
-        ".geojson",
-        ".GEOJSON",
-    ]:
+    parsed_url = urlparse(str(fp_or_url))
+    is_url = parsed_url.scheme in ("http", "https", "ftp", "ftps")
+    # For urls the suffix must come from the path only, a query string would be part of it.
+    suffix = Path(parsed_url.path if is_url else fp_or_url).suffix
+    if suffix.lower() not in (".json", ".geojson"):
         raise ValueError("Filepath or URL must be a geojson or json file")
-    if urlparse(str(fp_or_url)).scheme in ("http", "https", "ftp", "ftps"):
+    if is_url:
         response = requests.get(str(fp_or_url), timeout=5)
         response.raise_for_status()  # raise a clear HTTP error instead of falling through to a file open
         return response.json()
@@ -103,7 +103,7 @@ def to_shapely_or_none(geometry: dict) -> Optional[BaseGeometry]:
     # Initiating the shapely type in each check function specifically is time intensive.
     try:
         return shape(geometry)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, ShapelyError):
         # e.g. mixed 2D/3D coordinates make shapely raise. Return None so the raw-JSON
         # based checks (3d_coordinates, precision, etc.) can still run; shapely-based
         # checks are skipped for this geometry.

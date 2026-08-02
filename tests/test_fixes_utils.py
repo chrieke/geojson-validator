@@ -2,8 +2,8 @@ import json
 
 from shapely.geometry import shape
 
-from .context import fixes_utils
-from .fixtures import read_geojson
+from geojson_validator import fixes_utils
+from .helpers import DATA, read_geojson
 
 
 def test_process_fix_skips_unparseable_geometry():
@@ -37,9 +37,37 @@ def test_process_fix_skips_unparseable_geometry():
     assert fixed_fc == fc
 
 
+def test_process_fix_skips_geometry_the_fix_itself_cannot_handle():
+    # A fully degenerate ring parses fine, but remove_repeated_points then raises
+    # GEOSException, which is a ShapelyError rather than a ValueError.
+    fc = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [[[0, 0], [0, 0], [0, 0], [0, 0]]],
+                },
+            }
+        ],
+    }
+    geometry_validation_results = {
+        "invalid": {},
+        "problematic": {"duplicate_nodes": [0]},
+        "count_geometry_types": {"Polygon": 1},
+        "skipped_validation": [],
+    }
+    fixed_fc = fixes_utils.process_fix(
+        fc, geometry_validation_results, ["duplicate_nodes"]
+    )
+    assert fixed_fc == fc
+
+
 def test_process_fix():
     fc = read_geojson(
-        "./tests/data/invalid_geometries/invalid_exterior_not_ccw.geojson",
+        DATA / "invalid_geometries/invalid_exterior_not_ccw.geojson",
     )
     geometry_validation_results = {
         "invalid": {"exterior_not_ccw": [0]},

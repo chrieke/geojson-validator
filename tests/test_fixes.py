@@ -1,12 +1,12 @@
 from shapely.geometry import shape
 
-from .context import fixes, checks_invalid, checks_problematic
-from .fixtures import read_geojson
+from geojson_validator import fixes, checks_invalid, checks_problematic
+from .helpers import DATA, read_geojson
 
 
 def test_fix_unclosed():
     geometry = read_geojson(
-        "./tests/data/invalid_geometries/invalid_unclosed.geojson",
+        DATA / "invalid_geometries/invalid_unclosed.geojson",
         geometries=True,
     )
     geom = shape(geometry)
@@ -17,7 +17,7 @@ def test_fix_unclosed():
 
 def test_fix_exterior_not_ccw():
     geometry = read_geojson(
-        "./tests/data/invalid_geometries/invalid_exterior_not_ccw.geojson",
+        DATA / "invalid_geometries/invalid_exterior_not_ccw.geojson",
         geometries=True,
     )
     geom = shape(geometry)
@@ -28,7 +28,7 @@ def test_fix_exterior_not_ccw():
 
 def test_fix_interior_not_cw():
     geometry = read_geojson(
-        "./tests/data/invalid_geometries/invalid_interior_not_cw.geojson",
+        DATA / "invalid_geometries/invalid_interior_not_cw.geojson",
         geometries=True,
     )
     geom = shape(geometry)
@@ -39,7 +39,7 @@ def test_fix_interior_not_cw():
 
 def test_fix_duplicate_nodes():
     geometry = read_geojson(
-        "./tests/data/problematic_geometries/problematic_duplicate_nodes.geojson",
+        DATA / "problematic_geometries/problematic_duplicate_nodes.geojson",
         geometries=True,
     )
     geom = shape(geometry)
@@ -64,7 +64,7 @@ def test_fix_duplicate_nodes_preserves_collinear_vertices():
 
 # def test_fix_excessive_coordinate_precision():
 #     geometry = read_geojson(
-#         "./tests/data/problematic_geometries/problematic_excessive_coordinate_precision.geojson",
+#         DATA / "problematic_geometries/problematic_excessive_coordinate_precision.geojson",
 #         geometries=True,
 #     )
 #     geom = shape(geometry)

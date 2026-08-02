@@ -1,19 +1,12 @@
 from shapely.geometry import shape
-import pytest
 
-from .context import checks_invalid
-from .fixtures import read_geojson
-
-
-@pytest.fixture(scope="session")
-def valid_geometry():
-    geojson_fp = "./tests/data/valid/valid_featurecollection.geojson"
-    return read_geojson(geojson_fp, geometries=True)
+from geojson_validator import checks_invalid
+from .helpers import DATA, read_geojson
 
 
 def test_check_unclosed(valid_geometry):
     geometry = read_geojson(
-        "./tests/data/invalid_geometries/invalid_unclosed.geojson",
+        DATA / "invalid_geometries/invalid_unclosed.geojson",
         geometries=True,
     )
     assert checks_invalid.check_unclosed(geometry)
@@ -41,7 +34,7 @@ def test_check_unclosed_empty_ring():
 
 def test_less_three_unique_nodes(valid_geometry):
     geometry = read_geojson(
-        "./tests/data/invalid_geometries/invalid_less_three_unique_nodes.geojson",
+        DATA / "invalid_geometries/invalid_less_three_unique_nodes.geojson",
         geometries=True,
     )
     assert checks_invalid.check_less_three_unique_nodes(geometry)
@@ -50,7 +43,7 @@ def test_less_three_unique_nodes(valid_geometry):
 
 def test_check_exterior_not_ccw(valid_geometry):
     geometry = read_geojson(
-        "./tests/data/invalid_geometries/invalid_exterior_not_ccw.geojson",
+        DATA / "invalid_geometries/invalid_exterior_not_ccw.geojson",
         geometries=True,
     )
     geom = shape(geometry)
@@ -60,7 +53,7 @@ def test_check_exterior_not_ccw(valid_geometry):
 
 def test_check_interior_not_cw(valid_geometry):
     geometry = read_geojson(
-        "./tests/data/invalid_geometries/invalid_interior_not_cw.geojson",
+        DATA / "invalid_geometries/invalid_interior_not_cw.geojson",
         geometries=True,
     )
     geom = shape(geometry)
