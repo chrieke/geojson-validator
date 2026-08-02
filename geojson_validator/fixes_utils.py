@@ -1,4 +1,4 @@
-from typing import Any, Dict, Sequence, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 import copy
 
 from shapely.geometry import shape
@@ -25,26 +25,39 @@ def deep_list(obj: Any) -> Any:
     return obj
 
 
-def fix_single_geometry(geometry: dict, criterium: str) -> Union[dict, None]:
-    """Fixes one single-type geometry dict, returns the fixed geometry dict or None if not fixable."""
+def fix_single_geometry(geometry: dict, criteria: Sequence[str]) -> Union[dict, None]:
+    """
+    Applies all given fixes to one single-type geometry dict, in order.
+
+    Returns the fixed geometry dict, or None if the geometry cannot be fixed. Parsing and
+    serialising once for all criteria, instead of per criterium, avoids a round trip
+    through __geo_interface__ that costs far more than the fixes themselves.
+    """
     if geometry["type"] != "Polygon":
         logger.info("Currently only fixing polygons, skipping")
         return None
     try:
         geom = shape(geometry)
-        fixed = apply_fix(criterium, geom)
+        for criterium in criteria:
+            geom = apply_fix(criterium, geom)
     except (TypeError, ValueError, ShapelyError):
         # Parsing fails on e.g. mixed 2D/3D coordinates, and a fix can fail on its own:
         # remove_repeated_points raises GEOSException on a fully degenerate ring.
         logger.info("Geometry could not be parsed or fixed by shapely, skipping fix.")
         return None
-    return deep_list(fixed.__geo_interface__)
+    return deep_list(geom.__geo_interface__)
 
 
-def process_fix(
-    fc: dict, geometry_validation_results: Dict[str, Any], criteria: Sequence[str]
-) -> Dict[str, Any]:
-    fc_copy = copy.deepcopy(fc)
+def _group_criteria_by_target(
+    geometry_validation_results: Dict[str, Any], criteria: Sequence[str]
+) -> Dict[Tuple[int, Optional[int]], List[str]]:
+    """
+    Maps each flagged geometry to the criteria flagging it, keeping the criteria order.
+
+    Targets are keyed as (feature index, sub-geometry index), with a sub-geometry index of
+    None for a whole feature. Those are distinct slots and must not be merged.
+    """
+    targets: Dict[Tuple[int, Optional[int]], List[str]] = {}
     for criterium in criteria:
         if criterium in geometry_validation_results["invalid"]:
             indices = geometry_validation_results["invalid"][criterium]
@@ -54,31 +67,46 @@ def process_fix(
             continue
         for idx in indices:
             if isinstance(idx, int):
-                geometry = fc_copy["features"][idx]["geometry"]
-                fixed = fix_single_geometry(geometry, criterium)
-                if fixed is not None:
-                    fc_copy["features"][idx]["geometry"] = fixed
+                targets.setdefault((idx, None), []).append(criterium)
             elif isinstance(idx, dict):  # multitype geometry e.g. idx is {0: [1, 2]}
                 idx, indices_subgeoms = next(iter(idx.items()))
-                geometry = fc_copy["features"][idx]["geometry"]
                 for idx_subgeom in indices_subgeoms:
                     if not isinstance(idx_subgeom, int):
                         raise TypeError(
                             "Fixing Multigeometries within Multigeometries not supported."
                         )
-                    if geometry["type"] == "GeometryCollection":
-                        subgeometry = geometry["geometries"][idx_subgeom]
-                    else:  # e.g. MultiPolygon -> Polygon
-                        subgeometry = {
-                            "type": geometry["type"].replace("Multi", ""),
-                            "coordinates": geometry["coordinates"][idx_subgeom],
-                        }
-                    fixed = fix_single_geometry(subgeometry, criterium)
-                    if fixed is None:
-                        continue
-                    if geometry["type"] == "GeometryCollection":
-                        geometry["geometries"][idx_subgeom] = fixed
-                    else:
-                        geometry["coordinates"][idx_subgeom] = fixed["coordinates"]
+                    targets.setdefault((idx, idx_subgeom), []).append(criterium)
+    return targets
+
+
+def process_fix(
+    fc: dict, geometry_validation_results: Dict[str, Any], criteria: Sequence[str]
+) -> Dict[str, Any]:
+    fc_copy = copy.deepcopy(fc)
+    targets = _group_criteria_by_target(geometry_validation_results, criteria)
+
+    for (idx, idx_subgeom), target_criteria in targets.items():
+        geometry = fc_copy["features"][idx]["geometry"]
+        is_collection = geometry["type"] == "GeometryCollection"
+
+        if idx_subgeom is None:
+            subgeometry = geometry
+        elif is_collection:
+            subgeometry = geometry["geometries"][idx_subgeom]
+        else:  # e.g. MultiPolygon -> Polygon
+            subgeometry = {
+                "type": geometry["type"].replace("Multi", ""),
+                "coordinates": geometry["coordinates"][idx_subgeom],
+            }
+
+        fixed = fix_single_geometry(subgeometry, target_criteria)
+        if fixed is None:
+            continue
+        if idx_subgeom is None:
+            fc_copy["features"][idx]["geometry"] = fixed
+        elif is_collection:
+            geometry["geometries"][idx_subgeom] = fixed
+        else:
+            geometry["coordinates"][idx_subgeom] = fixed["coordinates"]
 
     return fc_copy

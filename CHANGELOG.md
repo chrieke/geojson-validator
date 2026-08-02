@@ -52,6 +52,11 @@ Update your installation to the latest version:
   4.3x and LineStrings 2.3x
 - `check_inner_and_exterior_ring_intersect` skips building the exterior shell for polygons without
   holes (1.4x faster on hole-free polygons)
+- `fix_geometries` no longer re-parses and re-serialises a geometry once per criterium, so its cost
+  no longer grows with the number of criteria applied (2 fixes 1.9x faster, 3 fixes 2.8x)
+- When more than one fix applies to the same geometry, a `duplicate_nodes` removal is no longer
+  partly undone by the next fix re-adding a closing coordinate. Only reachable when calling
+  `process_fix` directly; `fix_geometries` was unaffected
 
 ## 0.6.0
 **November 29, 2024**

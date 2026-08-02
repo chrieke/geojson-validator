@@ -65,6 +65,77 @@ def test_process_fix_skips_geometry_the_fix_itself_cannot_handle():
     assert fixed_fc == fc
 
 
+def test_process_fix_applies_every_flagged_criterium_to_one_geometry():
+    # Clockwise exterior (exterior_not_ccw) that also has a duplicate node. Both fixes
+    # must land, even though the geometry is now parsed and serialised only once.
+    fc = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                        [[0, 0], [0, 0], [0, 10], [10, 10], [10, 0], [0, 0]]
+                    ],
+                },
+            }
+        ],
+    }
+    geometry_validation_results = {
+        "invalid": {"exterior_not_ccw": [0]},
+        "problematic": {"duplicate_nodes": [0]},
+        "count_geometry_types": {"Polygon": 1},
+        "skipped_validation": [],
+    }
+    fixed = fixes_utils.process_fix(
+        fc, geometry_validation_results, ["exterior_not_ccw", "duplicate_nodes"]
+    )
+    ring = fixed["features"][0]["geometry"]["coordinates"][0]
+    assert shape(fixed["features"][0]["geometry"]).exterior.is_ccw  # exterior_not_ccw
+    assert len(ring) == len(set(map(tuple, ring))) + 1  # duplicate_nodes
+    # Plain json lists, not tuples from __geo_interface__
+    assert json.loads(json.dumps(fixed)) == fixed
+
+
+def test_process_fix_keeps_feature_and_subgeometry_targets_separate():
+    # The same feature index flagged as a whole geometry by one criterium and as a
+    # sub-geometry by another must not be merged into one target.
+    fc = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [[[0, 0], [0, 10], [10, 10], [0, 0]]],
+                },
+            },
+            {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "type": "MultiPolygon",
+                    "coordinates": [[[[0, 0], [0, 10], [10, 10], [0, 0]]]],
+                },
+            },
+        ],
+    }
+    results = {
+        "invalid": {"exterior_not_ccw": [0, {1: [0]}]},
+        "problematic": {},
+        "count_geometry_types": {"Polygon": 1, "MultiPolygon": 1},
+        "skipped_validation": [],
+    }
+    fixed = fixes_utils.process_fix(fc, results, ["exterior_not_ccw"])
+    assert fixed["features"][0]["geometry"]["type"] == "Polygon"
+    assert fixed["features"][1]["geometry"]["type"] == "MultiPolygon"
+    assert shape(fixed["features"][0]["geometry"]).exterior.is_ccw
+    assert shape(fixed["features"][1]["geometry"]).geoms[0].exterior.is_ccw
+
+
 def test_process_fix():
     fc = read_geojson(
         DATA / "invalid_geometries/invalid_exterior_not_ccw.geojson",
