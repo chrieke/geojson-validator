@@ -168,3 +168,10 @@ def test_fix_invalid():
     fixed_fc = main.fix_geometries(fc)
     assert fixed_fc["type"] == "FeatureCollection"
     assert fc != fixed_fc
+
+
+@pytest.mark.parametrize("optional", [None, [], ("duplicate_nodes",)])
+def test_fix_geometries_optional_argument_types(optional):
+    fc = read_geojson("./tests/data/invalid_geometries/invalid_unclosed.geojson")
+    fixed_fc = main.fix_geometries(fc, optional=optional)
+    assert fixed_fc["type"] == "FeatureCollection"

@@ -1,3 +1,7 @@
+import json
+
+from shapely.geometry import shape
+
 from .context import fixes_utils
 from .fixtures import read_geojson
 
@@ -141,8 +145,44 @@ def test_process_fix_multigeom():
     fixed_fc = fixes_utils.process_fix(fc, geometry_validation_results, criteria)
     assert fixed_fc != fc
     assert len(fixed_fc["features"]) == 1
-    assert len(fixed_fc["features"][0]["geometry"]["coordinates"]) == 3
+    geometry = fixed_fc["features"][0]["geometry"]
+    assert set(geometry.keys()) == {"type", "coordinates"}
+    assert len(geometry["coordinates"]) == 3
+    # The flagged subgeometries 1 & 2 were actually rewound to counter-clockwise
+    for i in [1, 2]:
+        subgeom = shape({"type": "Polygon", "coordinates": geometry["coordinates"][i]})
+        assert subgeom.exterior.is_ccw
+    # Plain JSON types, no tuples
+    assert json.loads(json.dumps(fixed_fc)) == fixed_fc
 
 
-# def test_process_fix_multigeom_geometrycollection():
-# TODO
+def test_process_fix_geometrycollection():
+    fc = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "type": "GeometryCollection",
+                    "geometries": [
+                        {"type": "Point", "coordinates": [1, 2]},
+                        {  # clockwise exterior
+                            "type": "Polygon",
+                            "coordinates": [[[0, 0], [0, 1], [1, 1], [1, 0], [0, 0]]],
+                        },
+                    ],
+                },
+            }
+        ],
+    }
+    geometry_validation_results = {
+        "invalid": {"exterior_not_ccw": [{0: [1]}]},
+        "problematic": {},
+    }
+    fixed_fc = fixes_utils.process_fix(
+        fc, geometry_validation_results, ["exterior_not_ccw"]
+    )
+    geometries = fixed_fc["features"][0]["geometry"]["geometries"]
+    assert geometries[0] == {"type": "Point", "coordinates": [1, 2]}
+    assert shape(geometries[1]).exterior.is_ccw
